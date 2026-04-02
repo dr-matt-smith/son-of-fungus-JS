@@ -1,17 +1,29 @@
 'use strict';
 
 // ── Configuration ─────────────────────────────────────────────────────────────
-const WORLD_W    = 4000;   // canvas world dimensions (px)
+const WORLD_W    = 4000;
 const WORLD_H    = 3000;
-const MM_W       = 200;    // minimap display dimensions (px)
+const MM_W       = 200;
 const MM_H       = 150;
 const MM_SCALE_X = MM_W / WORLD_W;
 const MM_SCALE_Y = MM_H / WORLD_H;
-const STATE_W    = 120;    // default state node size (px, must match CSS)
-const STATE_H    = 50;
 const ZOOM_STEP  = 0.1;
 const ZOOM_MIN   = 0.08;
 const ZOOM_MAX   = 5;
+
+// Default dimensions per node type
+const NODE_DEFAULTS = {
+  state:  { w: 120, h: 50 },
+  start:  { w: 30,  h: 30 },
+  end:    { w: 36,  h: 36 },
+  choice: { w: 80,  h: 80 },
+};
+
+// Minimum resize dimensions for resizable node types
+const NODE_MIN_SIZE = {
+  state:  { w: 60, h: 30 },
+  choice: { w: 40, h: 40 },
+};
 
 // ── App state ─────────────────────────────────────────────────────────────────
 let zoom       = 1;
@@ -20,19 +32,25 @@ let panY       = 0;
 let activeTool = 'select';  // 'select' | 'hand'
 let nextId     = 1;
 
-const states = [];  // { id, x, y, label, el, mmEl }
+const nodes = [];  // { id, type, x, y, w, h, label, el, mmEl }
 
 // Interaction flags
-let isPanning       = false;
-let panOrigin       = null;   // { x, y, panX, panY }
+let isPanning         = false;
+let panOrigin         = null;    // { x, y, panX, panY }
 
-let draggingState   = null;   // { state, offsetX, offsetY }
+let draggingNode      = null;    // { node, offsetX, offsetY }
+let didDragNode       = false;   // distinguish click vs drag for activation
 
-let creatingState   = false;  // dragging from toolbar palette
-let ghostEl         = null;
+let creatingNode      = false;   // dragging from toolbar palette
+let creatingNodeType  = null;    // type being created
+let ghostEl           = null;
 
 let draggingMinimapVP = false;
 let mmVPGrabOffset    = { x: 0, y: 0 };
+
+let activeNode        = null;    // currently selected node
+let editingNode       = null;    // node whose label is being edited
+let resizingNode      = null;    // { node, handle, startWorldX, startWorldY, startX, startY, startW, startH }
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const canvasContainer = document.getElementById('canvas-container');
@@ -42,7 +60,6 @@ const mmStatesEl      = document.getElementById('minimap-states');
 const mmVP            = document.getElementById('minimap-viewport');
 const zoomLabel       = document.getElementById('zoom-label');
 const btnHandTool     = document.getElementById('btn-hand-tool');
-const btnNewState     = document.getElementById('btn-new-state');
 
 // ── Transform helpers ─────────────────────────────────────────────────────────
 
@@ -52,10 +69,6 @@ function applyTransform() {
   updateMinimapViewport();
 }
 
-/**
- * Zoom around a point expressed in canvas-container–relative coordinates.
- * The world point under (relX, relY) stays fixed on screen.
- */
 function zoomAround(newZoom, relX, relY) {
   newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, newZoom));
   const worldX = (relX - panX) / zoom;
@@ -66,7 +79,6 @@ function zoomAround(newZoom, relX, relY) {
   applyTransform();
 }
 
-/** Convert client (page) coordinates → world (canvas) coordinates. */
 function clientToWorld(clientX, clientY) {
   const rect = canvasContainer.getBoundingClientRect();
   return {
@@ -75,57 +87,210 @@ function clientToWorld(clientX, clientY) {
   };
 }
 
-/** Returns container-relative coords from a mouse event. */
 function relativeToContainer(clientX, clientY) {
   const rect = canvasContainer.getBoundingClientRect();
   return { x: clientX - rect.left, y: clientY - rect.top };
 }
 
-// ── State node management ─────────────────────────────────────────────────────
+// ── Node management ───────────────────────────────────────────────────────────
 
-function createState(worldX, worldY) {
-  const id    = nextId++;
-  const label = `State ${id}`;
-
-  // Main canvas element
+function buildNodeElement(type, id) {
   const el = document.createElement('div');
-  el.className = 'state-node';
-  el.dataset.id = String(id);
-  el.innerHTML  = `<span class="state-label">${label}</span>`;
-  el.style.left = `${worldX}px`;
-  el.style.top  = `${worldY}px`;
+  el.className = `diagram-node ${type}-node`;
+  el.dataset.id   = String(id);
+  el.dataset.type = type;
+
+  if (type === 'choice') {
+    // SVG diamond shape + label
+    el.innerHTML =
+      '<svg class="choice-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">' +
+        '<polygon points="50,2 98,50 50,98 2,50"/>' +
+      '</svg>' +
+      '<span class="node-label">?</span>';
+  } else if (type === 'state') {
+    const label = `State ${id}`;
+    el.innerHTML = `<span class="node-label">${label}</span>`;
+  }
+  // start and end nodes have no label
+
+  return el;
+}
+
+function createNode(type, worldX, worldY) {
+  const id      = nextId++;
+  const def     = NODE_DEFAULTS[type];
+  const w       = def.w;
+  const h       = def.h;
+
+  let label = '';
+  if (type === 'state')  label = `State ${id}`;
+  if (type === 'choice') label = '?';
+
+  const el = buildNodeElement(type, id);
+  el.style.left   = `${worldX}px`;
+  el.style.top    = `${worldY}px`;
+  el.style.width  = `${w}px`;
+  el.style.height = `${h}px`;
   canvasEl.appendChild(el);
 
   // Minimap representation
   const mmEl = document.createElement('div');
-  mmEl.className = 'minimap-state';
+  mmEl.className = `minimap-node minimap-${type}-node`;
   mmStatesEl.appendChild(mmEl);
 
-  const state = { id, x: worldX, y: worldY, label, el, mmEl };
-  states.push(state);
+  const node = { id, type, x: worldX, y: worldY, w, h, label, el, mmEl };
+  nodes.push(node);
 
-  positionMinimapState(state);
+  positionMinimapNode(node);
 
-  // Start moving the state on mousedown
-  el.addEventListener('mousedown', onStateMouseDown);
+  el.addEventListener('mousedown', onNodeMouseDown);
+  el.addEventListener('dblclick',  onNodeDblClick);
 
-  return state;
+  return node;
 }
 
-function moveState(state, worldX, worldY) {
-  state.x = worldX;
-  state.y = worldY;
-  state.el.style.left = `${worldX}px`;
-  state.el.style.top  = `${worldY}px`;
-  positionMinimapState(state);
+function moveNode(node, worldX, worldY) {
+  node.x = worldX;
+  node.y = worldY;
+  node.el.style.left = `${worldX}px`;
+  node.el.style.top  = `${worldY}px`;
+  positionMinimapNode(node);
 }
 
-function positionMinimapState(state) {
-  const el = state.mmEl;
-  el.style.left   = `${state.x * MM_SCALE_X}px`;
-  el.style.top    = `${state.y * MM_SCALE_Y}px`;
-  el.style.width  = `${STATE_W * MM_SCALE_X}px`;
-  el.style.height = `${STATE_H * MM_SCALE_Y}px`;
+function resizeNode(node, x, y, w, h) {
+  node.x = x;
+  node.y = y;
+  node.w = w;
+  node.h = h;
+  node.el.style.left   = `${x}px`;
+  node.el.style.top    = `${y}px`;
+  node.el.style.width  = `${w}px`;
+  node.el.style.height = `${h}px`;
+  positionMinimapNode(node);
+}
+
+function positionMinimapNode(node) {
+  const el = node.mmEl;
+  // For choice nodes the minimap dot is shrunk slightly to look better rotated
+  const scale = node.type === 'choice' ? 0.7 : 1;
+  const mw = node.w * MM_SCALE_X * scale;
+  const mh = node.h * MM_SCALE_Y * scale;
+  const mx = (node.x + node.w * (1 - scale) / 2) * MM_SCALE_X;
+  const my = (node.y + node.h * (1 - scale) / 2) * MM_SCALE_Y;
+  el.style.left   = `${mx}px`;
+  el.style.top    = `${my}px`;
+  el.style.width  = `${mw}px`;
+  el.style.height = `${mh}px`;
+}
+
+// ── Active node / selection ───────────────────────────────────────────────────
+
+function activateNode(node) {
+  if (activeNode === node) return;
+  deactivateNode();
+  activeNode = node;
+  node.el.classList.add('node-active');
+  if (node.type === 'state' || node.type === 'choice') {
+    addResizeHandles(node);
+  }
+}
+
+function deactivateNode() {
+  if (!activeNode) return;
+  if (editingNode) commitEditing();
+  if (activeNode.type === 'state' || activeNode.type === 'choice') {
+    removeResizeHandles(activeNode);
+  }
+  activeNode.el.classList.remove('node-active');
+  activeNode = null;
+}
+
+// ── Resize handles ────────────────────────────────────────────────────────────
+
+const HANDLE_DIRS = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
+
+function addResizeHandles(node) {
+  HANDLE_DIRS.forEach(dir => {
+    const h = document.createElement('div');
+    h.className  = 'resize-handle';
+    h.dataset.dir = dir;
+    h.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      e.stopPropagation();
+      e.preventDefault();
+      const world = clientToWorld(e.clientX, e.clientY);
+      resizingNode = {
+        node,
+        handle: dir,
+        startWorldX: world.x,
+        startWorldY: world.y,
+        startX: node.x,
+        startY: node.y,
+        startW: node.w,
+        startH: node.h,
+      };
+    });
+    node.el.appendChild(h);
+  });
+}
+
+function removeResizeHandles(node) {
+  node.el.querySelectorAll('.resize-handle').forEach(h => h.remove());
+}
+
+// ── Inline text editing ───────────────────────────────────────────────────────
+
+function startEditing(node) {
+  if (editingNode) commitEditing();
+  editingNode = node;
+
+  const labelEl = node.el.querySelector('.node-label');
+  if (!labelEl) { editingNode = null; return; }
+
+  const input = document.createElement('input');
+  input.type      = 'text';
+  input.className = 'node-label-input';
+  input.value     = node.label;
+  labelEl.replaceWith(input);
+  input.focus();
+  input.select();
+
+  input.addEventListener('blur',    () => commitEditing());
+  input.addEventListener('keydown', (e) => {
+    e.stopPropagation();   // prevent canvas shortcuts while typing
+    if (e.key === 'Enter')  { e.preventDefault(); commitEditing(); }
+    if (e.key === 'Escape') { e.preventDefault(); cancelEditing(); }
+  });
+}
+
+function commitEditing() {
+  if (!editingNode) return;
+  const node  = editingNode;
+  editingNode = null;
+
+  const input = node.el.querySelector('.node-label-input');
+  if (input) {
+    const newLabel = input.value.trim();
+    if (newLabel) node.label = newLabel;
+    const span = document.createElement('span');
+    span.className   = 'node-label';
+    span.textContent = node.label;
+    input.replaceWith(span);
+  }
+}
+
+function cancelEditing() {
+  if (!editingNode) return;
+  const node  = editingNode;
+  editingNode = null;
+
+  const input = node.el.querySelector('.node-label-input');
+  if (input) {
+    const span = document.createElement('span');
+    span.className   = 'node-label';
+    span.textContent = node.label;
+    input.replaceWith(span);
+  }
 }
 
 // ── Minimap viewport indicator ────────────────────────────────────────────────
@@ -134,7 +299,6 @@ function updateMinimapViewport() {
   const cw = canvasContainer.clientWidth;
   const ch = canvasContainer.clientHeight;
 
-  // Visible world rectangle
   const viewX = -panX / zoom;
   const viewY = -panY / zoom;
   const viewW =  cw   / zoom;
@@ -178,28 +342,50 @@ btnHandTool.addEventListener('click', () => {
   updateCursor();
 });
 
-// ── Toolbar: new State palette button (drag-to-create) ────────────────────────
+// ── Toolbar: palette buttons (drag-to-create) ─────────────────────────────────
 
-btnNewState.addEventListener('mousedown', (e) => {
-  if (e.button !== 0) return;
-  e.preventDefault();
+function setupPaletteBtn(btnId, type) {
+  const btn = document.getElementById(btnId);
 
-  creatingState = true;
+  btn.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
 
-  // Create a floating ghost that follows the cursor
-  ghostEl = document.createElement('div');
-  ghostEl.className = 'state-node state-ghost';
-  ghostEl.innerHTML = `<span class="state-label">State ${nextId}</span>`;
-  positionGhost(e.clientX, e.clientY);
-  document.body.appendChild(ghostEl);
-});
+    creatingNode     = true;
+    creatingNodeType = type;
 
-// Prevent browser's native drag on this button
-btnNewState.addEventListener('dragstart', (e) => e.preventDefault());
+    const def = NODE_DEFAULTS[type];
+    ghostEl = document.createElement('div');
+    ghostEl.className = `diagram-node ${type}-node node-ghost`;
+    ghostEl.style.width  = `${def.w}px`;
+    ghostEl.style.height = `${def.h}px`;
+
+    if (type === 'choice') {
+      ghostEl.innerHTML =
+        '<svg class="choice-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">' +
+          '<polygon points="50,2 98,50 50,98 2,50"/>' +
+        '</svg>' +
+        '<span class="node-label">?</span>';
+    } else if (type === 'state') {
+      ghostEl.innerHTML = `<span class="node-label">State ${nextId}</span>`;
+    }
+
+    positionGhost(e.clientX, e.clientY);
+    document.body.appendChild(ghostEl);
+  });
+
+  btn.addEventListener('dragstart', (e) => e.preventDefault());
+}
+
+setupPaletteBtn('btn-new-state',  'state');
+setupPaletteBtn('btn-new-start',  'start');
+setupPaletteBtn('btn-new-end',    'end');
+setupPaletteBtn('btn-new-choice', 'choice');
 
 function positionGhost(clientX, clientY) {
-  ghostEl.style.left = `${clientX - STATE_W / 2}px`;
-  ghostEl.style.top  = `${clientY - STATE_H / 2}px`;
+  const def = NODE_DEFAULTS[creatingNodeType];
+  ghostEl.style.left = `${clientX - def.w / 2}px`;
+  ghostEl.style.top  = `${clientY - def.h / 2}px`;
 }
 
 // ── Canvas: scroll-wheel zoom (Version 2) ─────────────────────────────────────
@@ -214,9 +400,14 @@ canvasContainer.addEventListener('wheel', (e) => {
 // ── Canvas: pan via hand tool (left-click) or middle mouse (Version 2) ────────
 
 canvasContainer.addEventListener('mousedown', (e) => {
-  if (creatingState) return;   // don't start panning while placing a node
+  if (creatingNode) return;
 
-  if (e.button === 1) {        // middle mouse button
+  // Deactivate selection when clicking on empty canvas area
+  if (e.button === 0 && !e.target.closest('.diagram-node') && activeNode) {
+    deactivateNode();
+  }
+
+  if (e.button === 1) {           // middle mouse button
     e.preventDefault();
     startPan(e);
   } else if (e.button === 0 && activeTool === 'hand') {
@@ -224,7 +415,6 @@ canvasContainer.addEventListener('mousedown', (e) => {
   }
 });
 
-// Suppress the autoscroll cursor that some browsers show on middle-mousedown
 canvasContainer.addEventListener('auxclick', (e) => {
   if (e.button === 1) e.preventDefault();
 });
@@ -236,24 +426,50 @@ function startPan(e) {
   e.preventDefault();
 }
 
-// ── State node: start drag ────────────────────────────────────────────────────
+// ── Node: mousedown (drag + select) ──────────────────────────────────────────
 
-function onStateMouseDown(e) {
-  if (e.button !== 0 || activeTool === 'hand' || creatingState) return;
+function onNodeMouseDown(e) {
+  if (e.button !== 0) return;
+  if (activeTool === 'hand') return;
+  if (creatingNode) return;
+  if (e.target.classList.contains('resize-handle')) return;
+
   e.preventDefault();
   e.stopPropagation();
 
-  const id    = Number(e.currentTarget.dataset.id);
-  const state = states.find(s => s.id === id);
-  if (!state) return;
+  // Commit any in-progress edit on a different node
+  if (editingNode && editingNode !== e.currentTarget._node) commitEditing();
+
+  const id   = Number(e.currentTarget.dataset.id);
+  const node = nodes.find(n => n.id === id);
+  if (!node) return;
+
+  activateNode(node);
+
+  // Don't start dragging if we clicked inside the live input
+  if (e.target.tagName === 'INPUT') return;
 
   const world = clientToWorld(e.clientX, e.clientY);
-  draggingState = {
-    state,
-    offsetX: world.x - state.x,
-    offsetY: world.y - state.y,
+  draggingNode = {
+    node,
+    offsetX: world.x - node.x,
+    offsetY: world.y - node.y,
   };
-  state.el.classList.add('dragging');
+  didDragNode = false;
+  node.el.classList.add('dragging');
+}
+
+// ── Node: double-click (edit label) ──────────────────────────────────────────
+
+function onNodeDblClick(e) {
+  const id   = Number(e.currentTarget.dataset.id);
+  const node = nodes.find(n => n.id === id);
+  if (!node) return;
+  if (node.type !== 'state' && node.type !== 'choice') return;
+
+  e.preventDefault();
+  activateNode(node);
+  startEditing(node);
 }
 
 // ── Minimap viewport: drag to scroll ─────────────────────────────────────────
@@ -276,7 +492,7 @@ mmVP.addEventListener('mousedown', (e) => {
 document.addEventListener('mousemove', (e) => {
 
   // Ghost follows cursor while dragging from toolbar
-  if (creatingState && ghostEl) {
+  if (creatingNode && ghostEl) {
     positionGhost(e.clientX, e.clientY);
   }
 
@@ -287,12 +503,46 @@ document.addEventListener('mousemove', (e) => {
     applyTransform();
   }
 
-  // Moving a state node
-  if (draggingState) {
+  // Moving a node
+  if (draggingNode) {
     const world = clientToWorld(e.clientX, e.clientY);
-    moveState(draggingState.state,
-              world.x - draggingState.offsetX,
-              world.y - draggingState.offsetY);
+    const newX = world.x - draggingNode.offsetX;
+    const newY = world.y - draggingNode.offsetY;
+    if (!didDragNode &&
+        (Math.abs(newX - draggingNode.node.x) > 2 ||
+         Math.abs(newY - draggingNode.node.y) > 2)) {
+      didDragNode = true;
+    }
+    moveNode(draggingNode.node, newX, newY);
+  }
+
+  // Resizing a node
+  if (resizingNode) {
+    const { node, handle, startWorldX, startWorldY,
+            startX, startY, startW, startH } = resizingNode;
+    const world = clientToWorld(e.clientX, e.clientY);
+    const dx    = world.x - startWorldX;
+    const dy    = world.y - startWorldY;
+
+    const min = NODE_MIN_SIZE[node.type] || { w: 20, h: 20 };
+    let newX = startX, newY = startY, newW = startW, newH = startH;
+
+    if (handle.includes('e')) {
+      newW = Math.max(min.w, startW + dx);
+    }
+    if (handle.includes('s')) {
+      newH = Math.max(min.h, startH + dy);
+    }
+    if (handle.includes('w')) {
+      newW = Math.max(min.w, startW - dx);
+      newX = startX + startW - newW;
+    }
+    if (handle.includes('n')) {
+      newH = Math.max(min.h, startH - dy);
+      newY = startY + startH - newH;
+    }
+
+    resizeNode(node, newX, newY, newW, newH);
   }
 
   // Dragging the minimap viewport rectangle
@@ -301,13 +551,11 @@ document.addEventListener('mousemove', (e) => {
     let mx = e.clientX - mmRect.left - mmVPGrabOffset.x;
     let my = e.clientY - mmRect.top  - mmVPGrabOffset.y;
 
-    // Clamp so the viewport rect stays within the minimap
     const vpW = parseFloat(mmVP.style.width)  || 0;
     const vpH = parseFloat(mmVP.style.height) || 0;
     mx = Math.max(0, Math.min(mx, MM_W - vpW));
     my = Math.max(0, Math.min(my, MM_H - vpH));
 
-    // Convert minimap position back to world → pan offset
     const worldX = mx / MM_SCALE_X;
     const worldY = my / MM_SCALE_Y;
     panX = -worldX * zoom;
@@ -320,8 +568,8 @@ document.addEventListener('mousemove', (e) => {
 
 document.addEventListener('mouseup', (e) => {
 
-  // Finish dragging from toolbar – place state if released over canvas
-  if (creatingState) {
+  // Finish dragging from toolbar – place node if released over canvas
+  if (creatingNode) {
     if (ghostEl) {
       const rect = canvasContainer.getBoundingClientRect();
       const overCanvas =
@@ -329,14 +577,16 @@ document.addEventListener('mouseup', (e) => {
         e.clientY >= rect.top  && e.clientY <= rect.bottom;
 
       if (overCanvas) {
+        const def   = NODE_DEFAULTS[creatingNodeType];
         const world = clientToWorld(e.clientX, e.clientY);
-        createState(world.x - STATE_W / 2, world.y - STATE_H / 2);
+        createNode(creatingNodeType, world.x - def.w / 2, world.y - def.h / 2);
       }
 
       ghostEl.remove();
       ghostEl = null;
     }
-    creatingState = false;
+    creatingNode     = false;
+    creatingNodeType = null;
   }
 
   // Finish panning
@@ -346,10 +596,15 @@ document.addEventListener('mouseup', (e) => {
     updateCursor();
   }
 
-  // Finish moving a state
-  if (draggingState) {
-    draggingState.state.el.classList.remove('dragging');
-    draggingState = null;
+  // Finish moving a node
+  if (draggingNode) {
+    draggingNode.node.el.classList.remove('dragging');
+    draggingNode = null;
+  }
+
+  // Finish resizing
+  if (resizingNode) {
+    resizingNode = null;
   }
 
   // Finish dragging minimap viewport
@@ -361,7 +616,6 @@ document.addEventListener('mouseup', (e) => {
 // ── Keyboard shortcuts ────────────────────────────────────────────────────────
 
 document.addEventListener('keydown', (e) => {
-  // Ignore if focus is in a text input
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
   const { clientWidth: cw, clientHeight: ch } = canvasContainer;
@@ -380,11 +634,14 @@ document.addEventListener('keydown', (e) => {
       break;
     case 'Escape':
       // Cancel in-progress toolbar drag
-      if (creatingState && ghostEl) {
+      if (creatingNode && ghostEl) {
         ghostEl.remove();
-        ghostEl = null;
-        creatingState = false;
+        ghostEl          = null;
+        creatingNode     = false;
+        creatingNodeType = null;
       }
+      // Deselect active node
+      if (activeNode) deactivateNode();
       break;
   }
 });

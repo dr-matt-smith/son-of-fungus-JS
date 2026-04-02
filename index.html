@@ -52,10 +52,39 @@
     <div class="toolbar-sep"></div>
 
     <div class="toolbar-group">
+      <!-- State node (rectangle) -->
       <button id="btn-new-state" class="toolbar-btn palette-btn" draggable="false"
               title="Drag onto canvas to create a new State node">
         <span class="palette-icon-state" aria-hidden="true"></span>
         State
+      </button>
+
+      <!-- Start state (filled circle) -->
+      <button id="btn-new-start" class="toolbar-btn palette-btn" draggable="false"
+              title="Drag onto canvas to create a Start state">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <circle cx="7" cy="7" r="5.5" fill="currentColor"/>
+        </svg>
+        Start
+      </button>
+
+      <!-- End state (double circle) -->
+      <button id="btn-new-end" class="toolbar-btn palette-btn" draggable="false"
+              title="Drag onto canvas to create an End state">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="7" cy="7" r="3"   fill="currentColor"/>
+        </svg>
+        End
+      </button>
+
+      <!-- Choice (diamond) node -->
+      <button id="btn-new-choice" class="toolbar-btn palette-btn" draggable="false"
+              title="Drag onto canvas to create a Choice (diamond) node">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <polygon points="7,1 13,7 7,13 1,7" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Choice
       </button>
     </div>
 

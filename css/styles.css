@@ -125,16 +125,25 @@ html, body {
   width: 4000px;
   height: 3000px;
   transform-origin: 0 0;
-  /* Dot grid – moves & scales with pan/zoom since it lives on the canvas element */
   background-color: #111827;
   background-image: radial-gradient(circle, #273146 1.4px, transparent 1.4px);
   background-size: 28px 28px;
   background-position: 14px 14px;
 }
 
-/* ── State nodes ───────────────────────────────────────────────────────────── */
-.state-node {
+/* ── Shared diagram node base ──────────────────────────────────────────────── */
+.diagram-node {
   position: absolute;
+  cursor: grab;
+}
+
+.diagram-node.dragging {
+  cursor: grabbing;
+  z-index: 999;
+}
+
+/* ── State nodes (rectangles) ──────────────────────────────────────────────── */
+.state-node {
   width: 120px;
   height: 50px;
   background: #1f2937;
@@ -143,9 +152,9 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: grab;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
   transition: border-color 0.12s, box-shadow 0.12s;
+  overflow: visible;
 }
 
 .state-node:hover {
@@ -154,13 +163,135 @@ html, body {
 }
 
 .state-node.dragging {
-  cursor: grabbing;
   border-color: #60a5fa;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.28), 0 8px 20px rgba(0, 0, 0, 0.6);
-  z-index: 999;
 }
 
-.state-label {
+.state-node.node-active {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.35), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Start state (filled circle) ───────────────────────────────────────────── */
+.start-node {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: 2px solid #2563eb;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: box-shadow 0.12s, border-color 0.12s;
+}
+
+.start-node:hover {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.start-node.dragging {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35), 0 8px 20px rgba(0, 0, 0, 0.6);
+}
+
+.start-node.node-active {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.4), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* ── End state (double circle) ─────────────────────────────────────────────── */
+.end-node {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent;
+  border: 2.5px solid #2563eb;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: box-shadow 0.12s, border-color 0.12s;
+}
+
+/* Inner filled circle via pseudo-element */
+.end-node::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #2563eb;
+  transition: background 0.12s;
+}
+
+.end-node:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.end-node:hover::before {
+  background: #3b82f6;
+}
+
+.end-node.dragging {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.35), 0 8px 20px rgba(0, 0, 0, 0.6);
+}
+
+.end-node.node-active {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.4), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.end-node.node-active::before {
+  background: #60a5fa;
+}
+
+/* ── Choice node (diamond) ─────────────────────────────────────────────────── */
+.choice-node {
+  width: 80px;
+  height: 80px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+/* SVG diamond drawn as a child element; scaled to fill the node's bounding box */
+.choice-node .choice-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.choice-node .choice-svg polygon {
+  fill: #1f2937;
+  stroke: #f59e0b;
+  stroke-width: 3;
+  transition: stroke 0.12s, fill 0.12s;
+}
+
+.choice-node:hover .choice-svg polygon {
+  stroke: #fbbf24;
+  fill: #23303f;
+}
+
+.choice-node.dragging .choice-svg polygon {
+  stroke: #fcd34d;
+}
+
+.choice-node.node-active .choice-svg polygon {
+  stroke: #fcd34d;
+  fill: #23303f;
+}
+
+/* ── Node label ────────────────────────────────────────────────────────────── */
+.node-label {
+  position: relative;
+  z-index: 1;
   font-size: 12px;
   font-weight: 500;
   color: #bfdbfe;
@@ -173,13 +304,65 @@ html, body {
   text-align: center;
 }
 
+.choice-node .node-label {
+  color: #fde68a;
+}
+
+/* ── Inline label edit input ───────────────────────────────────────────────── */
+.node-label-input {
+  position: relative;
+  z-index: 2;
+  width: 88%;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid #60a5fa;
+  color: #bfdbfe;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  text-align: center;
+  outline: none;
+  padding: 1px 4px;
+  user-select: text;
+}
+
+.choice-node .node-label-input {
+  color: #fde68a;
+  border-bottom-color: #fcd34d;
+}
+
 /* ── Ghost element (follows cursor while dragging from toolbar) ────────────── */
-.state-ghost {
-  position: fixed !important;  /* overrides .state-node's position:absolute */
+.node-ghost {
+  position: fixed !important;
   pointer-events: none !important;
   opacity: 0.72;
   z-index: 9999;
 }
+
+/* ── Resize handles ────────────────────────────────────────────────────────── */
+.resize-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #1e3a5f;
+  border: 1.5px solid #60a5fa;
+  border-radius: 2px;
+  z-index: 20;
+  pointer-events: all;
+}
+
+.resize-handle:hover {
+  background: #2563eb;
+}
+
+.resize-handle[data-dir="n"]  { top: -4px;    left: 50%;  transform: translateX(-50%); cursor: n-resize; }
+.resize-handle[data-dir="s"]  { bottom: -4px; left: 50%;  transform: translateX(-50%); cursor: s-resize; }
+.resize-handle[data-dir="e"]  { right: -4px;  top: 50%;   transform: translateY(-50%); cursor: e-resize; }
+.resize-handle[data-dir="w"]  { left: -4px;   top: 50%;   transform: translateY(-50%); cursor: w-resize; }
+.resize-handle[data-dir="ne"] { top: -4px;    right: -4px;  cursor: ne-resize; }
+.resize-handle[data-dir="nw"] { top: -4px;    left: -4px;   cursor: nw-resize; }
+.resize-handle[data-dir="se"] { bottom: -4px; right: -4px;  cursor: se-resize; }
+.resize-handle[data-dir="sw"] { bottom: -4px; left: -4px;   cursor: sw-resize; }
 
 /* ── Minimap ───────────────────────────────────────────────────────────────── */
 #minimap {
@@ -196,18 +379,38 @@ html, body {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
 }
 
-/* Scaled-down state representations inside the minimap */
 #minimap-states {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-.minimap-state {
+.minimap-node {
   position: absolute;
+}
+
+.minimap-state-node {
   background: rgba(37, 99, 235, 0.30);
   border: 1px solid rgba(59, 130, 246, 0.55);
   border-radius: 1px;
+}
+
+.minimap-start-node {
+  background: rgba(59, 130, 246, 0.70);
+  border-radius: 50%;
+}
+
+.minimap-end-node {
+  background: transparent;
+  border: 2px solid rgba(59, 130, 246, 0.80);
+  border-radius: 50%;
+}
+
+.minimap-choice-node {
+  background: rgba(245, 158, 11, 0.25);
+  border: 1px solid rgba(245, 158, 11, 0.55);
+  transform: rotate(45deg);
+  transform-origin: center center;
 }
 
 /* Viewport indicator rectangle */
