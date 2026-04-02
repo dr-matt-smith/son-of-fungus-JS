@@ -5,8 +5,6 @@ const WORLD_W    = 4000;
 const WORLD_H    = 3000;
 const MM_W       = 200;
 const MM_H       = 150;
-const MM_SCALE_X = MM_W / WORLD_W;
-const MM_SCALE_Y = MM_H / WORLD_H;
 const ZOOM_STEP  = 0.1;
 const ZOOM_MIN   = 0.08;
 const ZOOM_MAX   = 5;
@@ -24,6 +22,33 @@ const NODE_MIN_SIZE = {
   state:  { w: 60, h: 30 },
   choice: { w: 40, h: 40 },
 };
+
+// ── Dynamic minimap bounds ────────────────────────────────────────────────────
+
+/**
+ * Returns the world-space rectangle that the minimap should cover.
+ * Always at least as large as the original canvas, and expands to
+ * include any nodes that have been placed outside it.
+ */
+function getMinimapBounds() {
+  const PADDING = 200;   // extra world-space margin around the outermost nodes
+  let minX = 0, minY = 0, maxX = WORLD_W, maxY = WORLD_H;
+
+  for (const node of nodes) {
+    minX = Math.min(minX, node.x - PADDING);
+    minY = Math.min(minY, node.y - PADDING);
+    maxX = Math.max(maxX, node.x + node.w + PADDING);
+    maxY = Math.max(maxY, node.y + node.h + PADDING);
+  }
+
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
+/** Returns per-axis scale factors for the current minimap bounds. */
+function getMinimapScales() {
+  const b = getMinimapBounds();
+  return { b, sx: MM_W / b.w, sy: MM_H / b.h };
+}
 
 // ── App state ─────────────────────────────────────────────────────────────────
 let zoom       = 1;
@@ -66,7 +91,7 @@ const btnHandTool     = document.getElementById('btn-hand-tool');
 function applyTransform() {
   canvasEl.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
   zoomLabel.textContent = `${Math.round(zoom * 100)}%`;
-  updateMinimapViewport();
+  refreshMinimap();
 }
 
 function zoomAround(newZoom, relX, relY) {
@@ -101,17 +126,25 @@ function buildNodeElement(type, id) {
   el.dataset.type = type;
 
   if (type === 'choice') {
-    // SVG diamond shape + label
     el.innerHTML =
       '<svg class="choice-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">' +
         '<polygon points="50,2 98,50 50,98 2,50"/>' +
       '</svg>' +
       '<span class="node-label">?</span>';
   } else if (type === 'state') {
-    const label = `State ${id}`;
-    el.innerHTML = `<span class="node-label">${label}</span>`;
+    el.innerHTML = `<span class="node-label">State ${id}</span>`;
   }
   // start and end nodes have no label
+
+  // Reset-to-default-size button (state and choice only)
+  if (type === 'state' || type === 'choice') {
+    const btn = document.createElement('button');
+    btn.className = 'node-reset-btn';
+    btn.title     = 'Reset to default size';
+    btn.textContent = '↺';
+    btn.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); });
+    el.appendChild(btn);
+  }
 
   return el;
 }
@@ -146,6 +179,17 @@ function createNode(type, worldX, worldY) {
   el.addEventListener('mousedown', onNodeMouseDown);
   el.addEventListener('dblclick',  onNodeDblClick);
 
+  // Wire up reset button now that we have the node reference
+  const resetBtn = el.querySelector('.node-reset-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      resetNodeSize(node);
+    });
+  }
+
+  fitLabelFontSize(node);
+
   return node;
 }
 
@@ -167,20 +211,31 @@ function resizeNode(node, x, y, w, h) {
   node.el.style.width  = `${w}px`;
   node.el.style.height = `${h}px`;
   positionMinimapNode(node);
+  fitLabelFontSize(node);
 }
 
-function positionMinimapNode(node) {
+function positionMinimapNode(node, mmScales) {
+  const { b, sx, sy } = mmScales || getMinimapScales();
   const el = node.mmEl;
-  // For choice nodes the minimap dot is shrunk slightly to look better rotated
-  const scale = node.type === 'choice' ? 0.7 : 1;
-  const mw = node.w * MM_SCALE_X * scale;
-  const mh = node.h * MM_SCALE_Y * scale;
-  const mx = (node.x + node.w * (1 - scale) / 2) * MM_SCALE_X;
-  const my = (node.y + node.h * (1 - scale) / 2) * MM_SCALE_Y;
+  // Shrink choice dots slightly so the rotated square fits its bounding box
+  const vis = node.type === 'choice' ? 0.7 : 1;
+  const mw = node.w * sx * vis;
+  const mh = node.h * sy * vis;
+  const mx = (node.x - b.x + node.w * (1 - vis) / 2) * sx;
+  const my = (node.y - b.y + node.h * (1 - vis) / 2) * sy;
   el.style.left   = `${mx}px`;
   el.style.top    = `${my}px`;
   el.style.width  = `${mw}px`;
   el.style.height = `${mh}px`;
+}
+
+/** Reposition every minimap node + the viewport indicator in one pass. */
+function refreshMinimap() {
+  const mmScales = getMinimapScales();
+  for (const node of nodes) {
+    positionMinimapNode(node, mmScales);
+  }
+  updateMinimapViewport(mmScales);
 }
 
 // ── Active node / selection ───────────────────────────────────────────────────
@@ -247,18 +302,38 @@ function startEditing(node) {
   const labelEl = node.el.querySelector('.node-label');
   if (!labelEl) { editingNode = null; return; }
 
-  const input = document.createElement('input');
-  input.type      = 'text';
-  input.className = 'node-label-input';
-  input.value     = node.label;
-  labelEl.replaceWith(input);
-  input.focus();
-  input.select();
+  const ta = document.createElement('textarea');
+  ta.className = 'node-label-input';
+  ta.value     = node.label;
 
-  input.addEventListener('blur',    () => commitEditing());
-  input.addEventListener('keydown', (e) => {
+  // Size the textarea to the node's usable content area
+  if (node.type === 'choice') {
+    ta.style.width  = `${Math.max(40, node.w  * 0.46)}px`;
+    ta.style.height = `${Math.max(24, node.h  * 0.46)}px`;
+  } else {
+    ta.style.width  = `${Math.max(40, node.w  - 18)}px`;
+    ta.style.height = `${Math.max(20, node.h  - 12)}px`;
+  }
+
+  labelEl.replaceWith(ta);
+  ta.focus();
+  ta.select();
+
+  ta.addEventListener('blur', () => commitEditing());
+  ta.addEventListener('keydown', (e) => {
     e.stopPropagation();   // prevent canvas shortcuts while typing
-    if (e.key === 'Enter')  { e.preventDefault(); commitEditing(); }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (e.shiftKey) {
+        // Insert a newline at the cursor (Shift+Enter = multi-line)
+        const s = ta.selectionStart;
+        const end = ta.selectionEnd;
+        ta.value = ta.value.slice(0, s) + '\n' + ta.value.slice(end);
+        ta.selectionStart = ta.selectionEnd = s + 1;
+      } else {
+        commitEditing();
+      }
+    }
     if (e.key === 'Escape') { e.preventDefault(); cancelEditing(); }
   });
 }
@@ -268,15 +343,16 @@ function commitEditing() {
   const node  = editingNode;
   editingNode = null;
 
-  const input = node.el.querySelector('.node-label-input');
-  if (input) {
-    const newLabel = input.value.trim();
+  const ta = node.el.querySelector('.node-label-input');
+  if (ta) {
+    const newLabel = ta.value.trim();
     if (newLabel) node.label = newLabel;
     const span = document.createElement('span');
     span.className   = 'node-label';
-    span.textContent = node.label;
-    input.replaceWith(span);
+    span.textContent = node.label;   // pre-wrap CSS renders \n as line-breaks
+    ta.replaceWith(span);
   }
+  fitLabelFontSize(node);
 }
 
 function cancelEditing() {
@@ -284,18 +360,75 @@ function cancelEditing() {
   const node  = editingNode;
   editingNode = null;
 
-  const input = node.el.querySelector('.node-label-input');
-  if (input) {
+  const ta = node.el.querySelector('.node-label-input');
+  if (ta) {
     const span = document.createElement('span');
     span.className   = 'node-label';
     span.textContent = node.label;
-    input.replaceWith(span);
+    ta.replaceWith(span);
+  }
+}
+
+// ── Auto-fit label font size ──────────────────────────────────────────────────
+
+/**
+ * Reduces the label's font size (down to MIN_FONT) until all text fits
+ * vertically inside the node's content area.  Scales back up if there is
+ * room, so removing text makes the font grow again.
+ */
+function fitLabelFontSize(node) {
+  if (node.type !== 'state' && node.type !== 'choice') return;
+  const labelEl = node.el.querySelector('.node-label');
+  if (!labelEl) return;
+
+  const MAX_FONT = 14;
+  const MIN_FONT = 6;
+
+  // Available height (and width for diamonds) for the text block
+  let availH, availW;
+  if (node.type === 'choice') {
+    // Largest axis-aligned rectangle inscribed in the diamond is w/2 × h/2
+    availH = node.h * 0.48 - 4;
+    availW = node.w * 0.48 - 4;
+  } else {
+    availH = node.h - 14;
+    availW = node.w - 18;
+  }
+
+  // Binary-search the largest font size that fits
+  let lo = MIN_FONT, hi = MAX_FONT, best = MIN_FONT;
+  while (lo <= hi) {
+    const mid = (lo + hi) / 2;
+    labelEl.style.fontSize = `${mid}px`;
+    if (labelEl.scrollHeight <= availH && labelEl.scrollWidth <= availW) {
+      best = mid;
+      lo = mid + 0.5;
+    } else {
+      hi = mid - 0.5;
+    }
+  }
+  labelEl.style.fontSize = `${best}px`;
+}
+
+// ── Reset node to default size ────────────────────────────────────────────────
+
+function resetNodeSize(node) {
+  const def  = NODE_DEFAULTS[node.type];
+  // Keep the node visually centred on its current position
+  const newX = node.x + (node.w - def.w) / 2;
+  const newY = node.y + (node.h - def.h) / 2;
+  resizeNode(node, newX, newY, def.w, def.h);
+  // Refresh resize handles so they reposition correctly
+  if (activeNode === node) {
+    removeResizeHandles(node);
+    addResizeHandles(node);
   }
 }
 
 // ── Minimap viewport indicator ────────────────────────────────────────────────
 
-function updateMinimapViewport() {
+function updateMinimapViewport(mmScales) {
+  const { b, sx, sy } = mmScales || getMinimapScales();
   const cw = canvasContainer.clientWidth;
   const ch = canvasContainer.clientHeight;
 
@@ -304,10 +437,10 @@ function updateMinimapViewport() {
   const viewW =  cw   / zoom;
   const viewH =  ch   / zoom;
 
-  mmVP.style.left   = `${viewX * MM_SCALE_X}px`;
-  mmVP.style.top    = `${viewY * MM_SCALE_Y}px`;
-  mmVP.style.width  = `${viewW * MM_SCALE_X}px`;
-  mmVP.style.height = `${viewH * MM_SCALE_Y}px`;
+  mmVP.style.left   = `${(viewX - b.x) * sx}px`;
+  mmVP.style.top    = `${(viewY - b.y) * sy}px`;
+  mmVP.style.width  = `${viewW * sx}px`;
+  mmVP.style.height = `${viewH * sy}px`;
 }
 
 // ── Cursor management ─────────────────────────────────────────────────────────
@@ -485,8 +618,8 @@ function onNodeMouseDown(e) {
 
   activateNode(node);
 
-  // Don't start dragging if we clicked inside the live input
-  if (e.target.tagName === 'INPUT') return;
+  // Don't start dragging if we clicked inside the live text editor
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
   const world = clientToWorld(e.clientX, e.clientY);
   draggingNode = {
@@ -586,6 +719,7 @@ document.addEventListener('mousemove', (e) => {
 
   // Dragging the minimap viewport rectangle
   if (draggingMinimapVP) {
+    const { b, sx, sy } = getMinimapScales();
     const mmRect = minimapEl.getBoundingClientRect();
     let mx = e.clientX - mmRect.left - mmVPGrabOffset.x;
     let my = e.clientY - mmRect.top  - mmVPGrabOffset.y;
@@ -595,8 +729,9 @@ document.addEventListener('mousemove', (e) => {
     mx = Math.max(0, Math.min(mx, MM_W - vpW));
     my = Math.max(0, Math.min(my, MM_H - vpH));
 
-    const worldX = mx / MM_SCALE_X;
-    const worldY = my / MM_SCALE_Y;
+    // Convert minimap position back to world space (accounting for dynamic bounds offset)
+    const worldX = mx / sx + b.x;
+    const worldY = my / sy + b.y;
     panX = -worldX * zoom;
     panY = -worldY * zoom;
     applyTransform();

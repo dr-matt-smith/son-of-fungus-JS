@@ -35,10 +35,19 @@ add to the toolbar:
 - ✅ new start state (can be dragged into diagram)
 - ✅ new end state (can be dragged into diagram)
 - ✅ new choice (diamond) node (can be dragged into diagram)
+  - ✅ when text being edited, allow SHIFT+ENTER for multi-line text
 - ✅ the basic 'state' can have its text changed
-  - ✅ when it is clicked, if it's not being dragging then it becomes 'active', and highlgihed, and a double clikc allows its text to be edited
-  - ✅ also its width and height can be editoed, bt moving drag-handlers (N/S/E/W and on each corner)
+  - ✅ when it is clicked, if it's not being dragging then it becomes 'active', and highligherd, and a double click allows its text to be edited
+  - ✅ when text being edited, allow SHIFT+ENTER for multi-line text
+  - ✅ also its width and height can be edited, bt moving drag-handlers (N/S/E/W and on each corner)
 
+  - ✅ for all elements containing text (state and choice) change the font size so all text (including multi-line) can be seen
+    - ✅ (update each time the element resized)
+    - ✅ when text is added, font size will need to get smaller
+    - ✅ when text is removed, font size will need to get bigger
+
+  - ✅ for all elements containing text, add a 'reset' button at the top left (inside the border), that resets the object shape and size to the default (i.e. when first dragged onto the canvas)
+  
 Version 4 features
 ==================
 
@@ -47,7 +56,15 @@ add features:
 - ✅ the portion of the overall canvas being viewd should be arragned so diarram elements are near the top/bottom/left/right - so the diagram is zoom maximially to allow all elements to be seen
 - ✅ ensure the mini-map is updated correctly to reflect this Fit All function when it has been clicked
 
-Version 5 features 
+Version 5 features
+==================
+
+[] allow user to drag a rectangle area of the canvas (if starting drag point is not on an object)
+  - [] if this rectangle contains a single object, select that object
+  - [] if this rectangle contains mulrtiple objects, select them all,so they can all be moved together
+  - [] a click on the canvas will de-select this group of objects
+
+Version 6 features 
 ==================
 
 - ☐ connector (transition) mode, so user can click and drag to connect one state to another
@@ -55,7 +72,7 @@ Version 5 features
 - ☐ this connection should have an arrow 2/3rds along its length showing its from the active state to its targer
 - ☐ when a state with one or more transition arrows is moved, all its connected arrows shoudl move with it
 
-Version 6 features
+Version 7 features
 ==================
 
 - ☐ refactor the project as as Node Vite project
