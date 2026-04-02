@@ -1347,6 +1347,23 @@ document.addEventListener('keydown', (e) => {
 
 window.addEventListener('resize', updateMinimapViewport);
 
+// ── Minimap minimize / restore ───────────────────────────────────────────────
+
+const minimizeBtn = document.getElementById('minimap-minimize');
+const restoreBtn  = document.getElementById('minimap-restore');
+
+minimizeBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  minimapEl.style.display = 'none';
+  restoreBtn.style.display = 'block';
+});
+
+restoreBtn.addEventListener('click', () => {
+  restoreBtn.style.display = 'none';
+  minimapEl.style.display = '';
+  refreshMinimap();
+});
+
 // ── Initialise ────────────────────────────────────────────────────────────────
 
 applyTransform();

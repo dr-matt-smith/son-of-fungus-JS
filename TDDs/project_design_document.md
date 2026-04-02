@@ -91,6 +91,6 @@ Version 6 features
 Version 7 features
 ==================
 
-- [] minimap - minimize/show - add a widget to the minimap "_" that makes it shrink to a box "minimap"
-- [] when shrunk, have a widget "+" that reveals the minimap to its normal size again
+- ✅ minimap - minimize/show - add a widget to the minimap "_" that makes it shrink to a box "minimap"
+- ✅ when shrunk, clicking box "minimap" returns it to its normal size again
 

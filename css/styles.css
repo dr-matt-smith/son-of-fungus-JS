@@ -653,3 +653,58 @@ html, body {
   color: #374151;
   pointer-events: none;
 }
+
+/* Minimize button inside the minimap */
+#minimap-minimize {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid #4b5563;
+  border-radius: 3px;
+  background: #1f2937;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 210;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+#minimap-minimize:hover {
+  background: #374151;
+  color: #f3f4f6;
+  border-color: #6b7280;
+}
+
+/* Restore button (shown when minimap is minimized) */
+#minimap-restore {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  padding: 6px 12px;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  background: #1f2937;
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  z-index: 200;
+  display: none;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+#minimap-restore:hover {
+  background: #374151;
+  color: #f3f4f6;
+  border-color: #6b7280;
+}
