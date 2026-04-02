@@ -113,6 +113,14 @@ Version 10 features - allow states to be deleted
   - ✅ do NOT delete any transition connectors to/from the state, leave them with one end not connected
   - ✅ if a transition connectors with one or both ends unconnected is selected, add a connection "o" at each unconnected end, that can be dragged and connected to any state or choice object on the screen
 
+Version 11 features
+==================
 
+- ✅ refactor the project as a Node Vite project
+
+Version 12 features
+==================
+
+- [] write Vite tests for each of the features
 
 
