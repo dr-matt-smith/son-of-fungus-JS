@@ -276,7 +276,7 @@ function activateNode(node) {
   if (node.type === 'state' || node.type === 'choice') {
     addResizeHandles(node);
   }
-  addConnHandle(node);
+  if (node.type !== 'end') addConnHandle(node);
   addNodeDeleteHandle(node);
 }
 

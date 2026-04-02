@@ -124,3 +124,28 @@ Version 12 features
 - ✅ write Vite tests for each of the features
 
 
+
+Version 13 features
+==================
+
+- ✅  write a design document in TDDs for the requrements/plan to add playwright web tests to this project, 
+
+
+Version 14 features
+==================
+
+- ✅ suggest any architectural refactoring to make this project easier to extend and test in the future in a new document "TDDS/future_improvements.md"
+
+
+Version 15 features
+==================
+
+- ✅  the end state CANNOT have any transition connectors coming from it
+  - ✅ so remove the start transition widget from this object 
+
+
+
+Version 16 features
+==================
+
+- [] implement the improvements documented in the "future_improvements.md" plan
