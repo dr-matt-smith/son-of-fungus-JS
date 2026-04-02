@@ -4,7 +4,7 @@ import { setupDOM } from './setup.js';
 // The DOM must exist before app.js is imported (it grabs refs at load time)
 setupDOM();
 
-const app = await import('../js/app.js');
+const app = await import('../src/js/app.js');
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
