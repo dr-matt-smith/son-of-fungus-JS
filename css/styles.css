@@ -1,0 +1,242 @@
+/* ── Reset & base ──────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-size: 13px;
+  background: #111827;
+  color: #d1d5db;
+  user-select: none;
+}
+
+/* ── Toolbar ───────────────────────────────────────────────────────────────── */
+#toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 46px;
+  background: #1f2937;
+  border-bottom: 1px solid #374151;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 4px;
+  z-index: 100;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.toolbar-sep {
+  width: 1px;
+  height: 26px;
+  background: #374151;
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  white-space: nowrap;
+  line-height: 1;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+}
+
+.toolbar-btn:hover {
+  background: #374151;
+  border-color: #4b5563;
+  color: #f3f4f6;
+}
+
+.toolbar-btn:active {
+  background: #2d3748;
+}
+
+.toolbar-btn.active {
+  background: #1e3a5f;
+  border-color: #2563eb;
+  color: #60a5fa;
+}
+
+.zoom-label {
+  font-size: 11px;
+  color: #6b7280;
+  min-width: 40px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* Palette drag-to-create button */
+.palette-btn {
+  cursor: grab;
+}
+
+.palette-btn:active {
+  cursor: grabbing;
+}
+
+/* Small state-rectangle icon shown inside the toolbar palette button */
+.palette-icon-state {
+  display: inline-block;
+  width: 18px;
+  height: 13px;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Canvas container ──────────────────────────────────────────────────────── */
+#canvas-container {
+  position: absolute;
+  top: 46px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  background: #111827;
+}
+
+/* ── Canvas world ──────────────────────────────────────────────────────────── */
+#canvas {
+  position: absolute;
+  width: 4000px;
+  height: 3000px;
+  transform-origin: 0 0;
+  /* Dot grid – moves & scales with pan/zoom since it lives on the canvas element */
+  background-color: #111827;
+  background-image: radial-gradient(circle, #273146 1.4px, transparent 1.4px);
+  background-size: 28px 28px;
+  background-position: 14px 14px;
+}
+
+/* ── State nodes ───────────────────────────────────────────────────────────── */
+.state-node {
+  position: absolute;
+  width: 120px;
+  height: 50px;
+  background: #1f2937;
+  border: 2px solid #2563eb;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+.state-node:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.state-node.dragging {
+  cursor: grabbing;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.28), 0 8px 20px rgba(0, 0, 0, 0.6);
+  z-index: 999;
+}
+
+.state-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #bfdbfe;
+  pointer-events: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 0 8px;
+  width: 100%;
+  text-align: center;
+}
+
+/* ── Ghost element (follows cursor while dragging from toolbar) ────────────── */
+.state-ghost {
+  position: fixed !important;  /* overrides .state-node's position:absolute */
+  pointer-events: none !important;
+  opacity: 0.72;
+  z-index: 9999;
+}
+
+/* ── Minimap ───────────────────────────────────────────────────────────────── */
+#minimap {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  width: 200px;
+  height: 150px;
+  background: #0f1623;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 200;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+/* Scaled-down state representations inside the minimap */
+#minimap-states {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.minimap-state {
+  position: absolute;
+  background: rgba(37, 99, 235, 0.30);
+  border: 1px solid rgba(59, 130, 246, 0.55);
+  border-radius: 1px;
+}
+
+/* Viewport indicator rectangle */
+#minimap-viewport {
+  position: absolute;
+  border: 2px solid #ef4444;
+  background: rgba(239, 68, 68, 0.07);
+  border-radius: 3px;
+  cursor: grab;
+  min-width: 4px;
+  min-height: 4px;
+}
+
+#minimap-viewport:hover {
+  background: rgba(239, 68, 68, 0.14);
+}
+
+#minimap-viewport:active {
+  cursor: grabbing;
+}
+
+/* "MAP" label in the bottom-right corner of the minimap */
+#minimap-label {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #374151;
+  pointer-events: none;
+}
