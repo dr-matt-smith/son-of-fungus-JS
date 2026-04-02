@@ -43,9 +43,9 @@ Version 4 features
 ==================
 
 add features:
-- [] add a 'Fit all' button to the left of the Zoom In button, that zoomes appropriately to fit all diagram elements on the screen
-- the portion of the overall canvas being viewd should be arragned so diarram elements are near the top/bottom/left/right - so the diagram is zoom maximially to allow all elements to be seen
-- ensure the mini-map is updated correctly to reflect this Fit All function when it has been clicked
+- ✅ add a 'Fit all' button to the left of the Zoom In button, that zoomes appropriately to fit all diagram elements on the screen
+- ✅ the portion of the overall canvas being viewd should be arragned so diarram elements are near the top/bottom/left/right - so the diagram is zoom maximially to allow all elements to be seen
+- ✅ ensure the mini-map is updated correctly to reflect this Fit All function when it has been clicked
 
 Version 5 features 
 ==================

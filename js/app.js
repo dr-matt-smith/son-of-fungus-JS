@@ -322,6 +322,45 @@ function updateCursor() {
   }
 }
 
+// ── Fit All ───────────────────────────────────────────────────────────────────
+
+function fitAll() {
+  if (nodes.length === 0) return;
+
+  // Compute bounding box of all nodes in world space
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const node of nodes) {
+    minX = Math.min(minX, node.x);
+    minY = Math.min(minY, node.y);
+    maxX = Math.max(maxX, node.x + node.w);
+    maxY = Math.max(maxY, node.y + node.h);
+  }
+
+  const PADDING  = 48;   // world-space padding around the content
+  minX -= PADDING;
+  minY -= PADDING;
+  maxX += PADDING;
+  maxY += PADDING;
+
+  const contentW = maxX - minX;
+  const contentH = maxY - minY;
+
+  const cw = canvasContainer.clientWidth;
+  const ch = canvasContainer.clientHeight;
+
+  // Largest zoom that still fits content in the viewport
+  const newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, Math.min(cw / contentW, ch / contentH)));
+
+  // Pan so the content is centred in the viewport
+  panX = (cw - contentW * newZoom) / 2 - minX * newZoom;
+  panY = (ch - contentH * newZoom) / 2 - minY * newZoom;
+  zoom = newZoom;
+
+  applyTransform();
+}
+
+document.getElementById('btn-fit-all').addEventListener('click', fitAll);
+
 // ── Toolbar: zoom buttons ─────────────────────────────────────────────────────
 
 document.getElementById('btn-zoom-in').addEventListener('click', () => {
@@ -627,6 +666,10 @@ document.addEventListener('keydown', (e) => {
       break;
     case '-':
       zoomAround(zoom - ZOOM_STEP, cw / 2, ch / 2);
+      break;
+    case 'f':
+    case 'F':
+      fitAll();
       break;
     case 'h':
     case 'H':
