@@ -1584,3 +1584,44 @@ restoreBtn.addEventListener('click', () => {
 // ── Initialise ────────────────────────────────────────────────────────────────
 
 applyTransform();
+
+// ── State getters for testing ─────────────────────────────────────────────────
+
+function getZoom()       { return zoom; }
+function getPanX()       { return panX; }
+function getPanY()       { return panY; }
+function getActiveNode() { return activeNode; }
+function getSelectedConn() { return selectedConn; }
+function getSelectedNodes() { return selectedNodes; }
+
+// ── Exports for testing ──────────────────────────────────────────────────────
+
+export {
+  // Config
+  WORLD_W, WORLD_H, ZOOM_MIN, ZOOM_MAX, ZOOM_STEP, NODE_DEFAULTS, NODE_MIN_SIZE,
+  // State (arrays are live references; scalars via getters below)
+  nodes, connections,
+  // Node functions
+  createNode, moveNode, resizeNode, deleteNode, buildNodeElement,
+  activateNode, deactivateNode, resetNodeSize,
+  // Connection functions
+  createConnection, deleteConnection, updateConnection,
+  selectConn, deselectConn,
+  // Selection
+  selectGroup, clearGroup, selectedNodes,
+  // Editing
+  startEditing, commitEditing, cancelEditing,
+  fitLabelFontSize,
+  // Transform helpers
+  applyTransform, zoomAround, clientToWorld, relativeToContainer,
+  // Geometry
+  getBorderPoint, getPairPerpendicular,
+  // Minimap
+  refreshMinimap, getMinimapBounds, getMinimapScales,
+  // Fit all
+  fitAll,
+  // State getters
+  getZoom, getPanX, getPanY, getActiveNode, getSelectedConn, getSelectedNodes,
+  // DOM refs
+  canvasContainer, canvasEl, connSvg, minimapEl,
+};

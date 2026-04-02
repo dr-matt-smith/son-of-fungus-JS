@@ -121,6 +121,6 @@ Version 11 features
 Version 12 features
 ==================
 
-- [] write Vite tests for each of the features
+- ✅ write Vite tests for each of the features
 
 
