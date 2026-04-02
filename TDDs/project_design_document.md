@@ -148,4 +148,26 @@ Version 15 features
 Version 16 features
 ==================
 
-- [] implement the improvements documented in the "future_improvements.md" plan
+- ✅ implement the improvements documented in the "future_improvements.md" plan
+
+
+Version 17 features
+==================
+
+- ✅  separate the CSS into separate files
+  - ✅ the minimap styles in one file
+  - ✅ the main toolbar   styles in one file
+  - ✅ the zoom toolbar   styles in one file
+  - ✅ the choice node  styles in one file
+  - ✅ the connectors node  styles in one file
+
+- ✅ update index.html to read in all the separate CSS files
+
+
+
+Version 18 features
+==================
+
+- ✅  start states CANNOT have any transition connectors going into them
+  - [] refuse to link transition connections that would link INTO a start start
+

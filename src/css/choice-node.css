@@ -1,0 +1,69 @@
+/* ── Choice node (diamond) ─────────────────────────────────────────────────── */
+.choice-node {
+  width: 80px;
+  height: 80px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+/* SVG diamond drawn as a child element; scaled to fill the node's bounding box */
+.choice-node .choice-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.choice-node .choice-svg polygon {
+  fill: #1f2937;
+  stroke: #f59e0b;
+  stroke-width: 3;
+  transition: stroke 0.12s, fill 0.12s;
+}
+
+.choice-node:hover .choice-svg polygon {
+  stroke: #fbbf24;
+  fill: #23303f;
+}
+
+.choice-node.dragging .choice-svg polygon {
+  stroke: #fcd34d;
+}
+
+.choice-node.node-active .choice-svg polygon {
+  stroke: #fcd34d;
+  fill: #23303f;
+}
+
+.choice-node .node-label {
+  color: #fde68a;
+}
+
+.choice-node .node-label-input {
+  color: #fde68a;
+  border-bottom-color: #fcd34d;
+}
+
+/* For choice nodes, place the reset button at the top-centre above the diamond tip */
+.choice-node .node-reset-btn {
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* For choice nodes, position delete handle top-left above the diamond */
+.choice-node .node-delete-handle {
+  top: -2px;
+  left: -2px;
+}
+
+.choice-node.node-group-selected .choice-svg polygon {
+  stroke: #a78bfa;
+}

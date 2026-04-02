@@ -1,0 +1,92 @@
+/* ── Main Toolbar (top) ────────────────────────────────────────────────────── */
+#toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 46px;
+  background: #1f2937;
+  border-bottom: 1px solid #374151;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 4px;
+  z-index: 100;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  user-select: none;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.toolbar-sep {
+  width: 1px;
+  height: 26px;
+  background: #374151;
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  white-space: nowrap;
+  line-height: 1;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+}
+
+.toolbar-btn:hover {
+  background: #374151;
+  border-color: #4b5563;
+  color: #f3f4f6;
+}
+
+.toolbar-btn:active {
+  background: #2d3748;
+}
+
+.toolbar-btn.active {
+  background: #1e3a5f;
+  border-color: #2563eb;
+  color: #60a5fa;
+}
+
+.zoom-label {
+  font-size: 11px;
+  color: #6b7280;
+  min-width: 40px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* Palette drag-to-create button */
+.palette-btn {
+  cursor: grab;
+}
+
+.palette-btn:active {
+  cursor: grabbing;
+}
+
+/* Small state-rectangle icon shown inside the toolbar palette button */
+.palette-icon-state {
+  display: inline-block;
+  width: 18px;
+  height: 13px;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+  flex-shrink: 0;
+}

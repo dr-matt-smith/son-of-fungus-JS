@@ -4,12 +4,12 @@ import { setupDOM } from './setup.js';
 // The DOM must exist before app.js is imported (it grabs refs at load time)
 setupDOM();
 
-const app = await import('../src/js/app.js');
+const app = await import('../src/js/main.js');
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function nodeCount() { return app.nodes.length; }
-function connCount() { return app.connections.length; }
+function nodeCount() { return app.S.nodes.length; }
+function connCount() { return app.S.connections.length; }
 
 // ─── Version 1 & 2: Node creation ──────────────────────────────────────────
 
@@ -150,7 +150,7 @@ describe('Node activation', () => {
   it('activateNode sets the active node', () => {
     const node = app.createNode('state', 0, 0);
     app.activateNode(node);
-    expect(app.getActiveNode()).toBe(node);
+    expect(app.S.activeNode).toBe(node);
     expect(node.el.classList.contains('node-active')).toBe(true);
   });
 
@@ -176,7 +176,7 @@ describe('Node activation', () => {
     const node = app.createNode('state', 0, 0);
     app.activateNode(node);
     app.deactivateNode();
-    expect(app.getActiveNode()).toBeNull();
+    expect(app.S.activeNode).toBeNull();
     expect(node.el.classList.contains('node-active')).toBe(false);
   });
 
@@ -194,7 +194,7 @@ describe('Node activation', () => {
     const b = app.createNode('state', 200, 0);
     app.activateNode(a);
     app.activateNode(b);
-    expect(app.getActiveNode()).toBe(b);
+    expect(app.S.activeNode).toBe(b);
     expect(a.el.classList.contains('node-active')).toBe(false);
   });
 });
@@ -204,19 +204,19 @@ describe('Node activation', () => {
 describe('Fit All', () => {
   it('adjusts zoom and pan to show all nodes', () => {
     // Clear and create nodes far apart
-    app.nodes.length = 0;
+    app.S.nodes.length = 0;
     const a = app.createNode('state', 0, 0);
     const b = app.createNode('state', 2000, 1500);
     app.fitAll();
     // Zoom should be less than 1 since nodes span a large area
-    expect(app.getZoom()).toBeLessThan(1);
+    expect(app.S.zoom).toBeLessThan(1);
   });
 
   it('does nothing when there are no nodes', () => {
-    app.nodes.length = 0;
-    const zBefore = app.getZoom();
+    app.S.nodes.length = 0;
+    const zBefore = app.S.zoom;
     app.fitAll();
-    expect(app.getZoom()).toBe(zBefore);
+    expect(app.S.zoom).toBe(zBefore);
   });
 });
 
@@ -235,7 +235,7 @@ describe('Connections', () => {
     const a = app.createNode('state', 0, 0);
     const b = app.createNode('state', 300, 0);
     app.createConnection(a, b);
-    const conn = app.connections[app.connections.length - 1];
+    const conn = app.S.connections[app.S.connections.length - 1];
     expect(conn.label).toBe('transition');
   });
 
@@ -243,7 +243,7 @@ describe('Connections', () => {
     const a = app.createNode('state', 0, 0);
     const b = app.createNode('state', 300, 0);
     app.createConnection(a, b);
-    const conn = app.connections[app.connections.length - 1];
+    const conn = app.S.connections[app.S.connections.length - 1];
     expect(conn.group).toBeTruthy();
     expect(conn.group.querySelector('.conn-line')).toBeTruthy();
     expect(conn.group.querySelector('.conn-arrow')).toBeTruthy();
@@ -264,7 +264,7 @@ describe('Connections', () => {
     const a = app.createNode('state', 0, 0);
     const b = app.createNode('state', 300, 0);
     app.createConnection(a, b);
-    const conn = app.connections[app.connections.length - 1];
+    const conn = app.S.connections[app.S.connections.length - 1];
     const before = connCount();
     app.deleteConnection(conn);
     expect(connCount()).toBe(before - 1);
@@ -274,12 +274,12 @@ describe('Connections', () => {
     const a = app.createNode('state', 0, 0);
     const b = app.createNode('state', 300, 0);
     app.createConnection(a, b);
-    const conn = app.connections[app.connections.length - 1];
+    const conn = app.S.connections[app.S.connections.length - 1];
     app.selectConn(conn);
-    expect(app.getSelectedConn()).toBe(conn);
+    expect(app.S.selectedConn).toBe(conn);
     expect(conn.group.classList.contains('conn-selected')).toBe(true);
     app.deselectConn();
-    expect(app.getSelectedConn()).toBeNull();
+    expect(app.S.selectedConn).toBeNull();
     expect(conn.group.classList.contains('conn-selected')).toBe(false);
   });
 
@@ -287,7 +287,7 @@ describe('Connections', () => {
     const a = app.createNode('state', 0, 0);
     const b = app.createNode('state', 300, 0);
     app.createConnection(a, b);
-    const conn = app.connections[app.connections.length - 1];
+    const conn = app.S.connections[app.S.connections.length - 1];
     const pathBefore = conn.group.querySelector('.conn-line').getAttribute('d');
     app.moveNode(a, 0, 200);
     const pathAfter = conn.group.querySelector('.conn-line').getAttribute('d');
@@ -326,8 +326,8 @@ describe('Group selection', () => {
     const a = app.createNode('state', 0, 0);
     const b = app.createNode('state', 200, 0);
     app.selectGroup([a, b]);
-    expect(app.getSelectedNodes()).toContain(a);
-    expect(app.getSelectedNodes()).toContain(b);
+    expect(app.S.selectedNodes).toContain(a);
+    expect(app.S.selectedNodes).toContain(b);
     expect(a.el.classList.contains('node-group-selected')).toBe(true);
     expect(b.el.classList.contains('node-group-selected')).toBe(true);
   });
@@ -337,7 +337,7 @@ describe('Group selection', () => {
     const b = app.createNode('state', 200, 0);
     app.selectGroup([a, b]);
     app.clearGroup();
-    expect(app.getSelectedNodes().length).toBe(0);
+    expect(app.S.selectedNodes.length).toBe(0);
     expect(a.el.classList.contains('node-group-selected')).toBe(false);
   });
 
@@ -346,7 +346,7 @@ describe('Group selection', () => {
     const b = app.createNode('state', 200, 0);
     app.activateNode(a);
     app.selectGroup([a, b]);
-    expect(app.getActiveNode()).toBeNull();
+    expect(app.S.activeNode).toBeNull();
   });
 });
 
@@ -379,18 +379,18 @@ describe('Minimap minimize/restore', () => {
 
 describe('Zoom', () => {
   it('zoomAround changes zoom level', () => {
-    const before = app.getZoom();
+    const before = app.S.zoom;
     const cw = app.canvasContainer.clientWidth || 800;
     const ch = app.canvasContainer.clientHeight || 600;
     app.zoomAround(before + 0.5, cw / 2, ch / 2);
-    expect(app.getZoom()).toBeCloseTo(before + 0.5, 1);
+    expect(app.S.zoom).toBeCloseTo(before + 0.5, 1);
   });
 
   it('zoom is clamped to min/max', () => {
     app.zoomAround(0.001, 400, 300);
-    expect(app.getZoom()).toBeGreaterThanOrEqual(app.ZOOM_MIN);
+    expect(app.S.zoom).toBeGreaterThanOrEqual(app.ZOOM_MIN);
     app.zoomAround(100, 400, 300);
-    expect(app.getZoom()).toBeLessThanOrEqual(app.ZOOM_MAX);
+    expect(app.S.zoom).toBeLessThanOrEqual(app.ZOOM_MAX);
   });
 
   it('zoom label updates', () => {
@@ -421,7 +421,7 @@ describe('Node deletion', () => {
     const a = app.createNode('state', 0, 0);
     const b = app.createNode('state', 300, 0);
     app.createConnection(a, b);
-    const conn = app.connections[app.connections.length - 1];
+    const conn = app.S.connections[app.S.connections.length - 1];
     const beforeConns = connCount();
 
     app.deleteNode(a);
@@ -437,8 +437,8 @@ describe('Node deletion', () => {
     const c = app.createNode('state', 400, 0);
     app.createConnection(a, b);
     app.createConnection(b, c);
-    const conn1 = app.connections[app.connections.length - 2];
-    const conn2 = app.connections[app.connections.length - 1];
+    const conn1 = app.S.connections[app.S.connections.length - 2];
+    const conn2 = app.S.connections[app.S.connections.length - 1];
 
     app.deleteNode(b);
     expect(conn1.toId).toBeNull();
@@ -451,7 +451,7 @@ describe('Node deletion', () => {
     const node = app.createNode('state', 0, 0);
     app.activateNode(node);
     app.deleteNode(node);
-    expect(app.getActiveNode()).toBeNull();
+    expect(app.S.activeNode).toBeNull();
   });
 
   it('deleteNode removes minimap element', () => {
@@ -490,7 +490,7 @@ describe('Geometry helpers', () => {
   });
 
   it('getMinimapBounds covers all nodes', () => {
-    app.nodes.length = 0;
+    app.S.nodes.length = 0;
     app.createNode('state', -100, -50);
     app.createNode('state', 5000, 4000);
     const bounds = app.getMinimapBounds();

@@ -1,0 +1,134 @@
+/* ── Minimap ───────────────────────────────────────────────────────────────── */
+#minimap {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  width: 200px;
+  height: 150px;
+  background: #0f1623;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 200;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+#minimap-states {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.minimap-node {
+  position: absolute;
+}
+
+.minimap-state-node {
+  background: rgba(37, 99, 235, 0.30);
+  border: 1px solid rgba(59, 130, 246, 0.55);
+  border-radius: 1px;
+}
+
+.minimap-start-node {
+  background: rgba(59, 130, 246, 0.70);
+  border-radius: 50%;
+}
+
+.minimap-end-node {
+  background: transparent;
+  border: 2px solid rgba(59, 130, 246, 0.80);
+  border-radius: 50%;
+}
+
+.minimap-choice-node {
+  background: rgba(245, 158, 11, 0.25);
+  border: 1px solid rgba(245, 158, 11, 0.55);
+  transform: rotate(45deg);
+  transform-origin: center center;
+}
+
+/* Viewport indicator rectangle */
+#minimap-viewport {
+  position: absolute;
+  border: 2px solid #ef4444;
+  background: rgba(239, 68, 68, 0.07);
+  border-radius: 3px;
+  cursor: grab;
+  min-width: 4px;
+  min-height: 4px;
+}
+
+#minimap-viewport:hover {
+  background: rgba(239, 68, 68, 0.14);
+}
+
+#minimap-viewport:active {
+  cursor: grabbing;
+}
+
+/* "MAP" label in the bottom-right corner of the minimap */
+#minimap-label {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #374151;
+  pointer-events: none;
+}
+
+/* Minimize button inside the minimap */
+#minimap-minimize {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid #4b5563;
+  border-radius: 3px;
+  background: #1f2937;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 210;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+#minimap-minimize:hover {
+  background: #374151;
+  color: #f3f4f6;
+  border-color: #6b7280;
+}
+
+/* Restore button (shown when minimap is minimized) */
+#minimap-restore {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  padding: 6px 12px;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  background: #1f2937;
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  z-index: 200;
+  display: none;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+#minimap-restore:hover {
+  background: #374151;
+  color: #f3f4f6;
+  border-color: #6b7280;
+}

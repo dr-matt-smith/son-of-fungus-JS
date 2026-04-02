@@ -1,0 +1,9 @@
+export const canvasContainer = document.getElementById('canvas-container');
+export const canvasEl        = document.getElementById('canvas');
+export const connSvg         = document.getElementById('connections-svg');
+export const minimapEl       = document.getElementById('minimap');
+export const mmStatesEl      = document.getElementById('minimap-states');
+export const mmVP            = document.getElementById('minimap-viewport');
+export const zoomLabel       = document.getElementById('zoom-label');
+export const zoomSlider      = document.getElementById('zoom-slider');
+export const btnHandTool     = document.getElementById('btn-hand-tool');

@@ -2,7 +2,11 @@
 Version XX features
 ==================
 
-- []  the end state CANNOT have any transition connecrtors coming from it
-  - [] so remove the start transition widget from this object 
+- []  separate the CSS into separate files
+  - [] the minimap styles in one file
+  - [] the main toolbar   styles in one file
+  - [] the zoom toolbar   styles in one file
+  - [] the choice node  styles in one file
+  - [] the connectors node  styles in one file
 
-
+- [] update index.htlm to read in all the separate CSS fiules in the appropriate sequence
