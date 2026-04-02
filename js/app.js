@@ -90,6 +90,9 @@ let selectionRect     = null;  // { startX, startY } in world coords while dragg
 let selectionBoxEl    = null;  // DOM element for the rubber-band rectangle
 let draggingGroup     = null;  // { offsets: [{ node, ox, oy }] } while moving a selected group
 
+// Reconnection dragging
+let reconnDrag        = null;  // { conn, end: 'from'|'to' } while dragging a reconnection handle
+
 const CURVE_STEP = 90;     // px of perpendicular offset per parallel connection slot
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
@@ -152,8 +155,11 @@ function buildNodeElement(type, id) {
       '<span class="node-label">?</span>';
   } else if (type === 'state') {
     el.innerHTML = `<span class="node-label">State ${id}</span>`;
+  } else if (type === 'start') {
+    el.innerHTML = '<span class="node-label-fixed">start</span>';
+  } else if (type === 'end') {
+    el.innerHTML = '<span class="node-label-fixed">end</span>';
   }
-  // start and end nodes have no label
 
   // Reset-to-default-size button (state and choice only)
   if (type === 'state' || type === 'choice') {
@@ -271,6 +277,7 @@ function activateNode(node) {
     addResizeHandles(node);
   }
   addConnHandle(node);
+  addNodeDeleteHandle(node);
 }
 
 function deactivateNode() {
@@ -286,6 +293,7 @@ function deactivateNode() {
     removeResizeHandles(activeNode);
   }
   removeConnHandle(activeNode);
+  removeNodeDeleteHandle(activeNode);
   activeNode.el.classList.remove('node-active');
   activeNode = null;
 }
@@ -613,18 +621,51 @@ function updateConnectionsForNode(node) {
 
 /** Recomputes geometry for a single stored connection. */
 function updateConnection(conn) {
-  const from = nodes.find(n => n.id === conn.fromId);
-  const to   = nodes.find(n => n.id === conn.toId);
-  if (!from || !to) return;
-  const toC   = { x: to.x   + to.w / 2, y: to.y   + to.h / 2 };
-  const fromC = { x: from.x + from.w / 2, y: from.y + from.h / 2 };
-  const p1    = getBorderPoint(from, toC.x, toC.y);
-  const p2    = getBorderPoint(to, fromC.x, fromC.y);
-  const { px, py } = getPairPerpendicular(from, to);
-  const off   = conn.curveOffset || 0;
-  const mx    = (p1.x + p2.x) / 2 + px * off;
-  const my    = (p1.y + p2.y) / 2 + py * off;
+  const from = conn.fromId != null ? nodes.find(n => n.id === conn.fromId) : null;
+  const to   = conn.toId   != null ? nodes.find(n => n.id === conn.toId)   : null;
+
+  // Both ends dangling — just render between the two stored points
+  if (!from && !to) {
+    const p1 = conn.danglingFrom || { x: 0, y: 0 };
+    const p2 = conn.danglingTo   || { x: 0, y: 0 };
+    const mx = (p1.x + p2.x) / 2;
+    const my = (p1.y + p2.y) / 2;
+    renderConnGroup(conn.group, p1, p2, mx, my, conn.label, conn === selectedConn);
+    updateReconnHandles(conn);
+    return;
+  }
+
+  // Compute endpoints, using dangling position for the missing end
+  let p1, p2, fromC, toC;
+  if (from && to) {
+    toC   = { x: to.x   + to.w / 2, y: to.y   + to.h / 2 };
+    fromC = { x: from.x + from.w / 2, y: from.y + from.h / 2 };
+    p1 = getBorderPoint(from, toC.x, toC.y);
+    p2 = getBorderPoint(to, fromC.x, fromC.y);
+  } else if (from && !to) {
+    const dp = conn.danglingTo || { x: from.x + from.w / 2 + 80, y: from.y + from.h / 2 };
+    p1 = getBorderPoint(from, dp.x, dp.y);
+    p2 = dp;
+  } else {
+    const dp = conn.danglingFrom || { x: to.x + to.w / 2 - 80, y: to.y + to.h / 2 };
+    p1 = dp;
+    p2 = getBorderPoint(to, dp.x, dp.y);
+  }
+
+  // Curve offset (only meaningful when both ends are connected)
+  let mx, my;
+  if (from && to) {
+    const { px, py } = getPairPerpendicular(from, to);
+    const off = conn.curveOffset || 0;
+    mx = (p1.x + p2.x) / 2 + px * off;
+    my = (p1.y + p2.y) / 2 + py * off;
+  } else {
+    mx = (p1.x + p2.x) / 2;
+    my = (p1.y + p2.y) / 2;
+  }
+
   renderConnGroup(conn.group, p1, p2, mx, my, conn.label, conn === selectedConn);
+  updateReconnHandles(conn);
 }
 
 /**
@@ -634,6 +675,7 @@ function updateConnection(conn) {
 function recalcPairOffsets() {
   const groups = new Map();
   for (const conn of connections) {
+    if (conn.fromId == null || conn.toId == null) continue;  // skip dangling
     const key = `${Math.min(conn.fromId, conn.toId)}-${Math.max(conn.fromId, conn.toId)}`;
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(conn);
@@ -703,6 +745,54 @@ function deselectConn() {
   selectedConn = null;              // clear BEFORE re-rendering so isSelected = false
   prev.group.classList.remove('conn-selected');
   updateConnection(prev);           // hides the × button
+}
+
+// ── Reconnection handles (dangling ends) ─────────────────────────────────────
+
+/**
+ * Shows or hides draggable "o" handles at dangling ends of a connection.
+ * Only visible when the connection is selected.
+ */
+function updateReconnHandles(conn) {
+  const isSelected = conn === selectedConn;
+  const NS = 'http://www.w3.org/2000/svg';
+  const g  = conn.group;
+
+  // Remove existing reconn handles
+  g.querySelectorAll('.reconn-handle').forEach(h => h.remove());
+
+  if (!isSelected) return;
+
+  const hasDanglingFrom = conn.fromId == null;
+  const hasDanglingTo   = conn.toId   == null;
+  if (!hasDanglingFrom && !hasDanglingTo) return;
+
+  // Helper to get current endpoint positions from the rendered path
+  const line = g.querySelector('.conn-line');
+  const d = line.getAttribute('d');
+  // Parse "M x1 y1 Q cx cy x2 y2"
+  const nums = d.match(/-?[\d.]+/g).map(Number);
+  const p1 = { x: nums[0], y: nums[1] };
+  const p2 = { x: nums[4], y: nums[5] };
+
+  function makeHandle(pos, end) {
+    const handle = document.createElementNS(NS, 'circle');
+    handle.classList.add('reconn-handle');
+    handle.setAttribute('cx', pos.x);
+    handle.setAttribute('cy', pos.y);
+    handle.setAttribute('r', '7');
+    handle.dataset.end = end;
+    handle.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      reconnDrag = { conn, end };
+      canvasContainer.style.cursor = 'crosshair';
+    });
+    g.appendChild(handle);
+  }
+
+  if (hasDanglingFrom) makeHandle(p1, 'from');
+  if (hasDanglingTo)   makeHandle(p2, 'to');
 }
 
 // ── Connection label editing ──────────────────────────────────────────────────
@@ -791,6 +881,84 @@ function startDrawingConnection(fromNode) {
   group.classList.add('conn-drawing');
   drawingConn = { fromNode, group };
   canvasContainer.style.cursor = 'crosshair';
+}
+
+// ── Node delete handle ───────────────────────────────────────────────────────
+
+function addNodeDeleteHandle(node) {
+  if (node.el.querySelector('.node-delete-handle')) return;
+  const btn = document.createElement('div');
+  btn.className = 'node-delete-handle';
+  btn.title     = 'Delete this node';
+  btn.textContent = '×';
+  btn.addEventListener('mousedown', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+  });
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    deleteNode(node);
+  });
+  node.el.appendChild(btn);
+}
+
+function removeNodeDeleteHandle(node) {
+  node.el.querySelector('.node-delete-handle')?.remove();
+}
+
+function deleteNode(node) {
+  // Deactivate first
+  if (activeNode === node) {
+    // Remove handles manually since deactivateNode sets activeNode = null
+    if (editingNode === node) commitEditing();
+    if (node.type === 'state' || node.type === 'choice') removeResizeHandles(node);
+    removeConnHandle(node);
+    removeNodeDeleteHandle(node);
+    node.el.classList.remove('node-active');
+    activeNode = null;
+  }
+
+  // For each connection involving this node, store a dangling endpoint
+  const cx = node.x + node.w / 2;
+  const cy = node.y + node.h / 2;
+  for (const conn of connections) {
+    if (conn.fromId === node.id) {
+      // Store the border point toward the other end (or centre if other end also dangling)
+      const to = nodes.find(n => n.id === conn.toId);
+      if (to) {
+        const toC = { x: to.x + to.w / 2, y: to.y + to.h / 2 };
+        const bp = getBorderPoint(node, toC.x, toC.y);
+        conn.danglingFrom = { x: bp.x, y: bp.y };
+      } else {
+        conn.danglingFrom = { x: cx, y: cy };
+      }
+      conn.fromId = null;
+    }
+    if (conn.toId === node.id) {
+      const from = nodes.find(n => n.id === conn.fromId);
+      if (from) {
+        const fromC = { x: from.x + from.w / 2, y: from.y + from.h / 2 };
+        const bp = getBorderPoint(node, fromC.x, fromC.y);
+        conn.danglingTo = { x: bp.x, y: bp.y };
+      } else {
+        conn.danglingTo = { x: cx, y: cy };
+      }
+      conn.toId = null;
+    }
+  }
+
+  // Remove DOM elements
+  node.el.remove();
+  node.mmEl.remove();
+
+  // Remove from nodes array
+  nodes.splice(nodes.indexOf(node), 1);
+
+  // Redraw affected connections
+  for (const conn of connections) {
+    updateConnection(conn);
+  }
+  refreshMinimap();
 }
 
 // ── Auto-fit label font size ──────────────────────────────────────────────────
@@ -1207,6 +1375,18 @@ document.addEventListener('mousemove', (e) => {
     }
   }
 
+  // Reconnection handle drag
+  if (reconnDrag) {
+    const world = clientToWorld(e.clientX, e.clientY);
+    const conn = reconnDrag.conn;
+    if (reconnDrag.end === 'from') {
+      conn.danglingFrom = { x: world.x, y: world.y };
+    } else {
+      conn.danglingTo = { x: world.x, y: world.y };
+    }
+    updateConnection(conn);
+  }
+
   // Dragging the minimap viewport rectangle
   if (draggingMinimapVP) {
     const { b, sx, sy } = getMinimapScales();
@@ -1231,6 +1411,33 @@ document.addEventListener('mousemove', (e) => {
 // ── Global: mouseup ───────────────────────────────────────────────────────────
 
 document.addEventListener('mouseup', (e) => {
+
+  // Finish reconnection handle drag
+  if (reconnDrag) {
+    const world = clientToWorld(e.clientX, e.clientY);
+    const conn = reconnDrag.conn;
+    // Hit-test: find a node under the cursor
+    const target = nodes.find(n => {
+      // Don't allow connecting to the node already on the other end
+      if (reconnDrag.end === 'from' && conn.toId != null && n.id === conn.toId) return false;
+      if (reconnDrag.end === 'to' && conn.fromId != null && n.id === conn.fromId) return false;
+      return world.x >= n.x && world.x <= n.x + n.w &&
+             world.y >= n.y && world.y <= n.y + n.h;
+    });
+    if (target) {
+      if (reconnDrag.end === 'from') {
+        conn.fromId = target.id;
+        conn.danglingFrom = null;
+      } else {
+        conn.toId = target.id;
+        conn.danglingTo = null;
+      }
+      recalcPairOffsets();
+    }
+    reconnDrag = null;
+    updateCursor();
+    updateConnection(conn);
+  }
 
   // Finish drawing a connection
   if (drawingConn) {

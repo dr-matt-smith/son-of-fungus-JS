@@ -376,6 +376,21 @@ html, body {
   color: #fde68a;
 }
 
+/* Read-only label for start/end nodes */
+.node-label-fixed {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 3px;
+  font-size: 9px;
+  font-weight: 600;
+  color: #6b7280;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
 /* ── Inline label edit (textarea) ──────────────────────────────────────────── */
 .node-label-input {
   position: relative;
@@ -443,6 +458,53 @@ html, body {
   top: 2px;
   left: 50%;
   transform: translateX(-50%);
+}
+
+/* ── Node delete handle ───────────────────────────────────────────────────── */
+.node-delete-handle {
+  position: absolute;
+  top: -22px;
+  left: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #7f1d1d;
+  border: 1.5px solid #ef4444;
+  color: #fca5a5;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s;
+  pointer-events: all;
+  user-select: none;
+}
+
+.node-delete-handle:hover {
+  background: #b91c1c;
+}
+
+/* For choice nodes, position top-left above the diamond */
+.choice-node .node-delete-handle {
+  top: -2px;
+  left: -2px;
+}
+
+/* For start/end nodes, spread delete and conn handles apart */
+.start-node .node-delete-handle,
+.end-node .node-delete-handle {
+  top: -22px;
+  left: -10px;
+}
+
+.start-node .conn-handle,
+.end-node .conn-handle {
+  top: -22px;
+  right: -10px;
 }
 
 /* ── Ghost element (follows cursor while dragging from toolbar) ────────────── */
@@ -563,6 +625,20 @@ html, body {
   text-anchor: middle;
   dominant-baseline: central;
   pointer-events: none;
+}
+
+/* Reconnection handle (draggable circle at dangling connection ends) */
+.reconn-handle {
+  fill: #1f2937;
+  stroke: #f59e0b;
+  stroke-width: 2;
+  cursor: crosshair;
+  pointer-events: all;
+  transition: fill 0.12s;
+}
+
+.reconn-handle:hover {
+  fill: #374151;
 }
 
 /* Floating HTML input for editing a connection label */

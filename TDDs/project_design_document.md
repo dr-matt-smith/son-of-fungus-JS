@@ -102,6 +102,17 @@ Version 8 features - zoom toolbar
 Version 9 features - naming start and end states
 ==================
 
-- [] add text "start" and "end" to the start and end state objects
-  - [] this text should be READ ONLY
+- ✅ add text "start" and "end" to the start and end state objects
+  - ✅ this text should be READ ONLY
+
+
+Version 10 features - allow states to be deleted
+==================
+
+- ✅ when a state (general state, start, end) or choice object is selected, show a red "x" that when clicked will delete it
+  - ✅ do NOT delete any transition connectors to/from the state, leave them with one end not connected
+  - ✅ if a transition connectors with one or both ends unconnected is selected, add a connection "o" at each unconnected end, that can be dragged and connected to any state or choice object on the screen
+
+
+
 
