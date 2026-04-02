@@ -41,10 +41,7 @@ add to the toolbar:
   - ✅ when text being edited, allow SHIFT+ENTER for multi-line text
   - ✅ also its width and height can be edited, bt moving drag-handlers (N/S/E/W and on each corner)
 
-  - ✅ for all elements containing text (state and choice) change the font size so all text (including multi-line) can be seen
-    - ✅ (update each time the element resized)
-    - ✅ when text is added, font size will need to get smaller
-    - ✅ when text is removed, font size will need to get bigger
+
 
   - ✅ for all elements containing text, add a 'reset' button at the top left (inside the border), that resets the object shape and size to the default (i.e. when first dragged onto the canvas)
   
@@ -53,24 +50,37 @@ Version 4 features
 
 add features:
 - ✅ add a 'Fit all' button to the left of the Zoom In button, that zoomes appropriately to fit all diagram elements on the screen
-- ✅ the portion of the overall canvas being viewd should be arragned so diarram elements are near the top/bottom/left/right - so the diagram is zoom maximially to allow all elements to be seen
+- ✅ the portion of the overall canvas being viewd should be arragned so diarram elements are near the top/bottom/left/right - so the diagram is zoom maximally to allow all elements to be seen
 - ✅ ensure the mini-map is updated correctly to reflect this Fit All function when it has been clicked
 
-Version 5 features
+Version 5 features 
 ==================
 
-[] allow user to drag a rectangle area of the canvas (if starting drag point is not on an object)
+- ✅ connector (transition) mode, so user can click and drag to connect one state to another
+- ✅ when a state is 'active' a little arrow tool appears just above its top-right corner, which allows the user to drag a connection from the active state to another
+- ✅ this connection should have an arrow 2/3rds along its length showing its from the active state to its target
+- ✅ when a state with one or more transition arrows is moved, all its connected arrows should move with it (as it drags - "elastic banding")
+
+- [] multiple transition connectors between 2 objects
+  - [] do NOT have double direction arrow transition connectors - each transition is a separate arrow
+  - [] so, for example, if a transition connector is created from A to B, and there is already a connector from B to A, please show this as 2 separate transition connectors
+  - [] if a transition connector is dragged from A to B, and there is already a connector from A to B, create a new transition connector from A to B (add curves to new transition connectors if neeed, to prevent them touching)
+
+- [] each transition connectors should be selectable, and if selected should have a "x" icon appear next to it, to allow it to be deleted
+- [] each transition connector should have text assopcated with it, default "transition"
+  - [] when selected, the text can be double-clicked and edited, just like the text for state objects
+
+Version 6 features
+==================
+
+- [] (auto text sized to fit) each time a text-containing element (state and choice) is resized, please change the font size so all text (including multi-line) can be seen
+
+
+- [] (select and drag group of objects) allow user to drag a rectangle area of the canvas (if starting drag point is not on an object)
   - [] if this rectangle contains a single object, select that object
   - [] if this rectangle contains mulrtiple objects, select them all,so they can all be moved together
   - [] a click on the canvas will de-select this group of objects
 
-Version 6 features 
-==================
-
-- ☐ connector (transition) mode, so user can click and drag to connect one state to another
-- ☐ when a state is 'active' a little arrow tool appears just above its top-right corner, which allows the user to drag a connection from the active state to another
-- ☐ this connection should have an arrow 2/3rds along its length showing its from the active state to its targer
-- ☐ when a state with one or more transition arrows is moved, all its connected arrows shoudl move with it
 
 Version 7 features
 ==================

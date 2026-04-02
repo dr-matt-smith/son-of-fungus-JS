@@ -386,6 +386,69 @@ html, body {
   z-index: 9999;
 }
 
+/* Active node gets its own stacking context so the conn-handle floats above
+   sibling nodes without needing a global z-index war */
+.diagram-node.node-active {
+  z-index: 50;
+}
+
+/* ── Connection drag-handle (appears above active node's top-right corner) ─── */
+.conn-handle {
+  position: absolute;
+  top: -20px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #1e3a5f;
+  border: 1.5px solid #60a5fa;
+  color: #60a5fa;
+  cursor: crosshair;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, color 0.12s;
+  pointer-events: all;
+  user-select: none;
+}
+
+.conn-handle:hover {
+  background: #2563eb;
+  color: #bfdbfe;
+}
+
+/* ── Connection lines (SVG layer) ──────────────────────────────────────────── */
+#connections-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4000px;
+  height: 3000px;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.conn-line {
+  stroke: #60a5fa;
+  stroke-width: 1.8;
+  fill: none;
+}
+
+.conn-arrow {
+  fill: #60a5fa;
+}
+
+/* Ghost connection drawn while the user drags from the handle */
+.conn-drawing .conn-line {
+  stroke: #93c5fd;
+  stroke-dasharray: 6 3;
+}
+
+.conn-drawing .conn-arrow {
+  fill: #93c5fd;
+}
+
 /* ── Resize handles ────────────────────────────────────────────────────────── */
 .resize-handle {
   position: absolute;

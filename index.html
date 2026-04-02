@@ -107,7 +107,10 @@
 
   <!-- ── Canvas ──────────────────────────────────────────────────────────── -->
   <div id="canvas-container">
-    <div id="canvas"></div>
+    <div id="canvas">
+      <!-- SVG layer for connection arrows – sits below node divs in DOM order -->
+      <svg id="connections-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
   </div>
 
   <!-- ── Minimap ─────────────────────────────────────────────────────────── -->

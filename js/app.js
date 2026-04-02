@@ -77,9 +77,14 @@ let activeNode        = null;    // currently selected node
 let editingNode       = null;    // node whose label is being edited
 let resizingNode      = null;    // { node, handle, startWorldX, startWorldY, startX, startY, startW, startH }
 
+const connections = [];          // { id, fromId, toId, group }
+let nextConnId    = 1;
+let drawingConn   = null;        // { fromNode, group } while rubber-banding a new connection
+
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const canvasContainer = document.getElementById('canvas-container');
 const canvasEl        = document.getElementById('canvas');
+const connSvg         = document.getElementById('connections-svg');
 const minimapEl       = document.getElementById('minimap');
 const mmStatesEl      = document.getElementById('minimap-states');
 const mmVP            = document.getElementById('minimap-viewport');
@@ -199,6 +204,7 @@ function moveNode(node, worldX, worldY) {
   node.el.style.left = `${worldX}px`;
   node.el.style.top  = `${worldY}px`;
   positionMinimapNode(node);
+  updateConnectionsForNode(node);
 }
 
 function resizeNode(node, x, y, w, h) {
@@ -212,6 +218,7 @@ function resizeNode(node, x, y, w, h) {
   node.el.style.height = `${h}px`;
   positionMinimapNode(node);
   fitLabelFontSize(node);
+  updateConnectionsForNode(node);
 }
 
 function positionMinimapNode(node, mmScales) {
@@ -248,14 +255,22 @@ function activateNode(node) {
   if (node.type === 'state' || node.type === 'choice') {
     addResizeHandles(node);
   }
+  addConnHandle(node);
 }
 
 function deactivateNode() {
   if (!activeNode) return;
   if (editingNode) commitEditing();
+  // Cancel any in-progress connection drawing
+  if (drawingConn) {
+    drawingConn.group.remove();
+    drawingConn = null;
+    updateCursor();
+  }
   if (activeNode.type === 'state' || activeNode.type === 'choice') {
     removeResizeHandles(activeNode);
   }
+  removeConnHandle(activeNode);
   activeNode.el.classList.remove('node-active');
   activeNode = null;
 }
@@ -367,6 +382,148 @@ function cancelEditing() {
     span.textContent = node.label;
     ta.replaceWith(span);
   }
+}
+
+// ── Connections ───────────────────────────────────────────────────────────────
+
+/**
+ * Returns the point on `node`'s visible border that faces toward (targetX, targetY).
+ * Used to make connection lines start/end neatly at the node edge rather than centre.
+ */
+function getBorderPoint(node, targetX, targetY) {
+  const cx = node.x + node.w / 2;
+  const cy = node.y + node.h / 2;
+  const dx = targetX - cx;
+  const dy = targetY - cy;
+  if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) return { x: cx, y: cy };
+
+  const len = Math.sqrt(dx * dx + dy * dy);
+  const ndx = dx / len;
+  const ndy = dy / len;
+  const hw  = node.w / 2;
+  const hh  = node.h / 2;
+
+  if (node.type === 'start' || node.type === 'end') {
+    return { x: cx + ndx * hw, y: cy + ndy * hh };   // circle radius
+  }
+
+  if (node.type === 'choice') {
+    // Diamond border equation: |x/hw| + |y/hh| = 1
+    const t = (hw * hh) / (Math.abs(ndy) * hw + Math.abs(ndx) * hh);
+    return { x: cx + ndx * t, y: cy + ndy * t };
+  }
+
+  // Rectangle: find which wall is hit first
+  const tx = Math.abs(ndx) > 0.001 ? hw / Math.abs(ndx) : Infinity;
+  const ty = Math.abs(ndy) > 0.001 ? hh / Math.abs(ndy) : Infinity;
+  const t  = Math.min(tx, ty);
+  return { x: cx + ndx * t, y: cy + ndy * t };
+}
+
+/** SVG polygon `points` string for a filled arrowhead whose TIP is at (px,py),
+ *  pointing in direction `angle` (radians). */
+function makeArrowPoints(px, py, angle) {
+  const LEN  = 11;   // head length
+  const HALF = 5;    // half base-width
+  const cos  = Math.cos(angle);
+  const sin  = Math.sin(angle);
+  const bx   = px - LEN * cos;
+  const by   = py - LEN * sin;
+  return `${px},${py} ${bx + HALF * sin},${by - HALF * cos} ${bx - HALF * sin},${by + HALF * cos}`;
+}
+
+/** Creates an SVG <g> with a <line> and <polygon> and appends it to connSvg. */
+function makeConnGroup() {
+  const g    = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  line.classList.add('conn-line');
+  poly.classList.add('conn-arrow');
+  g.appendChild(line);
+  g.appendChild(poly);
+  connSvg.appendChild(g);
+  return g;
+}
+
+/** Updates the <line> and arrowhead <polygon> positions for a given pair of world points. */
+function renderConnGroup(group, p1, p2) {
+  const line  = group.querySelector('.conn-line');
+  const poly  = group.querySelector('.conn-arrow');
+  line.setAttribute('x1', p1.x);
+  line.setAttribute('y1', p1.y);
+  line.setAttribute('x2', p2.x);
+  line.setAttribute('y2', p2.y);
+
+  // Arrowhead tip sits 2/3 of the way along the line, pointing from p1 → p2
+  const ax    = p1.x + (p2.x - p1.x) * (2 / 3);
+  const ay    = p1.y + (p2.y - p1.y) * (2 / 3);
+  const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+  poly.setAttribute('points', makeArrowPoints(ax, ay, angle));
+}
+
+/** Recalculates a stored connection's line between its two nodes. */
+function updateConnection(conn) {
+  const from = nodes.find(n => n.id === conn.fromId);
+  const to   = nodes.find(n => n.id === conn.toId);
+  if (!from || !to) return;
+  const toC   = { x: to.x   + to.w   / 2, y: to.y   + to.h   / 2 };
+  const fromC = { x: from.x + from.w / 2, y: from.y + from.h / 2 };
+  const p1 = getBorderPoint(from, toC.x,   toC.y);
+  const p2 = getBorderPoint(to,   fromC.x, fromC.y);
+  renderConnGroup(conn.group, p1, p2);
+}
+
+/** Elastic banding: called whenever a node moves or resizes. */
+function updateConnectionsForNode(node) {
+  for (const conn of connections) {
+    if (conn.fromId === node.id || conn.toId === node.id) updateConnection(conn);
+  }
+}
+
+/** Persists a new connection between two nodes (prevents duplicates). */
+function createConnection(fromNode, toNode) {
+  if (connections.some(c => c.fromId === fromNode.id && c.toId === toNode.id)) return;
+  const group = makeConnGroup();
+  const conn  = { id: nextConnId++, fromId: fromNode.id, toId: toNode.id, group };
+  connections.push(conn);
+  updateConnection(conn);
+}
+
+// ── Connection drag-handle ────────────────────────────────────────────────────
+
+function addConnHandle(node) {
+  if (node.el.querySelector('.conn-handle')) return;   // already present
+
+  const btn = document.createElement('div');
+  btn.className = 'conn-handle';
+  btn.title     = 'Drag to connect to another node';
+  // Right-arrow icon
+  btn.innerHTML =
+    '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" ' +
+        'stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
+      '<line x1="1" y1="5" x2="8" y2="5"/>' +
+      '<polyline points="5,2 8,5 5,8"/>' +
+    '</svg>';
+
+  btn.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    e.preventDefault();
+    startDrawingConnection(node);
+  });
+
+  node.el.appendChild(btn);
+}
+
+function removeConnHandle(node) {
+  node.el.querySelector('.conn-handle')?.remove();
+}
+
+function startDrawingConnection(fromNode) {
+  const group = makeConnGroup();
+  group.classList.add('conn-drawing');
+  drawingConn = { fromNode, group };
+  canvasContainer.style.cursor = 'crosshair';
 }
 
 // ── Auto-fit label font size ──────────────────────────────────────────────────
@@ -573,6 +730,7 @@ canvasContainer.addEventListener('wheel', (e) => {
 
 canvasContainer.addEventListener('mousedown', (e) => {
   if (creatingNode) return;
+  if (drawingConn)  return;   // mid-draw: don't deselect or pan
 
   // Deactivate selection when clicking on empty canvas area
   if (e.button === 0 && !e.target.closest('.diagram-node') && activeNode) {
@@ -604,6 +762,7 @@ function onNodeMouseDown(e) {
   if (e.button !== 0) return;
   if (activeTool === 'hand') return;
   if (creatingNode) return;
+  if (drawingConn)  return;   // mid-draw: let mouseup handle the target hit-test
   if (e.target.classList.contains('resize-handle')) return;
 
   e.preventDefault();
@@ -666,6 +825,13 @@ document.addEventListener('mousemove', (e) => {
   // Ghost follows cursor while dragging from toolbar
   if (creatingNode && ghostEl) {
     positionGhost(e.clientX, e.clientY);
+  }
+
+  // Rubber-band ghost connection while drawing
+  if (drawingConn) {
+    const world = clientToWorld(e.clientX, e.clientY);
+    const p1 = getBorderPoint(drawingConn.fromNode, world.x, world.y);
+    renderConnGroup(drawingConn.group, p1, world);
   }
 
   // Canvas panning
@@ -742,6 +908,21 @@ document.addEventListener('mousemove', (e) => {
 
 document.addEventListener('mouseup', (e) => {
 
+  // Finish drawing a connection
+  if (drawingConn) {
+    const world = clientToWorld(e.clientX, e.clientY);
+    // Hit-test: find a node under the cursor that isn't the source
+    const target = nodes.find(n => {
+      if (n.id === drawingConn.fromNode.id) return false;
+      return world.x >= n.x && world.x <= n.x + n.w &&
+             world.y >= n.y && world.y <= n.y + n.h;
+    });
+    drawingConn.group.remove();
+    if (target) createConnection(drawingConn.fromNode, target);
+    drawingConn = null;
+    updateCursor();
+  }
+
   // Finish dragging from toolbar – place node if released over canvas
   if (creatingNode) {
     if (ghostEl) {
@@ -811,6 +992,12 @@ document.addEventListener('keydown', (e) => {
       btnHandTool.click();
       break;
     case 'Escape':
+      // Cancel in-progress connection drawing
+      if (drawingConn) {
+        drawingConn.group.remove();
+        drawingConn = null;
+        updateCursor();
+      }
       // Cancel in-progress toolbar drag
       if (creatingNode && ghostEl) {
         ghostEl.remove();
