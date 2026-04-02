@@ -73,7 +73,6 @@ Version 5 features
   - ✅ when selected, the text can be double-clicked and edited, just like the text for state objects
 
 
-
 Version 6 features
 ==================
 
@@ -87,10 +86,22 @@ Version 6 features
 
 
 
-
 Version 7 features
 ==================
 
 - ✅ minimap - minimize/show - add a widget to the minimap "_" that makes it shrink to a box "minimap"
 - ✅ when shrunk, clicking box "minimap" returns it to its normal size again
+
+Version 8 features - zoom toolbar
+==================
+- ✅ create a zoom toolbar at the bottom LEFT of the screen
+  - move the reset / zoom in/out and current %age tools to this toolbar
+
+- ✅ add a zoom slider to the zoom toolbar
+
+Version 9 features - naming start and end states
+==================
+
+- [] add text "start" and "end" to the start and end state objects
+  - [] this text should be READ ONLY
 

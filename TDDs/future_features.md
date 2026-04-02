@@ -1,11 +1,12 @@
 
 
-Version XX features - zoom toolbar
-==================
-- [] create a zoom toolbar at the bottom LEFT of the screen
-  - move the reset / zoom in/out and current %age tools to this toolbar
 
-- [] add a zoom slider to the zoom toolbar
+Version XXX features - naming start and end states
+==================
+
+- [] add text "start" and "end" to the start and end state objects
+  - [] this text should be READ ONLY
+
 
 
 Version 9 features

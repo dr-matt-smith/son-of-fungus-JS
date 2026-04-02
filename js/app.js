@@ -100,6 +100,7 @@ const minimapEl       = document.getElementById('minimap');
 const mmStatesEl      = document.getElementById('minimap-states');
 const mmVP            = document.getElementById('minimap-viewport');
 const zoomLabel       = document.getElementById('zoom-label');
+const zoomSlider      = document.getElementById('zoom-slider');
 const btnHandTool     = document.getElementById('btn-hand-tool');
 
 // ── Transform helpers ─────────────────────────────────────────────────────────
@@ -108,6 +109,7 @@ function applyTransform() {
   if (editingConn) commitConnEditing();   // label input position would go stale
   canvasEl.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
   zoomLabel.textContent = `${Math.round(zoom * 100)}%`;
+  zoomSlider.value = Math.round(zoom * 100);
   refreshMinimap();
 }
 
@@ -926,6 +928,14 @@ document.getElementById('btn-zoom-in').addEventListener('click', () => {
 document.getElementById('btn-zoom-out').addEventListener('click', () => {
   const { clientWidth: cw, clientHeight: ch } = canvasContainer;
   zoomAround(zoom - ZOOM_STEP, cw / 2, ch / 2);
+});
+
+// ── Zoom slider ──────────────────────────────────────────────────────────────
+
+zoomSlider.addEventListener('input', () => {
+  const newZoom = parseInt(zoomSlider.value, 10) / 100;
+  const { clientWidth: cw, clientHeight: ch } = canvasContainer;
+  zoomAround(newZoom, cw / 2, ch / 2);
 });
 
 // ── Toolbar: hand tool ────────────────────────────────────────────────────────
