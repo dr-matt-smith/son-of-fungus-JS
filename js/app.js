@@ -77,9 +77,14 @@ let activeNode        = null;    // currently selected node
 let editingNode       = null;    // node whose label is being edited
 let resizingNode      = null;    // { node, handle, startWorldX, startWorldY, startX, startY, startW, startH }
 
-const connections = [];          // { id, fromId, toId, group }
-let nextConnId    = 1;
-let drawingConn   = null;        // { fromNode, group } while rubber-banding a new connection
+const connections  = [];   // { id, fromId, toId, label, curveOffset, group }
+let nextConnId     = 1;
+let drawingConn    = null; // { fromNode, group } while rubber-banding a new connection
+let selectedConn   = null; // currently selected connection
+let editingConn    = null; // connection whose label is being edited
+let connLabelInput = null; // floating HTML input for label editing
+
+const CURVE_STEP = 90;     // px of perpendicular offset per parallel connection slot
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const canvasContainer = document.getElementById('canvas-container');
@@ -94,6 +99,7 @@ const btnHandTool     = document.getElementById('btn-hand-tool');
 // ── Transform helpers ─────────────────────────────────────────────────────────
 
 function applyTransform() {
+  if (editingConn) commitConnEditing();   // label input position would go stale
   canvasEl.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
   zoomLabel.textContent = `${Math.round(zoom * 100)}%`;
   refreshMinimap();
@@ -249,6 +255,7 @@ function refreshMinimap() {
 
 function activateNode(node) {
   if (activeNode === node) return;
+  if (selectedConn) deselectConn();
   deactivateNode();
   activeNode = node;
   node.el.classList.add('node-active');
@@ -386,132 +393,313 @@ function cancelEditing() {
 
 // ── Connections ───────────────────────────────────────────────────────────────
 
-/**
- * Returns the point on `node`'s visible border that faces toward (targetX, targetY).
- * Used to make connection lines start/end neatly at the node edge rather than centre.
- */
+/** World → screen conversion (used to position the floating label editor). */
+function worldToScreen(wx, wy) {
+  const rect = canvasContainer.getBoundingClientRect();
+  return { x: wx * zoom + panX + rect.left, y: wy * zoom + panY + rect.top };
+}
+
+/** Point on `node`'s visible border facing toward (targetX, targetY). */
 function getBorderPoint(node, targetX, targetY) {
   const cx = node.x + node.w / 2;
   const cy = node.y + node.h / 2;
   const dx = targetX - cx;
   const dy = targetY - cy;
   if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) return { x: cx, y: cy };
-
   const len = Math.sqrt(dx * dx + dy * dy);
   const ndx = dx / len;
   const ndy = dy / len;
   const hw  = node.w / 2;
   const hh  = node.h / 2;
-
   if (node.type === 'start' || node.type === 'end') {
-    return { x: cx + ndx * hw, y: cy + ndy * hh };   // circle radius
+    return { x: cx + ndx * hw, y: cy + ndy * hh };
   }
-
   if (node.type === 'choice') {
-    // Diamond border equation: |x/hw| + |y/hh| = 1
     const t = (hw * hh) / (Math.abs(ndy) * hw + Math.abs(ndx) * hh);
     return { x: cx + ndx * t, y: cy + ndy * t };
   }
-
-  // Rectangle: find which wall is hit first
   const tx = Math.abs(ndx) > 0.001 ? hw / Math.abs(ndx) : Infinity;
   const ty = Math.abs(ndy) > 0.001 ? hh / Math.abs(ndy) : Infinity;
-  const t  = Math.min(tx, ty);
-  return { x: cx + ndx * t, y: cy + ndy * t };
+  return { x: cx + ndx * Math.min(tx, ty), y: cy + ndy * Math.min(tx, ty) };
 }
 
-/** SVG polygon `points` string for a filled arrowhead whose TIP is at (px,py),
- *  pointing in direction `angle` (radians). */
+/** Filled arrowhead polygon whose TIP is at (px,py) pointing in direction `angle`. */
 function makeArrowPoints(px, py, angle) {
-  const LEN  = 11;   // head length
-  const HALF = 5;    // half base-width
-  const cos  = Math.cos(angle);
-  const sin  = Math.sin(angle);
-  const bx   = px - LEN * cos;
-  const by   = py - LEN * sin;
+  const LEN = 11, HALF = 5;
+  const cos = Math.cos(angle), sin = Math.sin(angle);
+  const bx = px - LEN * cos, by = py - LEN * sin;
   return `${px},${py} ${bx + HALF * sin},${by - HALF * cos} ${bx - HALF * sin},${by + HALF * cos}`;
 }
 
-/** Creates an SVG <g> with a <line> and <polygon> and appends it to connSvg. */
+/**
+ * Returns the perpendicular unit vector for an unordered node pair.
+ * Always defined relative to lower-id → higher-id so it is the same for
+ * both A→B and B→A connections in the same pair.
+ */
+function getPairPerpendicular(from, to) {
+  const ref = from.id < to.id ? { from, to } : { from: to, to: from };
+  const dx  = (ref.to.x + ref.to.w / 2) - (ref.from.x + ref.from.w / 2);
+  const dy  = (ref.to.y + ref.to.h / 2) - (ref.from.y + ref.from.h / 2);
+  const len = Math.sqrt(dx * dx + dy * dy) || 1;
+  return { px: -dy / len, py: dx / len };  // 90° left of reference direction
+}
+
+/** Creates the full SVG group structure for one connection (hitarea + line + arrow + label + delete). */
 function makeConnGroup() {
-  const g    = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-  const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+  const NS = 'http://www.w3.org/2000/svg';
+  const g  = document.createElementNS(NS, 'g');
+  g.classList.add('conn-group');
+
+  const hit = document.createElementNS(NS, 'path');
+  hit.classList.add('conn-hitarea');
+  g.appendChild(hit);
+
+  const line = document.createElementNS(NS, 'path');
   line.classList.add('conn-line');
-  poly.classList.add('conn-arrow');
   g.appendChild(line);
-  g.appendChild(poly);
+
+  const arrow = document.createElementNS(NS, 'polygon');
+  arrow.classList.add('conn-arrow');
+  g.appendChild(arrow);
+
+  const lbl = document.createElementNS(NS, 'text');
+  lbl.classList.add('conn-label');
+  g.appendChild(lbl);
+
+  const del = document.createElementNS(NS, 'g');
+  del.classList.add('conn-delete');
+  del.style.visibility = 'hidden';
+  const delCirc = document.createElementNS(NS, 'circle');
+  delCirc.setAttribute('r', '8');
+  delCirc.classList.add('conn-delete-bg');
+  const delTxt = document.createElementNS(NS, 'text');
+  delTxt.classList.add('conn-delete-x');
+  delTxt.textContent = '×';
+  del.appendChild(delCirc);
+  del.appendChild(delTxt);
+  g.appendChild(del);
+
   connSvg.appendChild(g);
   return g;
 }
 
-/** Updates the <line> and arrowhead <polygon> positions for a given pair of world points. */
-function renderConnGroup(group, p1, p2) {
-  const line  = group.querySelector('.conn-line');
-  const poly  = group.querySelector('.conn-arrow');
-  line.setAttribute('x1', p1.x);
-  line.setAttribute('y1', p1.y);
-  line.setAttribute('x2', p2.x);
-  line.setAttribute('y2', p2.y);
+/**
+ * Redraws a connection group using a quadratic bezier (p1 → ctrl → p2).
+ * Also positions the label and delete button.
+ */
+function renderConnGroup(group, p1, p2, ctrlX, ctrlY, label, isSelected) {
+  const d = `M ${p1.x} ${p1.y} Q ${ctrlX} ${ctrlY} ${p2.x} ${p2.y}`;
+  group.querySelector('.conn-hitarea').setAttribute('d', d);
+  group.querySelector('.conn-line').setAttribute('d', d);
 
-  // Arrowhead tip sits 2/3 of the way along the line, pointing from p1 → p2
-  const ax    = p1.x + (p2.x - p1.x) * (2 / 3);
-  const ay    = p1.y + (p2.y - p1.y) * (2 / 3);
-  const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-  poly.setAttribute('points', makeArrowPoints(ax, ay, angle));
+  // Arrowhead at t = 2/3 along the quadratic bezier
+  const t = 2 / 3, mt = 1 - t;
+  const ax = mt*mt*p1.x + 2*mt*t*ctrlX + t*t*p2.x;
+  const ay = mt*mt*p1.y + 2*mt*t*ctrlY + t*t*p2.y;
+  const tx = 2*mt*(ctrlX - p1.x) + 2*t*(p2.x - ctrlX);   // tangent
+  const ty = 2*mt*(ctrlY - p1.y) + 2*t*(p2.y - ctrlY);
+  group.querySelector('.conn-arrow').setAttribute('points', makeArrowPoints(ax, ay, Math.atan2(ty, tx)));
+
+  // Label at t = 0.5, offset slightly along the perpendicular
+  const lx = 0.25*p1.x + 0.5*ctrlX + 0.25*p2.x;
+  const ly = 0.25*p1.y + 0.5*ctrlY + 0.25*p2.y;
+  const labelEl = group.querySelector('.conn-label');
+  labelEl.setAttribute('x', lx);
+  labelEl.setAttribute('y', ly - 10);
+  if (label !== undefined) labelEl.textContent = label;
+
+  // Delete button near the DESTINATION end (t = 0.88 along the bezier),
+  // offset perpendicular so it doesn't sit on top of the target node border.
+  const td = 0.88, mtd = 1 - td;
+  const dx  = mtd*mtd*p1.x + 2*mtd*td*ctrlX + td*td*p2.x;
+  const dy  = mtd*mtd*p1.y + 2*mtd*td*ctrlY + td*td*p2.y;
+  // Tangent at td – used to build a perpendicular offset so the button
+  // sits beside the line rather than on it.
+  const ttx = 2*mtd*(ctrlX - p1.x) + 2*td*(p2.x - ctrlX);
+  const tty = 2*mtd*(ctrlY - p1.y) + 2*td*(p2.y - ctrlY);
+  const tlen = Math.sqrt(ttx*ttx + tty*tty) || 1;
+  const DEL_OFFSET = 16;   // px away from the line
+  const delX = dx + (-tty / tlen) * DEL_OFFSET;
+  const delY = dy + ( ttx / tlen) * DEL_OFFSET;
+  const delGroup = group.querySelector('.conn-delete');
+  delGroup.setAttribute('transform', `translate(${delX}, ${delY})`);
+  delGroup.style.visibility = isSelected ? 'visible' : 'hidden';
 }
 
-/** Recalculates a stored connection's line between its two nodes. */
-function updateConnection(conn) {
-  const from = nodes.find(n => n.id === conn.fromId);
-  const to   = nodes.find(n => n.id === conn.toId);
-  if (!from || !to) return;
-  const toC   = { x: to.x   + to.w   / 2, y: to.y   + to.h   / 2 };
-  const fromC = { x: from.x + from.w / 2, y: from.y + from.h / 2 };
-  const p1 = getBorderPoint(from, toC.x,   toC.y);
-  const p2 = getBorderPoint(to,   fromC.x, fromC.y);
-  renderConnGroup(conn.group, p1, p2);
-}
-
-/** Elastic banding: called whenever a node moves or resizes. */
+/** Recalculates all connections for one node (elastic banding). */
 function updateConnectionsForNode(node) {
   for (const conn of connections) {
     if (conn.fromId === node.id || conn.toId === node.id) updateConnection(conn);
   }
 }
 
-/** Persists a new connection between two nodes (prevents duplicates). */
+/** Recomputes geometry for a single stored connection. */
+function updateConnection(conn) {
+  const from = nodes.find(n => n.id === conn.fromId);
+  const to   = nodes.find(n => n.id === conn.toId);
+  if (!from || !to) return;
+  const toC   = { x: to.x   + to.w / 2, y: to.y   + to.h / 2 };
+  const fromC = { x: from.x + from.w / 2, y: from.y + from.h / 2 };
+  const p1    = getBorderPoint(from, toC.x, toC.y);
+  const p2    = getBorderPoint(to, fromC.x, fromC.y);
+  const { px, py } = getPairPerpendicular(from, to);
+  const off   = conn.curveOffset || 0;
+  const mx    = (p1.x + p2.x) / 2 + px * off;
+  const my    = (p1.y + p2.y) / 2 + py * off;
+  renderConnGroup(conn.group, p1, p2, mx, my, conn.label, conn === selectedConn);
+}
+
+/**
+ * After any connection is added/removed, reassign curve offsets for all pairs so
+ * parallel arrows (same or opposite direction) are fanned out symmetrically.
+ */
+function recalcPairOffsets() {
+  const groups = new Map();
+  for (const conn of connections) {
+    const key = `${Math.min(conn.fromId, conn.toId)}-${Math.max(conn.fromId, conn.toId)}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(conn);
+  }
+  for (const group of groups.values()) {
+    const N = group.length;
+    group.forEach((conn, i) => {
+      // Symmetric: -offset…0…+offset centred on 0 (straight when N=1)
+      conn.curveOffset = (i - (N - 1) / 2) * CURVE_STEP;
+    });
+  }
+  for (const conn of connections) updateConnection(conn);
+}
+
+/** Creates a new connection (allows multiple; curves assigned by recalcPairOffsets). */
 function createConnection(fromNode, toNode) {
-  if (connections.some(c => c.fromId === fromNode.id && c.toId === toNode.id)) return;
   const group = makeConnGroup();
-  const conn  = { id: nextConnId++, fromId: fromNode.id, toId: toNode.id, group };
+  const conn  = { id: nextConnId++, fromId: fromNode.id, toId: toNode.id,
+                  label: 'transition', curveOffset: 0, group };
   connections.push(conn);
+
+  // Click on hitarea or label → select
+  group.querySelector('.conn-hitarea').addEventListener('click', (e) => {
+    e.stopPropagation();
+    selectConn(conn);
+  });
+  const lblEl = group.querySelector('.conn-label');
+  lblEl.addEventListener('click', (e) => { e.stopPropagation(); selectConn(conn); });
+  lblEl.addEventListener('dblclick', (e) => {
+    e.stopPropagation();
+    selectConn(conn);
+    startConnEditing(conn);
+  });
+
+  // Delete button
+  group.querySelector('.conn-delete').addEventListener('click', (e) => {
+    e.stopPropagation();
+    deleteConnection(conn);
+  });
+
+  recalcPairOffsets();   // also calls updateConnection for all
+}
+
+function deleteConnection(conn) {
+  if (selectedConn === conn) deselectConn();
+  if (editingConn  === conn) cancelConnEditing();
+  conn.group.remove();
+  connections.splice(connections.indexOf(conn), 1);
+  recalcPairOffsets();
+}
+
+// ── Connection selection ──────────────────────────────────────────────────────
+
+function selectConn(conn) {
+  if (selectedConn === conn) return;
+  if (selectedConn) deselectConn();
+  if (activeNode)   deactivateNode();
+  selectedConn = conn;
+  conn.group.classList.add('conn-selected');
   updateConnection(conn);
+}
+
+function deselectConn() {
+  if (!selectedConn) return;
+  if (editingConn) commitConnEditing();
+  const prev = selectedConn;
+  selectedConn = null;              // clear BEFORE re-rendering so isSelected = false
+  prev.group.classList.remove('conn-selected');
+  updateConnection(prev);           // hides the × button
+}
+
+// ── Connection label editing ──────────────────────────────────────────────────
+
+function startConnEditing(conn) {
+  if (editingConn) commitConnEditing();
+  editingConn = conn;
+
+  const lblEl = conn.group.querySelector('.conn-label');
+  const lx    = parseFloat(lblEl.getAttribute('x'));
+  const ly    = parseFloat(lblEl.getAttribute('y')) + 10;   // undo the -10 render offset
+  const sc    = worldToScreen(lx, ly);
+
+  const input = document.createElement('input');
+  input.type       = 'text';
+  input.className  = 'conn-label-input';
+  input.value      = conn.label;
+  input.style.left = `${sc.x}px`;
+  input.style.top  = `${sc.y}px`;
+  document.body.appendChild(input);
+  connLabelInput = input;
+  lblEl.style.visibility = 'hidden';
+
+  input.focus();
+  input.select();
+  input.addEventListener('blur',    () => commitConnEditing());
+  input.addEventListener('keydown', (e) => {
+    e.stopPropagation();
+    if (e.key === 'Enter')  { e.preventDefault(); commitConnEditing(); }
+    if (e.key === 'Escape') { e.preventDefault(); cancelConnEditing(); }
+  });
+}
+
+function commitConnEditing() {
+  if (!editingConn) return;
+  const conn   = editingConn;
+  editingConn  = null;
+  if (connLabelInput) {
+    const v = connLabelInput.value.trim();
+    if (v) conn.label = v;
+    connLabelInput.remove();
+    connLabelInput = null;
+  }
+  const lblEl = conn.group.querySelector('.conn-label');
+  if (lblEl) lblEl.style.visibility = '';
+  updateConnection(conn);
+}
+
+function cancelConnEditing() {
+  if (!editingConn) return;
+  const conn  = editingConn;
+  editingConn = null;
+  if (connLabelInput) { connLabelInput.remove(); connLabelInput = null; }
+  const lblEl = conn.group.querySelector('.conn-label');
+  if (lblEl) lblEl.style.visibility = '';
 }
 
 // ── Connection drag-handle ────────────────────────────────────────────────────
 
 function addConnHandle(node) {
-  if (node.el.querySelector('.conn-handle')) return;   // already present
-
+  if (node.el.querySelector('.conn-handle')) return;
   const btn = document.createElement('div');
   btn.className = 'conn-handle';
   btn.title     = 'Drag to connect to another node';
-  // Right-arrow icon
   btn.innerHTML =
     '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" ' +
         'stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
-      '<line x1="1" y1="5" x2="8" y2="5"/>' +
-      '<polyline points="5,2 8,5 5,8"/>' +
+      '<line x1="1" y1="5" x2="8" y2="5"/><polyline points="5,2 8,5 5,8"/>' +
     '</svg>';
-
   btn.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
     e.stopPropagation();
     e.preventDefault();
     startDrawingConnection(node);
   });
-
   node.el.appendChild(btn);
 }
 
@@ -520,6 +708,7 @@ function removeConnHandle(node) {
 }
 
 function startDrawingConnection(fromNode) {
+  if (selectedConn) deselectConn();
   const group = makeConnGroup();
   group.classList.add('conn-drawing');
   drawingConn = { fromNode, group };
@@ -732,9 +921,10 @@ canvasContainer.addEventListener('mousedown', (e) => {
   if (creatingNode) return;
   if (drawingConn)  return;   // mid-draw: don't deselect or pan
 
-  // Deactivate selection when clicking on empty canvas area
-  if (e.button === 0 && !e.target.closest('.diagram-node') && activeNode) {
-    deactivateNode();
+  // Deselect connection / node when clicking on empty canvas area
+  if (e.button === 0 && !e.target.closest('.conn-group') && !e.target.closest('.diagram-node')) {
+    if (selectedConn) deselectConn();
+    if (activeNode)   deactivateNode();
   }
 
   if (e.button === 1) {           // middle mouse button
@@ -827,11 +1017,13 @@ document.addEventListener('mousemove', (e) => {
     positionGhost(e.clientX, e.clientY);
   }
 
-  // Rubber-band ghost connection while drawing
+  // Rubber-band ghost connection while drawing (straight ghost – no curve offset yet)
   if (drawingConn) {
     const world = clientToWorld(e.clientX, e.clientY);
-    const p1 = getBorderPoint(drawingConn.fromNode, world.x, world.y);
-    renderConnGroup(drawingConn.group, p1, world);
+    const p1    = getBorderPoint(drawingConn.fromNode, world.x, world.y);
+    const mx    = (p1.x + world.x) / 2;
+    const my    = (p1.y + world.y) / 2;
+    renderConnGroup(drawingConn.group, p1, world, mx, my, '', false);
   }
 
   // Canvas panning
@@ -992,11 +1184,13 @@ document.addEventListener('keydown', (e) => {
       btnHandTool.click();
       break;
     case 'Escape':
+      if (editingConn) { cancelConnEditing(); break; }
       // Cancel in-progress connection drawing
       if (drawingConn) {
         drawingConn.group.remove();
         drawingConn = null;
         updateCursor();
+        break;
       }
       // Cancel in-progress toolbar drag
       if (creatingNode && ghostEl) {
@@ -1004,9 +1198,10 @@ document.addEventListener('keydown', (e) => {
         ghostEl          = null;
         creatingNode     = false;
         creatingNodeType = null;
+        break;
       }
-      // Deselect active node
-      if (activeNode) deactivateNode();
+      if (selectedConn) { deselectConn(); break; }
+      if (activeNode)   { deactivateNode(); break; }
       break;
   }
 });

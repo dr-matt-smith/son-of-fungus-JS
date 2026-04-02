@@ -61,14 +61,18 @@ Version 5 features
 - ✅ this connection should have an arrow 2/3rds along its length showing its from the active state to its target
 - ✅ when a state with one or more transition arrows is moved, all its connected arrows should move with it (as it drags - "elastic banding")
 
-- [] multiple transition connectors between 2 objects
-  - [] do NOT have double direction arrow transition connectors - each transition is a separate arrow
-  - [] so, for example, if a transition connector is created from A to B, and there is already a connector from B to A, please show this as 2 separate transition connectors
-  - [] if a transition connector is dragged from A to B, and there is already a connector from A to B, create a new transition connector from A to B (add curves to new transition connectors if neeed, to prevent them touching)
+- ✅ multiple transition connectors between 2 objects
+  - ✅ do NOT have double direction arrow transition connectors - each transition is a separate arrow
+  - ✅ so, for example, if a transition connector is created from A to B, and there is already a connector from B to A, please show this as 2 separate transition connectors
+  - ✅ if a transition connector is dragged from A to B, and there is already a connector from A to B, create a new transition connector from A to B (add curves to new transition connectors if neeed, to prevent them touching)
 
-- [] each transition connectors should be selectable, and if selected should have a "x" icon appear next to it, to allow it to be deleted
-- [] each transition connector should have text assopcated with it, default "transition"
-  - [] when selected, the text can be double-clicked and edited, just like the text for state objects
+- ✅ each transition connectors should be selectable, and if selected should have a "x" icon appear next to it, to allow it to be deleted
+  - ✅ NOTE - this "x" should be shown near the destination end of the transition connectors line
+  - ✅ when the transition connector is de-selected, this "x" widget should be hidden again
+- ✅ each transition connector should have text assopcated with it, default "transition"
+  - ✅ when selected, the text can be double-clicked and edited, just like the text for state objects
+
+
 
 Version 6 features
 ==================
@@ -83,6 +87,13 @@ Version 6 features
 
 
 Version 7 features
+==================
+
+- [] minimap - minimize/show - add a widget to the minimap "_" that makes it shrink to a box "minimap"
+- [] when shrunk, have a widget "+" that reveals the minimap to its normal size again
+
+
+Version 8 features
 ==================
 
 - ☐ refactor the project as as Node Vite project
