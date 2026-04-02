@@ -84,6 +84,12 @@ let selectedConn   = null; // currently selected connection
 let editingConn    = null; // connection whose label is being edited
 let connLabelInput = null; // floating HTML input for label editing
 
+// Group selection
+let selectedNodes     = [];    // nodes currently in the multi-select group
+let selectionRect     = null;  // { startX, startY } in world coords while dragging
+let selectionBoxEl    = null;  // DOM element for the rubber-band rectangle
+let draggingGroup     = null;  // { offsets: [{ node, ox, oy }] } while moving a selected group
+
 const CURVE_STEP = 90;     // px of perpendicular offset per parallel connection slot
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
@@ -280,6 +286,76 @@ function deactivateNode() {
   removeConnHandle(activeNode);
   activeNode.el.classList.remove('node-active');
   activeNode = null;
+}
+
+// ── Group selection ───────────────────────────────────────────────────────────
+
+function selectGroup(nodesToSelect) {
+  clearGroup();
+  if (activeNode) deactivateNode();
+  if (selectedConn) deselectConn();
+  selectedNodes = nodesToSelect;
+  for (const node of selectedNodes) {
+    node.el.classList.add('node-group-selected');
+  }
+}
+
+function clearGroup() {
+  for (const node of selectedNodes) {
+    node.el.classList.remove('node-group-selected');
+  }
+  selectedNodes = [];
+  draggingGroup = null;
+}
+
+function startSelectionRect(worldX, worldY) {
+  selectionRect = { startX: worldX, startY: worldY };
+  selectionBoxEl = document.createElement('div');
+  selectionBoxEl.className = 'selection-rect';
+  selectionBoxEl.style.left   = `${worldX}px`;
+  selectionBoxEl.style.top    = `${worldY}px`;
+  selectionBoxEl.style.width  = '0px';
+  selectionBoxEl.style.height = '0px';
+  canvasEl.appendChild(selectionBoxEl);
+}
+
+function updateSelectionRect(worldX, worldY) {
+  if (!selectionRect || !selectionBoxEl) return;
+  const x = Math.min(selectionRect.startX, worldX);
+  const y = Math.min(selectionRect.startY, worldY);
+  const w = Math.abs(worldX - selectionRect.startX);
+  const h = Math.abs(worldY - selectionRect.startY);
+  selectionBoxEl.style.left   = `${x}px`;
+  selectionBoxEl.style.top    = `${y}px`;
+  selectionBoxEl.style.width  = `${w}px`;
+  selectionBoxEl.style.height = `${h}px`;
+}
+
+function finishSelectionRect(worldX, worldY) {
+  if (!selectionRect) return;
+  const rx = Math.min(selectionRect.startX, worldX);
+  const ry = Math.min(selectionRect.startY, worldY);
+  const rw = Math.abs(worldX - selectionRect.startX);
+  const rh = Math.abs(worldY - selectionRect.startY);
+
+  if (selectionBoxEl) { selectionBoxEl.remove(); selectionBoxEl = null; }
+  selectionRect = null;
+
+  // Only count as a rectangle selection if dragged at least a few pixels
+  if (rw < 4 && rh < 4) return;
+
+  // Find nodes whose centre falls inside the selection rectangle
+  const hits = nodes.filter(n => {
+    const cx = n.x + n.w / 2;
+    const cy = n.y + n.h / 2;
+    return cx >= rx && cx <= rx + rw && cy >= ry && cy <= ry + rh;
+  });
+
+  if (hits.length === 1) {
+    activateNode(hits[0]);
+  } else if (hits.length > 1) {
+    selectGroup(hits);
+  }
 }
 
 // ── Resize handles ────────────────────────────────────────────────────────────
@@ -727,7 +803,7 @@ function fitLabelFontSize(node) {
   const labelEl = node.el.querySelector('.node-label');
   if (!labelEl) return;
 
-  const MAX_FONT = 14;
+  const MAX_FONT = 200;
   const MIN_FONT = 6;
 
   // Available height (and width for diamonds) for the text block
@@ -921,10 +997,13 @@ canvasContainer.addEventListener('mousedown', (e) => {
   if (creatingNode) return;
   if (drawingConn)  return;   // mid-draw: don't deselect or pan
 
-  // Deselect connection / node when clicking on empty canvas area
-  if (e.button === 0 && !e.target.closest('.conn-group') && !e.target.closest('.diagram-node')) {
+  const onEmpty = e.button === 0 && !e.target.closest('.conn-group') && !e.target.closest('.diagram-node');
+
+  // Deselect connection / node / group when clicking on empty canvas area
+  if (onEmpty) {
     if (selectedConn) deselectConn();
     if (activeNode)   deactivateNode();
+    if (selectedNodes.length) clearGroup();
   }
 
   if (e.button === 1) {           // middle mouse button
@@ -932,6 +1011,11 @@ canvasContainer.addEventListener('mousedown', (e) => {
     startPan(e);
   } else if (e.button === 0 && activeTool === 'hand') {
     startPan(e);
+  } else if (onEmpty && activeTool === 'select') {
+    // Start rectangle selection on empty canvas
+    e.preventDefault();
+    const world = clientToWorld(e.clientX, e.clientY);
+    startSelectionRect(world.x, world.y);
   }
 });
 
@@ -965,12 +1049,30 @@ function onNodeMouseDown(e) {
   const node = nodes.find(n => n.id === id);
   if (!node) return;
 
-  activateNode(node);
-
   // Don't start dragging if we clicked inside the live text editor
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
   const world = clientToWorld(e.clientX, e.clientY);
+
+  // If the clicked node is part of a group selection, start group drag
+  if (selectedNodes.length > 0 && selectedNodes.includes(node)) {
+    draggingGroup = {
+      offsets: selectedNodes.map(n => ({
+        node: n,
+        ox: world.x - n.x,
+        oy: world.y - n.y,
+      })),
+    };
+    didDragNode = false;
+    for (const n of selectedNodes) n.el.classList.add('dragging');
+    return;
+  }
+
+  // Clicking a node outside a group clears the group
+  if (selectedNodes.length > 0) clearGroup();
+
+  activateNode(node);
+
   draggingNode = {
     node,
     offsetX: world.x - node.x,
@@ -1075,6 +1177,26 @@ document.addEventListener('mousemove', (e) => {
     resizeNode(node, newX, newY, newW, newH);
   }
 
+  // Rectangle selection
+  if (selectionRect) {
+    const world = clientToWorld(e.clientX, e.clientY);
+    updateSelectionRect(world.x, world.y);
+  }
+
+  // Group drag
+  if (draggingGroup) {
+    const world = clientToWorld(e.clientX, e.clientY);
+    for (const { node, ox, oy } of draggingGroup.offsets) {
+      const newX = world.x - ox;
+      const newY = world.y - oy;
+      if (!didDragNode &&
+          (Math.abs(newX - node.x) > 2 || Math.abs(newY - node.y) > 2)) {
+        didDragNode = true;
+      }
+      moveNode(node, newX, newY);
+    }
+  }
+
   // Dragging the minimap viewport rectangle
   if (draggingMinimapVP) {
     const { b, sx, sy } = getMinimapScales();
@@ -1154,6 +1276,20 @@ document.addEventListener('mouseup', (e) => {
     resizingNode = null;
   }
 
+  // Finish rectangle selection
+  if (selectionRect) {
+    const world = clientToWorld(e.clientX, e.clientY);
+    finishSelectionRect(world.x, world.y);
+  }
+
+  // Finish group drag
+  if (draggingGroup) {
+    for (const { node } of draggingGroup.offsets) {
+      node.el.classList.remove('dragging');
+    }
+    draggingGroup = null;
+  }
+
   // Finish dragging minimap viewport
   if (draggingMinimapVP) {
     draggingMinimapVP = false;
@@ -1200,6 +1336,7 @@ document.addEventListener('keydown', (e) => {
         creatingNodeType = null;
         break;
       }
+      if (selectedNodes.length) { clearGroup(); break; }
       if (selectedConn) { deselectConn(); break; }
       if (activeNode)   { deactivateNode(); break; }
       break;

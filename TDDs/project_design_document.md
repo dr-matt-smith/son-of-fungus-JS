@@ -77,13 +77,15 @@ Version 5 features
 Version 6 features
 ==================
 
-- [] (auto text sized to fit) each time a text-containing element (state and choice) is resized, please change the font size so all text (including multi-line) can be seen
+- ✅ (auto text sized to fit) each time a text-containing element (state and choice) is resized, please change the font size so all text (including multi-line) can be seen (and is as large as will fit)
 
 
-- [] (select and drag group of objects) allow user to drag a rectangle area of the canvas (if starting drag point is not on an object)
-  - [] if this rectangle contains a single object, select that object
-  - [] if this rectangle contains mulrtiple objects, select them all,so they can all be moved together
-  - [] a click on the canvas will de-select this group of objects
+- ✅ (select and drag group of objects) allow user to drag a rectangle area of the canvas (if starting drag point is not on an object)
+  - ✅ if this rectangle contains a single object, select that object
+  - ✅ if this rectangle contains mulrtiple objects, select them all,so they can all be moved together
+  - ✅ a click on the canvas will de-select this group of objects
+
+
 
 
 Version 7 features
@@ -92,11 +94,3 @@ Version 7 features
 - [] minimap - minimize/show - add a widget to the minimap "_" that makes it shrink to a box "minimap"
 - [] when shrunk, have a widget "+" that reveals the minimap to its normal size again
 
-
-Version 8 features
-==================
-
-- ☐ refactor the project as as Node Vite project
-  and add Vite tests for each of the features
-
-- ☐ also write a design document in TDDs for the requrements/plan to add playwright web tests to this project, and suggesting any architectural refacting to make this project easier to extend and test in the future

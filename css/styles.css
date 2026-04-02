@@ -541,6 +541,39 @@ html, body {
 .resize-handle[data-dir="se"] { bottom: -4px; right: -4px;  cursor: se-resize; }
 .resize-handle[data-dir="sw"] { bottom: -4px; left: -4px;   cursor: sw-resize; }
 
+/* ── Selection rectangle (rubber-band) ─────────────────────────────────────── */
+.selection-rect {
+  position: absolute;
+  border: 1.5px dashed #60a5fa;
+  background: rgba(96, 165, 250, 0.08);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* ── Group-selected node highlight ─────────────────────────────────────────── */
+.diagram-node.node-group-selected {
+  z-index: 50;
+}
+
+.state-node.node-group-selected {
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.35), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.start-node.node-group-selected {
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.4), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.end-node.node-group-selected {
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.4), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.choice-node.node-group-selected .choice-svg polygon {
+  stroke: #a78bfa;
+}
+
 /* ── Minimap ───────────────────────────────────────────────────────────────── */
 #minimap {
   position: fixed;
