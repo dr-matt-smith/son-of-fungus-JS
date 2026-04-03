@@ -72,7 +72,8 @@ function setupPaletteBtn(btnId, type) {
         '</svg>' +
         '<span class="node-label">?</span>';
     } else if (type === 'state') {
-      S.ghostEl.innerHTML = `<span class="node-label">State ${S.nextId}</span>`;
+      const name = S.diagramMode === 'fungus' ? `New Block ${S.nextId}` : `State ${S.nextId}`;
+      S.ghostEl.innerHTML = `<span class="node-label">${name}</span>`;
     }
     positionGhost(e.clientX, e.clientY);
     document.body.appendChild(S.ghostEl);

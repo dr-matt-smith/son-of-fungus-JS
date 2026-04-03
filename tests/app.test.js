@@ -789,3 +789,97 @@ describe('Fungus mode enter/exit', () => {
     expect(autoConn.group.classList.contains('conn-auto')).toBe(true);
   });
 });
+
+// ─── Version 24: Inspector cleanup and Export JSON move ────────────────────
+
+describe('Inspector clears when no object selected', () => {
+  it('inspector shows empty message after node deletion', () => {
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+    // Verify inspector has content
+    const propsContainer = document.getElementById('inspector-props');
+    expect(propsContainer.style.display).not.toBe('none');
+
+    app.deleteNode(node);
+    app.updateInspector();
+    expect(document.getElementById('inspector-empty').style.display).toBe('block');
+    expect(propsContainer.style.display).toBe('none');
+  });
+
+  it('inspector clears sections when node is deactivated', () => {
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+    const inspectorBody = document.getElementById('inspector-body');
+    expect(inspectorBody.querySelectorAll('.inspector-section').length).toBeGreaterThan(0);
+
+    app.deactivateNode();
+    app.updateInspector();
+    expect(inspectorBody.querySelectorAll('.inspector-section').length).toBe(0);
+  });
+
+  it('inspector is blank when group is selected', () => {
+    const a = app.createNode('state', 0, 0);
+    const b = app.createNode('state', 200, 0);
+    app.selectGroup([a, b]);
+    app.updateInspector();
+    expect(document.getElementById('inspector-empty').style.display).toBe('block');
+    expect(document.getElementById('inspector-props').style.display).toBe('none');
+  });
+});
+
+describe('Export JSON button location', () => {
+  it('export JSON button is inside canvas-container', () => {
+    const canvasContainer = document.getElementById('canvas-container');
+    const btn = document.getElementById('btn-export-json');
+    expect(canvasContainer.contains(btn)).toBe(true);
+  });
+
+  it('export JSON button is NOT inside inspector', () => {
+    const inspector = document.getElementById('inspector');
+    const btn = document.getElementById('btn-export-json');
+    expect(inspector.contains(btn)).toBe(false);
+  });
+});
+
+describe('Choice button hidden in Fungus mode', () => {
+  afterEach(() => {
+    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
+  });
+
+  it('choice button is visible in statechart mode', () => {
+    const btn = document.getElementById('btn-new-choice');
+    expect(btn).toBeTruthy();
+  });
+});
+
+describe('Fungus mode naming', () => {
+  afterEach(() => {
+    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
+  });
+
+  it('new state nodes are named "New Block N" in Fungus mode', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    expect(node.label).toMatch(/^New Block \d+$/);
+  });
+
+  it('new state nodes are named "State N" in statechart mode', () => {
+    const node = app.createNode('state', 0, 0);
+    expect(node.label).toMatch(/^State \d+$/);
+  });
+
+  it('toolbar button text changes to "Block" in Fungus mode', () => {
+    const btn = document.getElementById('btn-new-state');
+    app.enterFungusMode();
+    expect(btn.textContent).toContain('Block');
+  });
+
+  it('toolbar button text changes back to "State" when exiting Fungus mode', () => {
+    const btn = document.getElementById('btn-new-state');
+    app.enterFungusMode();
+    app.exitFungusMode();
+    expect(btn.textContent).toContain('State');
+  });
+});

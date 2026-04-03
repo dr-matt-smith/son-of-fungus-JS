@@ -124,6 +124,28 @@ html, body {
 
 /* ── Canvas container (positioned by #main-area flex in inspector.css) ─────── */
 
+.canvas-overlay-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 50;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 5px;
+  padding: 5px 10px;
+  color: #9ca3af;
+  font-size: 11px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.canvas-overlay-btn:hover {
+  background: #374151;
+  border-color: #4b5563;
+  color: #f3f4f6;
+}
+
 /* ── Canvas world ──────────────────────────────────────────────────────────── */
 #canvas {
   position: absolute;

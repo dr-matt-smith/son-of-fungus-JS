@@ -849,6 +849,115 @@ test.describe('V23 – Fungus FlowChart mode', () => {
   });
 });
 
+// ─── Version 24: Inspector cleanup, Export JSON move, choice hidden ───────
+
+test.describe('V24 – Inspector clears on deselect/delete', () => {
+  test('inspector shows "No object selected" after node is deleted', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    const node = page.locator('.state-node');
+    await node.click();
+    await expect(page.locator('#inspector-props')).toBeVisible();
+
+    // Delete the node
+    await page.locator('.node-delete-handle').click();
+    await expect(page.locator('.state-node')).toHaveCount(0);
+    await expect(page.locator('#inspector-props')).toBeHidden();
+    const emptyText = await page.locator('#inspector-empty').textContent();
+    expect(emptyText).toContain('No object selected');
+  });
+
+  test('inspector clears when node is deselected by clicking canvas', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    const node = page.locator('.state-node');
+    await node.click();
+    await expect(page.locator('#inspector-props')).toBeVisible();
+
+    // Click empty canvas
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+    await expect(page.locator('#inspector-empty')).toBeVisible();
+    await expect(page.locator('.inspector-section')).toHaveCount(0);
+  });
+
+  test('inspector is blank when group of nodes is selected', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state', -50, -20);
+    await dragNewNode(page, '#btn-new-state', 50, 20);
+
+    // Deselect first
+    const canvas = page.locator('#canvas-container');
+    const cBox = await canvas.boundingBox();
+    await page.mouse.click(cBox.x + 5, cBox.y + 5);
+
+    // Select both via rubber-band
+    const nodeA = page.locator('.state-node').nth(0);
+    const nodeB = page.locator('.state-node').nth(1);
+    const boxA = await nodeA.boundingBox();
+    const boxB = await nodeB.boundingBox();
+    const left = Math.min(boxA.x, boxB.x) - 20;
+    const top = Math.min(boxA.y, boxB.y) - 20;
+    const right = Math.max(boxA.x + boxA.width, boxB.x + boxB.width) + 20;
+    const bottom = Math.max(boxA.y + boxA.height, boxB.y + boxB.height) + 20;
+    await drag(page, left, top, right, bottom, 15);
+
+    await expect(nodeA).toHaveClass(/node-group-selected/);
+    await expect(page.locator('#inspector-empty')).toBeVisible();
+  });
+});
+
+test.describe('V24 – Export JSON button on canvas', () => {
+  test('export JSON button is visible on the canvas area', async ({ page }) => {
+    const btn = page.locator('#canvas-container #btn-export-json');
+    await expect(btn).toBeVisible();
+  });
+
+  test('export JSON button is NOT inside the inspector', async ({ page }) => {
+    const btnInInspector = page.locator('#inspector #btn-export-json');
+    await expect(btnInInspector).toHaveCount(0);
+  });
+
+  test('clicking export JSON button shows the JSON modal', async ({ page }) => {
+    await page.locator('#btn-export-json').click();
+    await expect(page.locator('#json-modal-overlay')).toBeVisible();
+    // Close it
+    await page.keyboard.press('Escape');
+  });
+});
+
+test.describe('V24 – Fungus mode toolbar and naming', () => {
+  async function switchToFungusMode(page) {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+  }
+
+  test('choice button is hidden in Fungus mode', async ({ page }) => {
+    await expect(page.locator('#btn-new-choice')).toBeVisible();
+    await switchToFungusMode(page);
+    await expect(page.locator('#btn-new-choice')).toBeHidden();
+  });
+
+  test('state button shows "Block" text in Fungus mode', async ({ page }) => {
+    await switchToFungusMode(page);
+    await expect(page.locator('#btn-new-state')).toContainText('Block');
+  });
+
+  test('new nodes named "New Block N" in Fungus mode', async ({ page }) => {
+    await switchToFungusMode(page);
+    await dragNewNode(page, '#btn-new-state');
+    const label = page.locator('.state-node .node-label');
+    await expect(label).toContainText('New Block');
+  });
+
+  test('state button shows "State" text after exiting Fungus mode', async ({ page }) => {
+    await switchToFungusMode(page);
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="statechart"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await expect(page.locator('#btn-new-state')).toContainText('State');
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

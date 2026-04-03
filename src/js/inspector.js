@@ -6,6 +6,7 @@ import { applyFungusStyles, syncAutoConnections } from './fungus-mode.js';
 const inspectorEl    = document.getElementById('inspector');
 const emptyMsg       = document.getElementById('inspector-empty');
 const propsContainer = document.getElementById('inspector-props');
+const inspectorBody  = document.getElementById('inspector-body');
 const tbody          = document.querySelector('#inspector-table tbody');
 const divider        = document.getElementById('divider');
 
@@ -61,8 +62,11 @@ function setPropsRows(rows) {
 }
 
 function showEmpty() {
-  emptyMsg.style.display = '';
+  emptyMsg.style.display = 'block';
   propsContainer.style.display = 'none';
+  // Remove sections from both propsContainer and inspectorBody
+  inspectorBody.querySelectorAll('.inspector-section').forEach(s => s.remove());
+  tbody.innerHTML = '';
 }
 
 // ── Inspector update ─────────────────────────────────────────────────────────

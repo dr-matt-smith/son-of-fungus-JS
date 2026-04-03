@@ -175,4 +175,5 @@ export function deleteNode(node) {
     updateConnection(conn);
   }
   refreshMinimap();
+  if (S.onSelectionChange) S.onSelectionChange();
 }

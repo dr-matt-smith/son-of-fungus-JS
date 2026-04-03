@@ -5,7 +5,7 @@
 export function setupDOM() {
   document.body.innerHTML = `
     <div id="toolbar">
-      <button id="btn-new-state" class="toolbar-btn palette-btn" draggable="false"></button>
+      <button id="btn-new-state" class="toolbar-btn palette-btn" draggable="false">State</button>
       <button id="btn-new-start" class="toolbar-btn palette-btn" draggable="false"></button>
       <button id="btn-new-end" class="toolbar-btn palette-btn" draggable="false"></button>
       <button id="btn-new-choice" class="toolbar-btn palette-btn" draggable="false"></button>
@@ -25,6 +25,7 @@ export function setupDOM() {
         <div id="canvas" style="width:4000px;height:3000px;">
           <svg id="connections-svg" xmlns="http://www.w3.org/2000/svg"></svg>
         </div>
+        <button id="btn-export-json" class="toolbar-btn">Export JSON</button>
       </div>
       <div id="divider"></div>
       <div id="inspector">
@@ -33,9 +34,6 @@ export function setupDOM() {
           <button class="inspector-tab" data-tab="settings">Settings</button>
         </div>
         <div id="inspector-panel" class="tab-panel">
-          <div id="inspector-header">
-            <button id="btn-export-json" class="toolbar-btn">Export JSON</button>
-          </div>
           <div id="inspector-body">
             <p id="inspector-empty">No object selected</p>
             <div id="inspector-props" style="display:none;">

@@ -226,16 +226,19 @@ Version 23 features - Fungus Flowchart mode
 - ✅ just as for Fungus, add the (read only, unlabelled) transition automatically when calls are made from one block to another
 
 
-- [] rather than a settings Cog, have tabs at the top right of the screen, to switch between Inspector panel and Settings panel  
-  - [] this should have choice of diagram 'mode' should be by named radio button, also showing a little example diagram with a couple of objects in it - so gthey can see the mode they are changing to
+- ✅ rather than a settings Cog, have tabs at the top right of the screen, to switch between Inspector panel and Settings panel  
+  - ✅ this should have choice of diagram 'mode' should be by named radio button, also showing a little example diagram with a couple of objects in it - so gthey can see the mode they are changing to
 
-- [] and add Vite and PlayWright tests for the above feature(s)
+- ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
 Version 24 features - move JSON export button & change from settings cog to tabs
 ==================
 
 [] remove  choice block from toolbar when Fungus mode
+
+[] when in fugus mode, default name should be "New Block 1", "New Block 2" etc. (in state mode, State 1, State 2 etc.)
+  - [] and in the toolbar, the widget should be labelled 'Block' not 'State'
 
 Remove past Inspector details for deleted / unselected object
 - [] when an object is deleted, the Inspector panel should be blank, since not object is selected
@@ -245,5 +248,19 @@ Remove past Inspector details for deleted / unselected object
 
 move JSON button
 - [] move the export to JSON button out of the inspector, so it is at the top right of the canvas
+
+- [] and add Vite and PlayWright tests for the above feature(s)
+
+Version 25 features
+==================
+
+[] swap the order in the settings tab - make fungus first here, and also make fungus mode the default
+
+[] at the top LEFT of the screen, show the curently active MODE "Fungus Mode"/"State Chart Mode" , and a note "(change in Settings tab)"
+
+[] when in Fungus mode, rather than just a Play button:
+- [] have a Play All button
+- [] have a "Play Step by Step" button
+  - [] which will play one step, and then pause, and offer buttons to STOP and Continue when in Step mode and not all blocks have finished
 
 - [] and add Vite and PlayWright tests for the above feature(s)

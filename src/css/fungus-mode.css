@@ -1,8 +1,9 @@
 /* ── Fungus FlowChart mode overrides ────────────────────────────────────────── */
 
-/* Hide start/end palette buttons */
+/* Hide start/end/choice palette buttons */
 body[data-mode="fungus"] #btn-new-start,
-body[data-mode="fungus"] #btn-new-end {
+body[data-mode="fungus"] #btn-new-end,
+body[data-mode="fungus"] #btn-new-choice {
   display: none;
 }
 

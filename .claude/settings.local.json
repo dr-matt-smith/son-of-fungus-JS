@@ -6,7 +6,8 @@
       "Bash(npx playwright:*)",
       "Bash(curl -sL \"https://github.com/snozbot/fungus/wiki/blocks\")",
       "Bash(curl -sL \"https://github.com/snozbot/fungus/wiki/Blocks\")",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(kill %1)"
     ]
   },
   "enableAllProjectMcpServers": true,

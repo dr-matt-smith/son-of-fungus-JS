@@ -129,6 +129,8 @@ export function enterFungusMode() {
   if (S.selectedConn) deselectConn();
   applyFungusStyles();
   syncAutoConnections();
+  const stateBtn = document.getElementById('btn-new-state');
+  if (stateBtn && stateBtn.lastChild) stateBtn.lastChild.textContent = 'Block';
 }
 
 /**
@@ -141,4 +143,6 @@ export function exitFungusMode() {
   if (S.selectedConn) deselectConn();
   clearFungusStyles();
   removeAllAutoConnections();
+  const stateBtn = document.getElementById('btn-new-state');
+  if (stateBtn && stateBtn.lastChild) stateBtn.lastChild.textContent = 'State';
 }

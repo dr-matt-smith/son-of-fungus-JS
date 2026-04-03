@@ -13,7 +13,7 @@ export function createNode(type, worldX, worldY) {
   const h   = def.h;
 
   let label = '';
-  if (type === 'state')  label = `State ${id}`;
+  if (type === 'state')  label = S.diagramMode === 'fungus' ? `New Block ${id}` : `State ${id}`;
   if (type === 'choice') label = '?';
 
   const el = buildNodeElement(type, id);

@@ -44,23 +44,6 @@
   flex-shrink: 0;
 }
 
-#inspector-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  border-bottom: 1px solid #374151;
-  font-size: 12px;
-  font-weight: 600;
-  color: #9ca3af;
-  user-select: none;
-}
-
-#inspector-header .toolbar-btn {
-  font-size: 11px;
-  padding: 3px 8px;
-}
-
 #inspector-body {
   flex: 1;
   overflow-y: auto;

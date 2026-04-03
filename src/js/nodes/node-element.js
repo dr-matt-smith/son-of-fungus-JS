@@ -1,6 +1,7 @@
 /**
  * DOM element construction and font sizing for nodes.
  */
+import { S } from '../state.js';
 
 export function buildNodeElement(type, id) {
   const el = document.createElement('div');
@@ -16,7 +17,8 @@ export function buildNodeElement(type, id) {
       '</svg>' +
       '<span class="node-label">?</span>';
   } else if (type === 'state') {
-    el.innerHTML = `<span class="node-label">State ${id}</span>`;
+    const name = S.diagramMode === 'fungus' ? `New Block ${id}` : `State ${id}`;
+    el.innerHTML = `<span class="node-label">${name}</span>`;
   } else if (type === 'start') {
     el.innerHTML = '<span class="node-label-fixed">start</span>';
   } else if (type === 'end') {
