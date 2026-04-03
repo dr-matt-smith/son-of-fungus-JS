@@ -208,3 +208,25 @@ Version 22 features - edit block name in inspector panel
   - ✅ and the state/block name should change in the diagram dynamically as the user types
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
+
+Version 23 features - Fungus Flowchart mode
+==================
+
+- ✅ please add a settings 'cog' at the top right of the screen
+  - ✅ this should have choice of diagram 'mode'
+    - ✅ (default) State Chart Diagram mode
+      - ✅ (the current look and feel)
+    - ✅ Fungus FlowChart mode
+      -(see below)
+
+✅ Fungus FlowChart mode - detailed design
+- ✅ for this mode should hide 'start' and 'end' nodes, and transitions
+- ✅ blocks should be styled according the rules here: https://github.com/snozbot/fungus/wiki/blocks
+  - (so Event blocks, Branching blocks, Standard block)
+- ✅ just as for Fungus, add the (read only, unlabelled) transition automatically when calls are made from one block to another
+
+
+- [] rather than a settings Cog, have tabs at the top right of the screen, to switch between Inspector panel and Settings panel  
+  - [] this should have choice of diagram 'mode' should be by named radio button, also showing a little example diagram with a couple of objects in it - so gthey can see the mode they are changing to
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)

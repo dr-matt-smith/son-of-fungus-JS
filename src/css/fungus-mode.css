@@ -1,0 +1,77 @@
+/* ── Fungus FlowChart mode overrides ────────────────────────────────────────── */
+
+/* Hide start/end palette buttons */
+body[data-mode="fungus"] #btn-new-start,
+body[data-mode="fungus"] #btn-new-end {
+  display: none;
+}
+
+/* Hide manual connection handles */
+body[data-mode="fungus"] .conn-handle {
+  display: none;
+}
+
+/* Dim existing start/end nodes on the canvas */
+body[data-mode="fungus"] .start-node,
+body[data-mode="fungus"] .end-node {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* ── Fungus block type styles ──────────────────────────────────────────────── */
+
+/* Event Block: blue rounded rectangle */
+.fungus-event-block {
+  background: #1e3a5f;
+  border: 2px solid #3b82f6;
+  border-radius: 12px;
+}
+
+.fungus-event-block:hover {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.fungus-event-block.node-active {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.4), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Standard Block: yellow rectangle */
+.fungus-standard-block {
+  background: #422006;
+  border: 2px solid #eab308;
+  border-radius: 4px;
+}
+
+.fungus-standard-block:hover {
+  border-color: #facc15;
+  box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.2), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.fungus-standard-block.node-active {
+  border-color: #fde047;
+  box-shadow: 0 0 0 3px rgba(253, 224, 71, 0.3), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Branching Block: orange hexagon via clip-path */
+.fungus-branching-block {
+  background: #7c2d12;
+  border: none;
+  border-radius: 0;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+
+/* ── Auto-connections (read-only) ──────────────────────────────────────────── */
+
+.conn-auto .conn-delete {
+  display: none;
+}
+
+.conn-auto .conn-hitarea {
+  pointer-events: none;
+}
+
+.conn-auto .conn-label {
+  display: none;
+}

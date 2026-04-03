@@ -3,7 +3,10 @@
     "allow": [
       "Bash(npx vite:*)",
       "Bash(npx vitest:*)",
-      "Bash(npx playwright:*)"
+      "Bash(npx playwright:*)",
+      "Bash(curl -sL \"https://github.com/snozbot/fungus/wiki/blocks\")",
+      "Bash(curl -sL \"https://github.com/snozbot/fungus/wiki/Blocks\")",
+      "WebFetch(domain:github.com)"
     ]
   },
   "enableAllProjectMcpServers": true,

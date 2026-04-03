@@ -36,6 +36,23 @@ export function createConnection(fromNode, toNode) {
   recalcPairOffsets();
 }
 
+export function createAutoConnection(fromNode, toNode) {
+  const group = makeConnGroup();
+  group.classList.add('conn-auto');
+  const conn  = {
+    id: S.nextConnId++,
+    fromId: fromNode.id,
+    toId: toNode.id,
+    label: '',
+    curveOffset: 0,
+    auto: true,
+    group,
+  };
+  S.connections.push(conn);
+  recalcPairOffsets();
+  return conn;
+}
+
 export function deleteConnection(conn) {
   if (S.selectedConn === conn) deselectConn();
   if (S.editingConn  === conn) cancelConnEditing();

@@ -17,6 +17,7 @@ import { renderConnGroup, updateConnection } from './connections/conn-render.js'
 import { recalcPairOffsets } from './connections/conn-model.js';
 import { updateInspector, showJsonExport } from './inspector.js';
 import { startExecution, stopExecution, isRunning } from './engine.js';
+import { enterFungusMode, exitFungusMode, classifyBlock, applyFungusStyles, syncAutoConnections } from './fungus-mode.js';
 
 // ── Toolbar: Fit All ─────────────────────────────────────────────────────────
 
@@ -438,6 +439,30 @@ btnStop.addEventListener('click', () => {
   btnPlay.style.display = '';
 });
 
+// ── Settings cog ────────────────────────────────────────────────────────────
+
+const settingsBtn     = document.getElementById('btn-settings');
+const settingsPopover = document.getElementById('settings-popover');
+
+settingsBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  settingsPopover.style.display = settingsPopover.style.display === 'none' ? '' : 'none';
+});
+
+document.addEventListener('click', (e) => {
+  if (!settingsBtn.contains(e.target) && !settingsPopover.contains(e.target)) {
+    settingsPopover.style.display = 'none';
+  }
+});
+
+for (const radio of document.querySelectorAll('input[name="diagram-mode"]')) {
+  radio.addEventListener('change', () => {
+    if (radio.value === 'fungus') enterFungusMode();
+    else exitFungusMode();
+    settingsPopover.style.display = 'none';
+  });
+}
+
 // ── Initialise ───────────────────────────────────────────────────────────────
 
 applyTransform();
@@ -453,8 +478,9 @@ export { createNode, moveNode, resizeNode, resetNodeSize } from './nodes/node-mo
 export { buildNodeElement, fitLabelFontSize } from './nodes/node-element.js';
 export { activateNode, deactivateNode, selectGroup, clearGroup, deleteNode } from './nodes/node-selection.js';
 export { startEditing, commitEditing, cancelEditing } from './nodes/node-editing.js';
-export { createConnection, deleteConnection } from './connections/conn-model.js';
+export { createConnection, deleteConnection, createAutoConnection } from './connections/conn-model.js';
 export { updateConnection } from './connections/conn-render.js';
 export { selectConn, deselectConn } from './connections/conn-selection.js';
 export { getBorderPoint, getPairPerpendicular } from './connections/geometry.js';
 export { updateInspector } from './inspector.js';
+export { classifyBlock, applyFungusStyles, syncAutoConnections, enterFungusMode, exitFungusMode } from './fungus-mode.js';

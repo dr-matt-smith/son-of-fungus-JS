@@ -1,6 +1,7 @@
 import { S } from './state.js';
 import { fitLabelFontSize } from './nodes/node-element.js';
 import { EVENT_TYPES, COMMAND_TYPES, createCommand } from './commands.js';
+import { applyFungusStyles, syncAutoConnections } from './fungus-mode.js';
 
 const inspectorEl    = document.getElementById('inspector');
 const emptyMsg       = document.getElementById('inspector-empty');
@@ -34,6 +35,15 @@ document.addEventListener('mouseup', () => {
   divider.classList.remove('dragging');
   document.body.style.cursor = '';
 });
+
+// ── Fungus mode reactivity ──────────────────────────────────────────────────
+
+function onNodeDataChanged() {
+  if (S.diagramMode === 'fungus') {
+    applyFungusStyles();
+    syncAutoConnections();
+  }
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -136,6 +146,7 @@ function renderNodeInspector(n) {
     n.event = { type: eventSelect.value };
     if (eventSelect.value === 'messageReceived') n.event.message = '';
     if (eventSelect.value === 'keyPressed') n.event.key = '';
+    onNodeDataChanged();
     updateInspector();
   });
   eventSection.appendChild(eventSelect);
@@ -182,7 +193,7 @@ function renderNodeInspector(n) {
       upBtn.className = 'cmd-btn';
       upBtn.textContent = '↑';
       upBtn.title = 'Move up';
-      upBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx - 1, 0, n.commands.splice(idx, 1)[0]); updateInspector(); });
+      upBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx - 1, 0, n.commands.splice(idx, 1)[0]); onNodeDataChanged(); updateInspector(); });
       btnGroup.appendChild(upBtn);
     }
     if (idx < n.commands.length - 1) {
@@ -190,14 +201,14 @@ function renderNodeInspector(n) {
       downBtn.className = 'cmd-btn';
       downBtn.textContent = '↓';
       downBtn.title = 'Move down';
-      downBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx + 1, 0, n.commands.splice(idx, 1)[0]); updateInspector(); });
+      downBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx + 1, 0, n.commands.splice(idx, 1)[0]); onNodeDataChanged(); updateInspector(); });
       btnGroup.appendChild(downBtn);
     }
     const delBtn = document.createElement('button');
     delBtn.className = 'cmd-btn cmd-btn-del';
     delBtn.textContent = '×';
     delBtn.title = 'Remove command';
-    delBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx, 1); updateInspector(); });
+    delBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx, 1); onNodeDataChanged(); updateInspector(); });
     btnGroup.appendChild(delBtn);
 
     header.appendChild(btnGroup);
@@ -226,6 +237,7 @@ function renderNodeInspector(n) {
   addSelect.addEventListener('change', () => {
     if (!addSelect.value) return;
     n.commands.push(createCommand(addSelect.value));
+    onNodeDataChanged();
     updateInspector();
   });
   addRow.appendChild(addSelect);
@@ -246,7 +258,7 @@ function renderCommandFields(container, cmd, node) {
       container.appendChild(labeledTextarea('Text', cmd.text, v => { cmd.text = v; }));
       break;
     case 'call':
-      container.appendChild(labeledBlockSelect('Target Block', cmd.targetBlockId, v => { cmd.targetBlockId = v; }, node));
+      container.appendChild(labeledBlockSelect('Target Block', cmd.targetBlockId, v => { cmd.targetBlockId = v; onNodeDataChanged(); }, node));
       container.appendChild(labeledSelect('Mode', cmd.mode, [['stop', 'Stop'], ['continue', 'Continue']], v => { cmd.mode = v; }));
       break;
     case 'menu':
@@ -254,12 +266,12 @@ function renderCommandFields(container, cmd, node) {
         const row = document.createElement('div');
         row.className = 'cmd-menu-option';
         row.appendChild(labeledInput(`Option ${i + 1}`, opt.text, v => { opt.text = v; }));
-        row.appendChild(labeledBlockSelect('→ Block', opt.targetBlockId, v => { opt.targetBlockId = v; }, node));
+        row.appendChild(labeledBlockSelect('→ Block', opt.targetBlockId, v => { opt.targetBlockId = v; onNodeDataChanged(); }, node));
         if (cmd.options.length > 2) {
           const del = document.createElement('button');
           del.className = 'cmd-btn cmd-btn-del';
           del.textContent = '×';
-          del.addEventListener('click', () => { cmd.options.splice(i, 1); updateInspector(); });
+          del.addEventListener('click', () => { cmd.options.splice(i, 1); onNodeDataChanged(); updateInspector(); });
           row.appendChild(del);
         }
         container.appendChild(row);
@@ -267,7 +279,7 @@ function renderCommandFields(container, cmd, node) {
       const addOpt = document.createElement('button');
       addOpt.className = 'cmd-btn';
       addOpt.textContent = '+ Option';
-      addOpt.addEventListener('click', () => { cmd.options.push({ text: `Option ${cmd.options.length + 1}`, targetBlockId: null }); updateInspector(); });
+      addOpt.addEventListener('click', () => { cmd.options.push({ text: `Option ${cmd.options.length + 1}`, targetBlockId: null }); onNodeDataChanged(); updateInspector(); });
       container.appendChild(addOpt);
       break;
     case 'setVariable':

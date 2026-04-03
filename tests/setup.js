@@ -11,6 +11,18 @@ export function setupDOM() {
       <button id="btn-new-choice" class="toolbar-btn palette-btn" draggable="false"></button>
       <button id="btn-play" class="toolbar-btn"></button>
       <button id="btn-stop" class="toolbar-btn" style="display:none;"></button>
+      <button id="btn-settings" class="toolbar-btn"></button>
+    </div>
+    <div id="settings-popover" style="display:none;">
+      <div class="settings-popover-title">Diagram Mode</div>
+      <label class="settings-radio-label">
+        <input type="radio" name="diagram-mode" value="statechart" checked>
+        State Chart Diagram
+      </label>
+      <label class="settings-radio-label">
+        <input type="radio" name="diagram-mode" value="fungus">
+        Fungus FlowChart
+      </label>
     </div>
     <div id="zoom-toolbar">
       <button id="btn-fit-all" class="toolbar-btn"></button>

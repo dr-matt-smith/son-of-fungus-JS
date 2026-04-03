@@ -1,9 +1,12 @@
 
-_Version XX features - edit block name in inspector panel 
+
+- [] rather than a settigns Cog, have tabs at the top right of the screen, to switch between Inspector panel and Settings panel
+
+
+Version XX features - move JSON export button
 ==================
 
-- [] when a state/block is selected, allow its name to be edited in the inspector panel on the right
-  - [] and the state/block name should change in the diagram dynamically as the user types_
+- [] move the export to JSON button out of the inspector, so it is at the top right of the canvas
 
 - [] and add Vite and PlayWright tests for the above feature(s)
 
@@ -21,4 +24,6 @@ Version X features - Fungus Flowchart mode
   - [] for this mode should hide 'start' and 'end' nodes, and transitions
   - [] blocks should be styled according the rules here: https://github.com/snozbot/fungus/wiki/blocks
     - (so Event blocks, Branching blocks, Standard block)
-  - [] 
+  - [] just as for Fungus, add the (read only, unlabelled) transition automatically when calls are made from one block to another
+
+- [] and add Vite and PlayWright tests for the above feature(s)

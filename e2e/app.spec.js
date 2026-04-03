@@ -682,6 +682,165 @@ test.describe('V22 – Edit block name in inspector panel', () => {
   });
 });
 
+// ─── Version 23: Fungus FlowChart mode ────────────────────────────────────
+
+test.describe('V23 – Settings cog and popover', () => {
+  test('settings cog button is visible', async ({ page }) => {
+    await expect(page.locator('#btn-settings')).toBeVisible();
+  });
+
+  test('settings popover is hidden by default', async ({ page }) => {
+    await expect(page.locator('#settings-popover')).toBeHidden();
+  });
+
+  test('clicking settings cog shows popover', async ({ page }) => {
+    await page.locator('#btn-settings').click();
+    await expect(page.locator('#settings-popover')).toBeVisible();
+  });
+
+  test('clicking settings cog again hides popover', async ({ page }) => {
+    await page.locator('#btn-settings').click();
+    await expect(page.locator('#settings-popover')).toBeVisible();
+    await page.locator('#btn-settings').click();
+    await expect(page.locator('#settings-popover')).toBeHidden();
+  });
+
+  test('popover has two radio buttons for diagram modes', async ({ page }) => {
+    await page.locator('#btn-settings').click();
+    const radios = page.locator('input[name="diagram-mode"]');
+    await expect(radios).toHaveCount(2);
+  });
+});
+
+test.describe('V23 – Fungus FlowChart mode', () => {
+  async function switchToFungusMode(page) {
+    await page.locator('#btn-settings').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+  }
+
+  async function switchToStatechartMode(page) {
+    await page.locator('#btn-settings').click();
+    await page.locator('input[name="diagram-mode"][value="statechart"]').check();
+  }
+
+  test('switching to Fungus mode hides start and end palette buttons', async ({ page }) => {
+    await expect(page.locator('#btn-new-start')).toBeVisible();
+    await expect(page.locator('#btn-new-end')).toBeVisible();
+    await switchToFungusMode(page);
+    await expect(page.locator('#btn-new-start')).toBeHidden();
+    await expect(page.locator('#btn-new-end')).toBeHidden();
+  });
+
+  test('switching back to State Chart mode restores start/end buttons', async ({ page }) => {
+    await switchToFungusMode(page);
+    await expect(page.locator('#btn-new-start')).toBeHidden();
+    await switchToStatechartMode(page);
+    await expect(page.locator('#btn-new-start')).toBeVisible();
+    await expect(page.locator('#btn-new-end')).toBeVisible();
+  });
+
+  test('state nodes get fungus styling class in Fungus mode', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await switchToFungusMode(page);
+    const node = page.locator('.state-node');
+    await expect(node).toHaveClass(/fungus-standard-block/);
+  });
+
+  test('node with event gets event block styling', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    const node = page.locator('.state-node');
+
+    // Select node and set event to Game Started
+    await node.click();
+    await page.locator('.inspector-select').first().selectOption('gameStarted');
+
+    await switchToFungusMode(page);
+    await expect(node).toHaveClass(/fungus-event-block/);
+  });
+
+  test('fungus styling classes removed when switching back', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await switchToFungusMode(page);
+    const node = page.locator('.state-node');
+    await expect(node).toHaveClass(/fungus-standard-block/);
+    await switchToStatechartMode(page);
+    await expect(node).not.toHaveClass(/fungus-standard-block/);
+  });
+
+  test('connection handle hidden in Fungus mode', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    const node = page.locator('.state-node');
+
+    // In statechart mode, clicking node shows conn handle
+    await node.click();
+    await expect(page.locator('.conn-handle')).toHaveCount(1);
+
+    // Deselect, switch to fungus, select node, no conn handle
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+
+    await switchToFungusMode(page);
+    await node.click();
+    await expect(page.locator('.conn-handle')).toHaveCount(0);
+  });
+
+  test('auto-connection created when call command targets another block', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state', -100, 0);
+    await dragNewNode(page, '#btn-new-state', 100, 0);
+
+    // Select first node and add a Call command
+    const nodeA = page.locator('.state-node').nth(0);
+    await nodeA.click();
+
+    // Add a Call command
+    const addCmd = page.locator('.inspector-add-cmd select');
+    await addCmd.selectOption('call');
+
+    // Set targetBlockId to second node
+    const blockSelect = page.locator('.cmd-field select').first();
+    // Get the second option value (should be the second node)
+    const options = await blockSelect.locator('option').all();
+    const secondNodeOption = options.find(async (opt) => {
+      const val = await opt.getAttribute('value');
+      return val && val !== '';
+    });
+
+    // Select the first available non-empty option (the other node)
+    await blockSelect.selectOption({ index: 1 });
+
+    // Switch to Fungus mode
+    await switchToFungusMode(page);
+
+    // Should have an auto-connection
+    await expect(page.locator('.conn-auto')).toHaveCount(1);
+  });
+
+  test('auto-connections removed when switching back to State Chart', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state', -100, 0);
+    await dragNewNode(page, '#btn-new-state', 100, 0);
+
+    const nodeA = page.locator('.state-node').nth(0);
+    await nodeA.click();
+    await page.locator('.inspector-add-cmd select').selectOption('call');
+    await page.locator('.cmd-field select').first().selectOption({ index: 1 });
+
+    await switchToFungusMode(page);
+    await expect(page.locator('.conn-auto')).toHaveCount(1);
+
+    await switchToStatechartMode(page);
+    await expect(page.locator('.conn-auto')).toHaveCount(0);
+  });
+
+  test('existing start/end nodes are dimmed in Fungus mode', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-start');
+    await switchToFungusMode(page);
+    const startNode = page.locator('.start-node');
+    const opacity = await startNode.evaluate(el => getComputedStyle(el).opacity);
+    expect(parseFloat(opacity)).toBeLessThan(1);
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

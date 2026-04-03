@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { setupDOM } from './setup.js';
 
 // The DOM must exist before app.js is imported (it grabs refs at load time)
@@ -631,5 +631,145 @@ describe('Edit block name in inspector panel', () => {
     nameInput.value = '   ';
     nameInput.dispatchEvent(new Event('input'));
     expect(node.label).toBe(original);
+  });
+});
+
+// ─── Version 23: Fungus FlowChart mode ─────────────────────────────────────
+
+describe('Settings cog and popover', () => {
+  it('settings button exists in DOM', () => {
+    expect(document.getElementById('btn-settings')).toBeTruthy();
+  });
+
+  it('settings popover exists and is initially hidden', () => {
+    const popover = document.getElementById('settings-popover');
+    expect(popover).toBeTruthy();
+    expect(popover.style.display).toBe('none');
+  });
+
+  it('settings popover has radio buttons for diagram modes', () => {
+    const radios = document.querySelectorAll('input[name="diagram-mode"]');
+    expect(radios.length).toBe(2);
+    expect(radios[0].value).toBe('statechart');
+    expect(radios[1].value).toBe('fungus');
+  });
+});
+
+describe('Block classification', () => {
+  it('classifies node with event as "event"', () => {
+    const node = app.createNode('state', 0, 0);
+    node.event = { type: 'gameStarted' };
+    expect(app.classifyBlock(node)).toBe('event');
+  });
+
+  it('classifies node with no event and 2+ targets as "branching"', () => {
+    const node = app.createNode('state', 0, 0);
+    const a = app.createNode('state', 200, 0);
+    const b = app.createNode('state', 400, 0);
+    node.event = { type: 'none' };
+    node.commands = [
+      { type: 'call', targetBlockId: a.id },
+      { type: 'call', targetBlockId: b.id },
+    ];
+    expect(app.classifyBlock(node)).toBe('branching');
+  });
+
+  it('classifies node with no event and 0-1 targets as "standard"', () => {
+    const node = app.createNode('state', 0, 0);
+    node.event = { type: 'none' };
+    node.commands = [];
+    expect(app.classifyBlock(node)).toBe('standard');
+  });
+
+  it('event overrides branching classification', () => {
+    const node = app.createNode('state', 0, 0);
+    const a = app.createNode('state', 200, 0);
+    const b = app.createNode('state', 400, 0);
+    node.event = { type: 'messageReceived', message: 'test' };
+    node.commands = [
+      { type: 'call', targetBlockId: a.id },
+      { type: 'call', targetBlockId: b.id },
+    ];
+    expect(app.classifyBlock(node)).toBe('event');
+  });
+
+  it('menu command targets count towards branching', () => {
+    const node = app.createNode('state', 0, 0);
+    const a = app.createNode('state', 200, 0);
+    const b = app.createNode('state', 400, 0);
+    node.event = { type: 'none' };
+    node.commands = [
+      { type: 'menu', options: [
+        { text: 'A', targetBlockId: a.id },
+        { text: 'B', targetBlockId: b.id },
+      ]},
+    ];
+    expect(app.classifyBlock(node)).toBe('branching');
+  });
+});
+
+describe('Fungus mode enter/exit', () => {
+  afterEach(() => {
+    // Reset to statechart mode
+    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
+  });
+
+  it('enterFungusMode sets diagramMode and body data attribute', () => {
+    app.enterFungusMode();
+    expect(app.S.diagramMode).toBe('fungus');
+    expect(document.body.dataset.mode).toBe('fungus');
+  });
+
+  it('exitFungusMode restores statechart mode', () => {
+    app.enterFungusMode();
+    app.exitFungusMode();
+    expect(app.S.diagramMode).toBe('statechart');
+    expect(document.body.dataset.mode).toBeUndefined();
+  });
+
+  it('enterFungusMode applies fungus CSS classes to state nodes', () => {
+    const node = app.createNode('state', 0, 0);
+    node.event = { type: 'none' };
+    node.commands = [];
+    app.enterFungusMode();
+    expect(node.el.classList.contains('fungus-standard-block')).toBe(true);
+  });
+
+  it('exitFungusMode removes fungus CSS classes', () => {
+    const node = app.createNode('state', 0, 0);
+    node.event = { type: 'none' };
+    app.enterFungusMode();
+    expect(node.el.classList.contains('fungus-standard-block')).toBe(true);
+    app.exitFungusMode();
+    expect(node.el.classList.contains('fungus-standard-block')).toBe(false);
+  });
+
+  it('enterFungusMode creates auto-connections from call commands', () => {
+    const a = app.createNode('state', 0, 0);
+    const b = app.createNode('state', 300, 0);
+    a.commands = [{ type: 'call', targetBlockId: b.id }];
+    app.enterFungusMode();
+    const autoConn = app.S.connections.find(c => c.auto && c.fromId === a.id && c.toId === b.id);
+    expect(autoConn).toBeTruthy();
+    expect(autoConn.label).toBe('');
+  });
+
+  it('exitFungusMode removes all auto-connections', () => {
+    const a = app.createNode('state', 0, 0);
+    const b = app.createNode('state', 300, 0);
+    a.commands = [{ type: 'call', targetBlockId: b.id }];
+    app.enterFungusMode();
+    expect(app.S.connections.some(c => c.auto)).toBe(true);
+    app.exitFungusMode();
+    expect(app.S.connections.some(c => c.auto)).toBe(false);
+  });
+
+  it('auto-connections have conn-auto CSS class', () => {
+    const a = app.createNode('state', 0, 0);
+    const b = app.createNode('state', 300, 0);
+    a.commands = [{ type: 'call', targetBlockId: b.id }];
+    app.enterFungusMode();
+    const autoConn = app.S.connections.find(c => c.auto);
+    expect(autoConn.group.classList.contains('conn-auto')).toBe(true);
   });
 });
