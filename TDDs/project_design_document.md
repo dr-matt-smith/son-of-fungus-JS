@@ -193,3 +193,18 @@ Version 20 features
   - ✅ different events
   - ✅ a sequence of commands, shown in the right-hand inspector panel, when each node is being executed
 - ✅ the fungus examples code may be useful: https://github.com/snozbot/fungus/tree/master/Assets/FungusExamples
+
+Version 21 features
+==================
+
+- ✅ move the hand tool to bottom left, into zoom toolbar
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+Version 22 features - edit block name in inspector panel
+==================
+
+- [] when a state/block is selected, allow its name to be edited in the inspector panel on the right
+  - [] and the state/block name should change in the diagram dynamically as the user types
+
+- [] and add Vite and PlayWright tests for the above feature(s)

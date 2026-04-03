@@ -527,3 +527,38 @@ describe('Configuration', () => {
     expect(app.ZOOM_STEP).toBeGreaterThan(0);
   });
 });
+
+// ─── Version 21: Hand tool in zoom toolbar ─────────────────────────────────
+
+describe('Hand tool in zoom toolbar', () => {
+  it('hand tool button exists inside zoom toolbar', () => {
+    const zoomToolbar = document.getElementById('zoom-toolbar');
+    const handBtn = document.getElementById('btn-hand-tool');
+    expect(zoomToolbar.contains(handBtn)).toBe(true);
+  });
+
+  it('hand tool button is NOT in the main toolbar', () => {
+    const toolbar = document.getElementById('toolbar');
+    const handBtn = document.getElementById('btn-hand-tool');
+    expect(toolbar.contains(handBtn)).toBe(false);
+  });
+
+  it('hand tool toggles activeTool between hand and select', () => {
+    const handBtn = document.getElementById('btn-hand-tool');
+    app.S.activeTool = 'select';
+    handBtn.click();
+    expect(app.S.activeTool).toBe('hand');
+    handBtn.click();
+    expect(app.S.activeTool).toBe('select');
+  });
+
+  it('hand tool button gets active class when toggled on', () => {
+    const handBtn = document.getElementById('btn-hand-tool');
+    app.S.activeTool = 'select';
+    handBtn.classList.remove('active');
+    handBtn.click();
+    expect(handBtn.classList.contains('active')).toBe(true);
+    handBtn.click();
+    expect(handBtn.classList.contains('active')).toBe(false);
+  });
+});

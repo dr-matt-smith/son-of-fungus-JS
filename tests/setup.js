@@ -5,12 +5,6 @@
 export function setupDOM() {
   document.body.innerHTML = `
     <div id="toolbar">
-      <button id="btn-fit-all" class="toolbar-btn"></button>
-      <button id="btn-zoom-in" class="toolbar-btn"></button>
-      <span id="zoom-label" class="zoom-label">100%</span>
-      <button id="btn-zoom-out" class="toolbar-btn"></button>
-      <input id="zoom-slider" type="range" min="8" max="500" value="100">
-      <button id="btn-hand-tool" class="toolbar-btn"></button>
       <button id="btn-new-state" class="toolbar-btn palette-btn" draggable="false"></button>
       <button id="btn-new-start" class="toolbar-btn palette-btn" draggable="false"></button>
       <button id="btn-new-end" class="toolbar-btn palette-btn" draggable="false"></button>
@@ -18,7 +12,14 @@ export function setupDOM() {
       <button id="btn-play" class="toolbar-btn"></button>
       <button id="btn-stop" class="toolbar-btn" style="display:none;"></button>
     </div>
-    <div id="zoom-toolbar"></div>
+    <div id="zoom-toolbar">
+      <button id="btn-fit-all" class="toolbar-btn"></button>
+      <button id="btn-zoom-out" class="toolbar-btn"></button>
+      <input id="zoom-slider" type="range" min="8" max="500" value="100">
+      <button id="btn-zoom-in" class="toolbar-btn"></button>
+      <span id="zoom-label" class="zoom-label">100%</span>
+      <button id="btn-hand-tool" class="toolbar-btn tool-btn"></button>
+    </div>
     <div id="main-area">
       <div id="canvas-container" style="width:800px;height:600px;">
         <div id="canvas" style="width:4000px;height:3000px;">

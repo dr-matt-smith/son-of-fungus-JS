@@ -566,6 +566,52 @@ test.describe('V10 – Node deletion', () => {
   });
 });
 
+// ─── Version 21: Hand tool in zoom toolbar ────────────────────────────────
+
+test.describe('V21 – Hand tool in zoom toolbar', () => {
+  test('hand tool button is inside the zoom toolbar', async ({ page }) => {
+    const handBtn = page.locator('#zoom-toolbar #btn-hand-tool');
+    await expect(handBtn).toBeVisible();
+  });
+
+  test('hand tool button is NOT in the main toolbar', async ({ page }) => {
+    const handBtnInToolbar = page.locator('#toolbar #btn-hand-tool');
+    await expect(handBtnInToolbar).toHaveCount(0);
+  });
+
+  test('hand tool toggles active class when clicked', async ({ page }) => {
+    const btn = page.locator('#btn-hand-tool');
+    await expect(btn).not.toHaveClass(/active/);
+    await btn.click();
+    await expect(btn).toHaveClass(/active/);
+    await btn.click();
+    await expect(btn).not.toHaveClass(/active/);
+  });
+
+  test('hand tool changes cursor to grab on canvas', async ({ page }) => {
+    await page.locator('#btn-hand-tool').click();
+    const cursor = await page.locator('#canvas-container').evaluate(el => el.style.cursor);
+    expect(cursor).toBe('grab');
+  });
+
+  test('deactivating hand tool restores default cursor', async ({ page }) => {
+    const btn = page.locator('#btn-hand-tool');
+    await btn.click();
+    await btn.click();
+    const cursor = await page.locator('#canvas-container').evaluate(el => el.style.cursor);
+    expect(cursor).toBe('');
+  });
+
+  test('"h" keyboard shortcut still toggles hand tool in zoom toolbar', async ({ page }) => {
+    const btn = page.locator('#btn-hand-tool');
+    await expect(btn).not.toHaveClass(/active/);
+    await page.keyboard.press('h');
+    await expect(btn).toHaveClass(/active/);
+    await page.keyboard.press('h');
+    await expect(btn).not.toHaveClass(/active/);
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {
