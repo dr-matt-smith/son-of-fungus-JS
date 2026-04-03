@@ -16,16 +16,7 @@ html, body {
   user-select: none;
 }
 
-/* ── Canvas container ──────────────────────────────────────────────────────── */
-#canvas-container {
-  position: absolute;
-  top: 46px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
-  background: #111827;
-}
+/* ── Canvas container (positioned by #main-area flex in inspector.css) ─────── */
 
 /* ── Canvas world ──────────────────────────────────────────────────────────── */
 #canvas {

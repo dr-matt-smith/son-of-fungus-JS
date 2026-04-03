@@ -35,6 +35,7 @@ export function activateNode(node) {
   }
   if (node.type !== 'end') addConnHandle(node);
   addNodeDeleteHandle(node);
+  if (S.onSelectionChange) S.onSelectionChange();
 }
 
 export function deactivateNode() {
@@ -52,6 +53,7 @@ export function deactivateNode() {
   removeNodeDeleteHandle(S.activeNode);
   S.activeNode.el.classList.remove('node-active');
   S.activeNode = null;
+  if (S.onSelectionChange) S.onSelectionChange();
 }
 
 // Group selection

@@ -11,6 +11,7 @@ export function selectConn(conn) {
   S.selectedConn = conn;
   conn.group.classList.add('conn-selected');
   updateConnection(conn);
+  if (S.onSelectionChange) S.onSelectionChange();
 }
 
 export function deselectConn() {
@@ -20,6 +21,7 @@ export function deselectConn() {
   S.selectedConn = null;
   prev.group.classList.remove('conn-selected');
   updateConnection(prev);
+  if (S.onSelectionChange) S.onSelectionChange();
 }
 
 export function updateReconnHandles(conn) {

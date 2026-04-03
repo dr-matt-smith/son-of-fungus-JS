@@ -15,6 +15,7 @@ import { cancelConnEditing } from './connections/conn-editing.js';
 import { getBorderPoint } from './connections/geometry.js';
 import { renderConnGroup, updateConnection } from './connections/conn-render.js';
 import { recalcPairOffsets } from './connections/conn-model.js';
+import { updateInspector, showJsonExport } from './inspector.js';
 
 // ── Toolbar: Fit All ─────────────────────────────────────────────────────────
 
@@ -318,6 +319,7 @@ document.addEventListener('mouseup', (e) => {
     const target = S.nodes.find(n => {
       if (S.reconnDrag.end === 'from' && conn.toId != null && n.id === conn.toId) return false;
       if (S.reconnDrag.end === 'to' && conn.fromId != null && n.id === conn.fromId) return false;
+      if (S.reconnDrag.end === 'to' && n.type === 'start') return false;  // cannot connect into a start node
       return world.x >= n.x && world.x <= n.x + n.w && world.y >= n.y && world.y <= n.y + n.h;
     });
     if (target) {
@@ -334,6 +336,7 @@ document.addEventListener('mouseup', (e) => {
     const world = clientToWorld(e.clientX, e.clientY);
     const target = S.nodes.find(n => {
       if (n.id === S.drawingConn.fromNode.id) return false;
+      if (n.type === 'start') return false;  // cannot connect into a start node
       return world.x >= n.x && world.x <= n.x + n.w && world.y >= n.y && world.y <= n.y + n.h;
     });
     S.drawingConn.group.remove();
@@ -411,6 +414,11 @@ restoreBtn.addEventListener('click', () => {
   minimapEl.style.display = '';
   refreshMinimap();
 });
+
+// ── Inspector ────────────────────────────────────────────────────────────────
+
+S.onSelectionChange = updateInspector;
+document.getElementById('btn-export-json').addEventListener('click', showJsonExport);
 
 // ── Initialise ───────────────────────────────────────────────────────────────
 

@@ -169,5 +169,15 @@ Version 18 features
 ==================
 
 - ✅  start states CANNOT have any transition connectors going into them
-  - [] refuse to link transition connections that would link INTO a start start
+  - ✅ refuse to link transition connections that would link INTO a start state
+
+
+Version 19 features
+==================
+
+- ✅  create a separate "inspector" panel on the right side of the page (about 30% of page width - but allow user to drag to change the width of this divider)
+  - ✅ when an object (state or choice or transition) is selected, its properties should be shown in this inspector panel on the right of the screen
+  - ✅ properties include - object type / object name
+- ✅ the JS of the page should store in memory a JSON array of object types and their properties
+- ✅ add an "Export to JSON button" which serialises the diagram structure as JSON - for now just popup a window showing the JSON representing the state chart diagram
 

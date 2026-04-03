@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="src/css/choice-node.css">
   <link rel="stylesheet" href="src/css/connectors.css">
   <link rel="stylesheet" href="src/css/minimap.css">
+  <link rel="stylesheet" href="src/css/inspector.css">
 </head>
 <body>
 
@@ -102,11 +103,29 @@
     <span id="zoom-label" class="zoom-label">100%</span>
   </div>
 
-  <!-- ── Canvas ──────────────────────────────────────────────────────────── -->
-  <div id="canvas-container">
-    <div id="canvas">
-      <!-- SVG layer for connection arrows – sits below node divs in DOM order -->
-      <svg id="connections-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+  <!-- ── Main area (canvas + divider + inspector) ─────────────────────── -->
+  <div id="main-area">
+    <div id="canvas-container">
+      <div id="canvas">
+        <svg id="connections-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+    </div>
+
+    <div id="divider"></div>
+
+    <div id="inspector">
+      <div id="inspector-header">
+        <span>Inspector</span>
+        <button id="btn-export-json" class="toolbar-btn" title="Export diagram as JSON">Export JSON</button>
+      </div>
+      <div id="inspector-body">
+        <p id="inspector-empty">No object selected</p>
+        <div id="inspector-props" style="display:none;">
+          <table id="inspector-table">
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 

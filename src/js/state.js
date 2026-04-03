@@ -45,4 +45,7 @@ export const S = {
 
   drawingConn: null,
   reconnDrag: null,
+
+  // Callback invoked whenever selection changes (set by main.js)
+  onSelectionChange: null,
 };
