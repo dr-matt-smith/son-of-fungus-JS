@@ -684,43 +684,51 @@ test.describe('V22 – Edit block name in inspector panel', () => {
 
 // ─── Version 23: Fungus FlowChart mode ────────────────────────────────────
 
-test.describe('V23 – Settings cog and popover', () => {
-  test('settings cog button is visible', async ({ page }) => {
-    await expect(page.locator('#btn-settings')).toBeVisible();
+test.describe('V23 – Inspector/Settings tabs', () => {
+  test('inspector and settings tabs are visible', async ({ page }) => {
+    await expect(page.locator('.inspector-tab[data-tab="inspector"]')).toBeVisible();
+    await expect(page.locator('.inspector-tab[data-tab="settings"]')).toBeVisible();
   });
 
-  test('settings popover is hidden by default', async ({ page }) => {
-    await expect(page.locator('#settings-popover')).toBeHidden();
+  test('inspector tab is active by default', async ({ page }) => {
+    await expect(page.locator('.inspector-tab[data-tab="inspector"]')).toHaveClass(/active/);
+    await expect(page.locator('.inspector-tab[data-tab="settings"]')).not.toHaveClass(/active/);
   });
 
-  test('clicking settings cog shows popover', async ({ page }) => {
-    await page.locator('#btn-settings').click();
-    await expect(page.locator('#settings-popover')).toBeVisible();
+  test('clicking settings tab shows settings panel', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await expect(page.locator('#settings-panel')).toBeVisible();
+    await expect(page.locator('#inspector-panel')).toBeHidden();
+    await expect(page.locator('.inspector-tab[data-tab="settings"]')).toHaveClass(/active/);
   });
 
-  test('clicking settings cog again hides popover', async ({ page }) => {
-    await page.locator('#btn-settings').click();
-    await expect(page.locator('#settings-popover')).toBeVisible();
-    await page.locator('#btn-settings').click();
-    await expect(page.locator('#settings-popover')).toBeHidden();
+  test('clicking inspector tab switches back', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await expect(page.locator('#inspector-panel')).toBeVisible();
+    await expect(page.locator('#settings-panel')).toBeHidden();
   });
 
-  test('popover has two radio buttons for diagram modes', async ({ page }) => {
-    await page.locator('#btn-settings').click();
+  test('settings panel has diagram mode radio buttons with preview diagrams', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
     const radios = page.locator('input[name="diagram-mode"]');
     await expect(radios).toHaveCount(2);
+    const previews = page.locator('.settings-mode-preview');
+    await expect(previews).toHaveCount(2);
   });
 });
 
 test.describe('V23 – Fungus FlowChart mode', () => {
   async function switchToFungusMode(page) {
-    await page.locator('#btn-settings').click();
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
   }
 
   async function switchToStatechartMode(page) {
-    await page.locator('#btn-settings').click();
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
     await page.locator('input[name="diagram-mode"][value="statechart"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
   }
 
   test('switching to Fungus mode hides start and end palette buttons', async ({ page }) => {

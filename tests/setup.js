@@ -11,18 +11,6 @@ export function setupDOM() {
       <button id="btn-new-choice" class="toolbar-btn palette-btn" draggable="false"></button>
       <button id="btn-play" class="toolbar-btn"></button>
       <button id="btn-stop" class="toolbar-btn" style="display:none;"></button>
-      <button id="btn-settings" class="toolbar-btn"></button>
-    </div>
-    <div id="settings-popover" style="display:none;">
-      <div class="settings-popover-title">Diagram Mode</div>
-      <label class="settings-radio-label">
-        <input type="radio" name="diagram-mode" value="statechart" checked>
-        State Chart Diagram
-      </label>
-      <label class="settings-radio-label">
-        <input type="radio" name="diagram-mode" value="fungus">
-        Fungus FlowChart
-      </label>
     </div>
     <div id="zoom-toolbar">
       <button id="btn-fit-all" class="toolbar-btn"></button>
@@ -40,14 +28,32 @@ export function setupDOM() {
       </div>
       <div id="divider"></div>
       <div id="inspector">
-        <div id="inspector-header">
-          <span>Inspector</span>
-          <button id="btn-export-json" class="toolbar-btn">Export JSON</button>
+        <div id="inspector-tabs">
+          <button class="inspector-tab active" data-tab="inspector">Inspector</button>
+          <button class="inspector-tab" data-tab="settings">Settings</button>
         </div>
-        <div id="inspector-body">
-          <p id="inspector-empty">No object selected</p>
-          <div id="inspector-props" style="display:none;">
-            <table id="inspector-table"><tbody></tbody></table>
+        <div id="inspector-panel" class="tab-panel">
+          <div id="inspector-header">
+            <button id="btn-export-json" class="toolbar-btn">Export JSON</button>
+          </div>
+          <div id="inspector-body">
+            <p id="inspector-empty">No object selected</p>
+            <div id="inspector-props" style="display:none;">
+              <table id="inspector-table"><tbody></tbody></table>
+            </div>
+          </div>
+        </div>
+        <div id="settings-panel" class="tab-panel" style="display:none;">
+          <div class="settings-section">
+            <div class="settings-section-title">Diagram Mode</div>
+            <label class="settings-mode-option">
+              <input type="radio" name="diagram-mode" value="statechart" checked>
+              <span class="settings-mode-name">State Chart Diagram</span>
+            </label>
+            <label class="settings-mode-option">
+              <input type="radio" name="diagram-mode" value="fungus">
+              <span class="settings-mode-name">Fungus FlowChart</span>
+            </label>
           </div>
         </div>
       </div>

@@ -439,27 +439,29 @@ btnStop.addEventListener('click', () => {
   btnPlay.style.display = '';
 });
 
-// ── Settings cog ────────────────────────────────────────────────────────────
+// ── Inspector / Settings tabs ────────────────────────────────────────────────
 
-const settingsBtn     = document.getElementById('btn-settings');
-const settingsPopover = document.getElementById('settings-popover');
+const inspectorPanel = document.getElementById('inspector-panel');
+const settingsPanel  = document.getElementById('settings-panel');
 
-settingsBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  settingsPopover.style.display = settingsPopover.style.display === 'none' ? '' : 'none';
-});
-
-document.addEventListener('click', (e) => {
-  if (!settingsBtn.contains(e.target) && !settingsPopover.contains(e.target)) {
-    settingsPopover.style.display = 'none';
-  }
-});
+for (const tab of document.querySelectorAll('.inspector-tab')) {
+  tab.addEventListener('click', () => {
+    for (const t of document.querySelectorAll('.inspector-tab')) t.classList.remove('active');
+    tab.classList.add('active');
+    if (tab.dataset.tab === 'inspector') {
+      inspectorPanel.style.display = '';
+      settingsPanel.style.display = 'none';
+    } else {
+      inspectorPanel.style.display = 'none';
+      settingsPanel.style.display = '';
+    }
+  });
+}
 
 for (const radio of document.querySelectorAll('input[name="diagram-mode"]')) {
   radio.addEventListener('change', () => {
     if (radio.value === 'fungus') enterFungusMode();
     else exitFungusMode();
-    settingsPopover.style.display = 'none';
   });
 }
 

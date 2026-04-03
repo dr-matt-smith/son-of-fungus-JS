@@ -229,4 +229,21 @@ Version 23 features - Fungus Flowchart mode
 - [] rather than a settings Cog, have tabs at the top right of the screen, to switch between Inspector panel and Settings panel  
   - [] this should have choice of diagram 'mode' should be by named radio button, also showing a little example diagram with a couple of objects in it - so gthey can see the mode they are changing to
 
-- ✅ and add Vite and PlayWright tests for the above feature(s)
+- [] and add Vite and PlayWright tests for the above feature(s)
+
+
+Version 24 features - move JSON export button & change from settings cog to tabs
+==================
+
+[] remove  choice block from toolbar when Fungus mode
+
+Remove past Inspector details for deleted / unselected object
+- [] when an object is deleted, the Inspector panel should be blank, since not object is selected
+  - [] this should be true at any other time when no object is selcted
+  - [] when a group of objects is selected, the Inspector panel should be blank
+  - [] so the Inspector only shows settings when an object is selected
+
+move JSON button
+- [] move the export to JSON button out of the inspector, so it is at the top right of the canvas
+
+- [] and add Vite and PlayWright tests for the above feature(s)

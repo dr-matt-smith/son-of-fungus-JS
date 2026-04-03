@@ -636,18 +636,34 @@ describe('Edit block name in inspector panel', () => {
 
 // ─── Version 23: Fungus FlowChart mode ─────────────────────────────────────
 
-describe('Settings cog and popover', () => {
-  it('settings button exists in DOM', () => {
-    expect(document.getElementById('btn-settings')).toBeTruthy();
+describe('Inspector/Settings tabs', () => {
+  it('inspector tabs exist in DOM', () => {
+    const tabs = document.querySelectorAll('.inspector-tab');
+    expect(tabs.length).toBe(2);
+    expect(tabs[0].dataset.tab).toBe('inspector');
+    expect(tabs[1].dataset.tab).toBe('settings');
   });
 
-  it('settings popover exists and is initially hidden', () => {
-    const popover = document.getElementById('settings-popover');
-    expect(popover).toBeTruthy();
-    expect(popover.style.display).toBe('none');
+  it('inspector tab is active by default', () => {
+    const inspectorTab = document.querySelector('.inspector-tab[data-tab="inspector"]');
+    expect(inspectorTab.classList.contains('active')).toBe(true);
   });
 
-  it('settings popover has radio buttons for diagram modes', () => {
+  it('inspector panel is visible and settings panel hidden by default', () => {
+    expect(document.getElementById('inspector-panel').style.display).not.toBe('none');
+    expect(document.getElementById('settings-panel').style.display).toBe('none');
+  });
+
+  it('clicking settings tab shows settings panel and hides inspector', () => {
+    const settingsTab = document.querySelector('.inspector-tab[data-tab="settings"]');
+    settingsTab.click();
+    expect(document.getElementById('settings-panel').style.display).toBe('');
+    expect(document.getElementById('inspector-panel').style.display).toBe('none');
+    // restore
+    document.querySelector('.inspector-tab[data-tab="inspector"]').click();
+  });
+
+  it('settings panel has radio buttons for diagram modes', () => {
     const radios = document.querySelectorAll('input[name="diagram-mode"]');
     expect(radios.length).toBe(2);
     expect(radios[0].value).toBe('statechart');
