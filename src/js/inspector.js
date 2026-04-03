@@ -1,4 +1,5 @@
 import { S } from './state.js';
+import { EVENT_TYPES, COMMAND_TYPES, createCommand } from './commands.js';
 
 const inspectorEl    = document.getElementById('inspector');
 const emptyMsg       = document.getElementById('inspector-empty');
@@ -22,8 +23,7 @@ document.addEventListener('mousemove', (e) => {
   if (!draggingDivider) return;
   const mainArea = document.getElementById('main-area');
   const mainRect = mainArea.getBoundingClientRect();
-  const totalW = mainRect.width;
-  const inspectorW = Math.max(180, Math.min(totalW * 0.6, mainRect.right - e.clientX));
+  const inspectorW = Math.max(180, Math.min(mainRect.width * 0.6, mainRect.right - e.clientX));
   inspectorEl.style.width = `${inspectorW}px`;
 });
 
@@ -34,17 +34,19 @@ document.addEventListener('mouseup', () => {
   document.body.style.cursor = '';
 });
 
-// ── Inspector content ────────────────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-function setRows(rows) {
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function setPropsRows(rows) {
   tbody.innerHTML = '';
   for (const [label, value] of rows) {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>${label}</td><td>${escapeHtml(String(value))}</td>`;
     tbody.appendChild(tr);
   }
-  emptyMsg.style.display = 'none';
-  propsContainer.style.display = '';
 }
 
 function showEmpty() {
@@ -52,57 +54,293 @@ function showEmpty() {
   propsContainer.style.display = 'none';
 }
 
-function escapeHtml(s) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
+// ── Inspector update ─────────────────────────────────────────────────────────
 
 export function updateInspector() {
   if (S.activeNode) {
-    const n = S.activeNode;
-    const rows = [
-      ['Type', n.type],
-      ['ID', n.id],
-    ];
-    if (n.type === 'state' || n.type === 'choice') {
-      rows.push(['Name', n.label]);
-      rows.push(['Width', n.w]);
-      rows.push(['Height', n.h]);
-    }
-    rows.push(['X', Math.round(n.x)]);
-    rows.push(['Y', Math.round(n.y)]);
-
-    // Count connections
-    const outgoing = S.connections.filter(c => c.fromId === n.id).length;
-    const incoming = S.connections.filter(c => c.toId === n.id).length;
-    rows.push(['Outgoing', outgoing]);
-    rows.push(['Incoming', incoming]);
-
-    setRows(rows);
+    renderNodeInspector(S.activeNode);
     return;
   }
-
   if (S.selectedConn) {
-    const c = S.selectedConn;
-    const fromNode = c.fromId != null ? S.nodes.find(n => n.id === c.fromId) : null;
-    const toNode   = c.toId   != null ? S.nodes.find(n => n.id === c.toId)   : null;
-    const rows = [
-      ['Type', 'transition'],
-      ['ID', c.id],
-      ['Label', c.label],
-      ['From', fromNode ? `${fromNode.type} (${fromNode.id})` : 'disconnected'],
-      ['To',   toNode   ? `${toNode.type} (${toNode.id})`     : 'disconnected'],
-    ];
-    setRows(rows);
+    renderConnInspector(S.selectedConn);
     return;
   }
-
   showEmpty();
+}
+
+// ── Node inspector ───────────────────────────────────────────────────────────
+
+function renderNodeInspector(n) {
+  emptyMsg.style.display = 'none';
+  propsContainer.style.display = '';
+
+  const rows = [['Type', n.type], ['ID', n.id]];
+  if (n.type === 'state' || n.type === 'choice') {
+    rows.push(['Name', n.label]);
+    rows.push(['Size', `${n.w} × ${n.h}`]);
+  }
+  rows.push(['Position', `${Math.round(n.x)}, ${Math.round(n.y)}`]);
+
+  const outgoing = S.connections.filter(c => c.fromId === n.id).length;
+  const incoming = S.connections.filter(c => c.toId === n.id).length;
+  rows.push(['Connections', `${outgoing} out / ${incoming} in`]);
+  setPropsRows(rows);
+
+  // Event section
+  const eventSection = document.createElement('div');
+  eventSection.className = 'inspector-section';
+  eventSection.innerHTML = `<div class="inspector-section-title">Event Trigger</div>`;
+
+  const eventSelect = document.createElement('select');
+  eventSelect.className = 'inspector-select';
+  for (const [key, ev] of Object.entries(EVENT_TYPES)) {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = ev.label;
+    if (n.event?.type === key) opt.selected = true;
+    eventSelect.appendChild(opt);
+  }
+  eventSelect.addEventListener('change', () => {
+    n.event = { type: eventSelect.value };
+    if (eventSelect.value === 'messageReceived') n.event.message = '';
+    if (eventSelect.value === 'keyPressed') n.event.key = '';
+    updateInspector();
+  });
+  eventSection.appendChild(eventSelect);
+
+  // Extra fields for message/key events
+  if (n.event?.type === 'messageReceived') {
+    const input = createInput(n.event.message || '', v => { n.event.message = v; });
+    input.placeholder = 'Message name';
+    eventSection.appendChild(input);
+  }
+  if (n.event?.type === 'keyPressed') {
+    const input = createInput(n.event.key || '', v => { n.event.key = v; });
+    input.placeholder = 'Key (e.g. Space, a)';
+    eventSection.appendChild(input);
+  }
+
+  // Commands section
+  const cmdsSection = document.createElement('div');
+  cmdsSection.className = 'inspector-section';
+  cmdsSection.innerHTML = `<div class="inspector-section-title">Commands (${n.commands.length})</div>`;
+
+  const cmdList = document.createElement('div');
+  cmdList.className = 'inspector-cmd-list';
+
+  n.commands.forEach((cmd, idx) => {
+    const item = document.createElement('div');
+    item.className = 'inspector-cmd-item';
+    if (S.executingCommandIdx === idx && S.executingNode === n) {
+      item.classList.add('cmd-executing');
+    }
+
+    const header = document.createElement('div');
+    header.className = 'inspector-cmd-header';
+
+    const label = COMMAND_TYPES[cmd.type]?.label || cmd.type;
+    const catLabel = COMMAND_TYPES[cmd.type]?.category || '';
+    header.innerHTML = `<span class="cmd-label">${label}</span><span class="cmd-cat">${catLabel}</span>`;
+
+    const btnGroup = document.createElement('span');
+    btnGroup.className = 'cmd-btn-group';
+
+    if (idx > 0) {
+      const upBtn = document.createElement('button');
+      upBtn.className = 'cmd-btn';
+      upBtn.textContent = '↑';
+      upBtn.title = 'Move up';
+      upBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx - 1, 0, n.commands.splice(idx, 1)[0]); updateInspector(); });
+      btnGroup.appendChild(upBtn);
+    }
+    if (idx < n.commands.length - 1) {
+      const downBtn = document.createElement('button');
+      downBtn.className = 'cmd-btn';
+      downBtn.textContent = '↓';
+      downBtn.title = 'Move down';
+      downBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx + 1, 0, n.commands.splice(idx, 1)[0]); updateInspector(); });
+      btnGroup.appendChild(downBtn);
+    }
+    const delBtn = document.createElement('button');
+    delBtn.className = 'cmd-btn cmd-btn-del';
+    delBtn.textContent = '×';
+    delBtn.title = 'Remove command';
+    delBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx, 1); updateInspector(); });
+    btnGroup.appendChild(delBtn);
+
+    header.appendChild(btnGroup);
+    item.appendChild(header);
+
+    // Command-specific fields
+    const fields = document.createElement('div');
+    fields.className = 'inspector-cmd-fields';
+    renderCommandFields(fields, cmd, n);
+    item.appendChild(fields);
+
+    cmdList.appendChild(item);
+  });
+
+  cmdsSection.appendChild(cmdList);
+
+  // Add command dropdown
+  const addRow = document.createElement('div');
+  addRow.className = 'inspector-add-cmd';
+  const addSelect = document.createElement('select');
+  addSelect.className = 'inspector-select';
+  addSelect.innerHTML = '<option value="">+ Add command...</option>';
+  for (const [key, ct] of Object.entries(COMMAND_TYPES)) {
+    addSelect.innerHTML += `<option value="${key}">${ct.label} (${ct.category})</option>`;
+  }
+  addSelect.addEventListener('change', () => {
+    if (!addSelect.value) return;
+    n.commands.push(createCommand(addSelect.value));
+    updateInspector();
+  });
+  addRow.appendChild(addSelect);
+  cmdsSection.appendChild(addRow);
+
+  // Append sections after the table
+  propsContainer.querySelectorAll('.inspector-section').forEach(s => s.remove());
+  propsContainer.appendChild(eventSection);
+  propsContainer.appendChild(cmdsSection);
+}
+
+// ── Command field renderers ──────────────────────────────────────────────────
+
+function renderCommandFields(container, cmd, node) {
+  switch (cmd.type) {
+    case 'say':
+      container.appendChild(labeledInput('Character', cmd.character, v => { cmd.character = v; }));
+      container.appendChild(labeledTextarea('Text', cmd.text, v => { cmd.text = v; }));
+      break;
+    case 'call':
+      container.appendChild(labeledBlockSelect('Target Block', cmd.targetBlockId, v => { cmd.targetBlockId = v; }, node));
+      container.appendChild(labeledSelect('Mode', cmd.mode, [['stop', 'Stop'], ['continue', 'Continue']], v => { cmd.mode = v; }));
+      break;
+    case 'menu':
+      cmd.options.forEach((opt, i) => {
+        const row = document.createElement('div');
+        row.className = 'cmd-menu-option';
+        row.appendChild(labeledInput(`Option ${i + 1}`, opt.text, v => { opt.text = v; }));
+        row.appendChild(labeledBlockSelect('→ Block', opt.targetBlockId, v => { opt.targetBlockId = v; }, node));
+        if (cmd.options.length > 2) {
+          const del = document.createElement('button');
+          del.className = 'cmd-btn cmd-btn-del';
+          del.textContent = '×';
+          del.addEventListener('click', () => { cmd.options.splice(i, 1); updateInspector(); });
+          row.appendChild(del);
+        }
+        container.appendChild(row);
+      });
+      const addOpt = document.createElement('button');
+      addOpt.className = 'cmd-btn';
+      addOpt.textContent = '+ Option';
+      addOpt.addEventListener('click', () => { cmd.options.push({ text: `Option ${cmd.options.length + 1}`, targetBlockId: null }); updateInspector(); });
+      container.appendChild(addOpt);
+      break;
+    case 'setVariable':
+      container.appendChild(labeledInput('Variable', cmd.variableName, v => { cmd.variableName = v; }));
+      container.appendChild(labeledInput('Value', cmd.value, v => { cmd.value = v; }));
+      break;
+    case 'playMusic':
+    case 'playSound':
+      container.appendChild(labeledInput('Audio URL', cmd.audioUrl, v => { cmd.audioUrl = v; }));
+      container.appendChild(labeledInput('Volume', cmd.volume, v => { cmd.volume = parseFloat(v) || 0; }));
+      break;
+    case 'wait':
+      container.appendChild(labeledInput('Duration (s)', cmd.duration, v => { cmd.duration = parseFloat(v) || 0; }));
+      break;
+    case 'sendMessage':
+      container.appendChild(labeledInput('Message', cmd.message, v => { cmd.message = v; }));
+      break;
+  }
+}
+
+// ── Field builders ───────────────────────────────────────────────────────────
+
+function createInput(value, onChange) {
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'inspector-input';
+  input.value = value;
+  input.addEventListener('change', () => onChange(input.value));
+  input.addEventListener('keydown', (e) => e.stopPropagation());
+  return input;
+}
+
+function labeledInput(label, value, onChange) {
+  const row = document.createElement('div');
+  row.className = 'cmd-field';
+  row.innerHTML = `<span class="cmd-field-label">${label}</span>`;
+  row.appendChild(createInput(String(value ?? ''), onChange));
+  return row;
+}
+
+function labeledTextarea(label, value, onChange) {
+  const row = document.createElement('div');
+  row.className = 'cmd-field';
+  row.innerHTML = `<span class="cmd-field-label">${label}</span>`;
+  const ta = document.createElement('textarea');
+  ta.className = 'inspector-textarea';
+  ta.value = value;
+  ta.rows = 3;
+  ta.addEventListener('change', () => onChange(ta.value));
+  ta.addEventListener('keydown', (e) => e.stopPropagation());
+  row.appendChild(ta);
+  return row;
+}
+
+function labeledSelect(label, value, options, onChange) {
+  const row = document.createElement('div');
+  row.className = 'cmd-field';
+  row.innerHTML = `<span class="cmd-field-label">${label}</span>`;
+  const sel = document.createElement('select');
+  sel.className = 'inspector-select';
+  for (const [val, text] of options) {
+    const opt = document.createElement('option');
+    opt.value = val;
+    opt.textContent = text;
+    if (val === value) opt.selected = true;
+    sel.appendChild(opt);
+  }
+  sel.addEventListener('change', () => onChange(sel.value));
+  row.appendChild(sel);
+  return row;
+}
+
+function labeledBlockSelect(label, currentId, onChange, excludeNode) {
+  const options = S.nodes
+    .filter(n => n !== excludeNode && (n.type === 'state' || n.type === 'choice'))
+    .map(n => [String(n.id), `${n.label || n.type} (${n.id})`]);
+  options.unshift(['', '— none —']);
+  return labeledSelect(label, currentId != null ? String(currentId) : '', options, v => {
+    onChange(v ? Number(v) : null);
+  });
+}
+
+// ── Connection inspector ─────────────────────────────────────────────────────
+
+function renderConnInspector(c) {
+  emptyMsg.style.display = 'none';
+  propsContainer.style.display = '';
+  propsContainer.querySelectorAll('.inspector-section').forEach(s => s.remove());
+
+  const fromNode = c.fromId != null ? S.nodes.find(n => n.id === c.fromId) : null;
+  const toNode   = c.toId   != null ? S.nodes.find(n => n.id === c.toId)   : null;
+  setPropsRows([
+    ['Type', 'transition'],
+    ['ID', c.id],
+    ['Label', c.label],
+    ['From', fromNode ? `${fromNode.type} (${fromNode.id})` : 'disconnected'],
+    ['To',   toNode   ? `${toNode.type} (${toNode.id})`     : 'disconnected'],
+  ]);
 }
 
 // ── JSON serialisation ───────────────────────────────────────────────────────
 
 export function serialiseDiagram() {
   return {
+    variables: S.variables.map(v => ({ name: v.name, type: v.type, value: v.value })),
     nodes: S.nodes.map(n => ({
       id: n.id,
       type: n.type,
@@ -111,6 +349,8 @@ export function serialiseDiagram() {
       w: n.w,
       h: n.h,
       label: n.label || undefined,
+      event: n.event,
+      commands: n.commands,
     })),
     connections: S.connections.map(c => ({
       id: c.id,
@@ -125,7 +365,6 @@ export function serialiseDiagram() {
 
 export function showJsonExport() {
   const json = JSON.stringify(serialiseDiagram(), null, 2);
-
   const overlay = document.createElement('div');
   overlay.id = 'json-modal-overlay';
   overlay.innerHTML = `
@@ -139,7 +378,6 @@ export function showJsonExport() {
   `;
   document.body.appendChild(overlay);
   overlay.querySelector('pre').textContent = json;
-
   const close = () => overlay.remove();
   overlay.querySelector('#json-modal-close').addEventListener('click', close);
   overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });

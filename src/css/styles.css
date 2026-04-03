@@ -16,6 +16,112 @@ html, body {
   user-select: none;
 }
 
+/* ── Node executing highlight ──────────────────────────────────────────────── */
+.diagram-node.node-executing {
+  outline: 2px solid #22c55e;
+  outline-offset: 2px;
+}
+
+/* ── Execution output panel ───────────────────────────────────────────────── */
+#execution-output {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  max-width: 80vw;
+  max-height: 300px;
+  background: #1a1a2e;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+#exec-output-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-bottom: 1px solid #374151;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+#exec-output-close {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#exec-output-close:hover { color: #f3f4f6; }
+
+#exec-output-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #d1d5db;
+}
+
+.exec-say {
+  margin-bottom: 4px;
+}
+
+.exec-say strong {
+  color: #93c5fd;
+}
+
+.exec-choice {
+  color: #fbbf24;
+  font-style: italic;
+}
+
+.exec-msg {
+  font-size: 11px;
+  margin-top: 6px;
+}
+
+.exec-msg.exec-error { color: #ef4444; }
+.exec-msg.exec-info  { color: #6b7280; font-style: italic; }
+
+.exec-menu {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.exec-menu-title {
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+
+.exec-menu-btn {
+  background: #1e3a5f;
+  border: 1px solid #2563eb;
+  border-radius: 4px;
+  color: #93c5fd;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.exec-menu-btn:hover {
+  background: #2563eb;
+  color: #fff;
+}
+
 /* ── Canvas container (positioned by #main-area flex in inspector.css) ─────── */
 
 /* ── Canvas world ──────────────────────────────────────────────────────────── */

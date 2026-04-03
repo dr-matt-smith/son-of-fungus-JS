@@ -181,3 +181,15 @@ Version 19 features
 - ✅ the JS of the page should store in memory a JSON array of object types and their properties
 - ✅ add an "Export to JSON button" which serialises the diagram structure as JSON - for now just popup a window showing the JSON representing the state chart diagram
 
+
+Version 20 features
+==================
+
+- ✅ view the fungus wiki pages at: https://github.com/snozbot/fungus/wiki
+  - ✅ ignore anything about the Unity game engine, since we are recreating Fungus here as a JavaScript visual programming system
+  - ✅ focus especially the pages for flowcharts, blocks, variables, telling a story, playing audio, conversation system, narrative text tags
+- ✅ add an execution model for a state chart/fungus style flow chart, based on the Fungus documentation
+  - ✅ this means different node (state) types
+  - ✅ different events
+  - ✅ a sequence of commands, shown in the right-hand inspector panel, when each node is being executed
+- ✅ the fungus examples code may be useful: https://github.com/snozbot/fungus/tree/master/Assets/FungusExamples

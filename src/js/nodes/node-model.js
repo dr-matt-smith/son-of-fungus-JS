@@ -27,7 +27,12 @@ export function createNode(type, worldX, worldY) {
   mmEl.className = `minimap-node minimap-${type}-node`;
   mmStatesEl.appendChild(mmEl);
 
-  const node = { id, type, x: worldX, y: worldY, w, h, label, el, mmEl };
+  // Determine default event for special node types
+  let event = { type: 'none' };
+  if (type === 'start') event = { type: 'gameStarted' };
+
+  const node = { id, type, x: worldX, y: worldY, w, h, label, el, mmEl,
+                 event, commands: [] };
   S.nodes.push(node);
 
   positionMinimapNode(node);

@@ -98,6 +98,159 @@
   word-break: break-word;
 }
 
+/* ── Inspector sections (event, commands) ──────────────────────────────────── */
+.inspector-section {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #262f3d;
+}
+
+.inspector-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.inspector-select {
+  width: 100%;
+  padding: 4px 6px;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  color: #d1d5db;
+  font-size: 11px;
+  font-family: inherit;
+  outline: none;
+  margin-top: 4px;
+}
+
+.inspector-select:focus {
+  border-color: #60a5fa;
+}
+
+.inspector-input,
+.inspector-textarea {
+  width: 100%;
+  padding: 4px 6px;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  color: #d1d5db;
+  font-size: 11px;
+  font-family: inherit;
+  outline: none;
+  margin-top: 4px;
+}
+
+.inspector-input:focus,
+.inspector-textarea:focus {
+  border-color: #60a5fa;
+}
+
+.inspector-textarea {
+  resize: vertical;
+  min-height: 40px;
+}
+
+/* ── Command list ──────────────────────────────────────────────────────────── */
+.inspector-cmd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inspector-cmd-item {
+  background: #111827;
+  border: 1px solid #262f3d;
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+
+.inspector-cmd-item.cmd-executing {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
+}
+
+.inspector-cmd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.cmd-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #d1d5db;
+}
+
+.cmd-cat {
+  font-size: 10px;
+  color: #4b5563;
+  margin-left: 6px;
+}
+
+.cmd-btn-group {
+  display: flex;
+  gap: 2px;
+}
+
+.cmd-btn {
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 3px;
+  color: #9ca3af;
+  font-size: 10px;
+  cursor: pointer;
+  padding: 1px 5px;
+  line-height: 1.2;
+}
+
+.cmd-btn:hover {
+  background: #374151;
+  color: #f3f4f6;
+}
+
+.cmd-btn-del {
+  color: #ef4444;
+}
+
+.cmd-btn-del:hover {
+  background: #7f1d1d;
+  color: #fca5a5;
+}
+
+.inspector-cmd-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cmd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cmd-field-label {
+  font-size: 10px;
+  color: #6b7280;
+}
+
+.cmd-menu-option {
+  border: 1px solid #1f2937;
+  border-radius: 3px;
+  padding: 4px;
+  margin-bottom: 3px;
+}
+
+.inspector-add-cmd {
+  margin-top: 6px;
+}
+
 /* ── JSON export modal ─────────────────────────────────────────────────────── */
 #json-modal-overlay {
   position: fixed;

@@ -12,6 +12,7 @@ export const S = {
 
   nodes: [],
   connections: [],
+  variables: [],    // flowchart-level variables: { name, type, value }
 
   // Currently active / selected
   activeNode: null,
@@ -45,6 +46,10 @@ export const S = {
 
   drawingConn: null,
   reconnDrag: null,
+
+  // Execution state
+  executingNode: null,
+  executingCommandIdx: -1,
 
   // Callback invoked whenever selection changes (set by main.js)
   onSelectionChange: null,

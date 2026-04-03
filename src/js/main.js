@@ -16,6 +16,7 @@ import { getBorderPoint } from './connections/geometry.js';
 import { renderConnGroup, updateConnection } from './connections/conn-render.js';
 import { recalcPairOffsets } from './connections/conn-model.js';
 import { updateInspector, showJsonExport } from './inspector.js';
+import { startExecution, stopExecution, isRunning } from './engine.js';
 
 // ── Toolbar: Fit All ─────────────────────────────────────────────────────────
 
@@ -419,6 +420,23 @@ restoreBtn.addEventListener('click', () => {
 
 S.onSelectionChange = updateInspector;
 document.getElementById('btn-export-json').addEventListener('click', showJsonExport);
+
+// ── Play / Stop ──────────────────────────────────────────────────────────────
+
+const btnPlay = document.getElementById('btn-play');
+const btnStop = document.getElementById('btn-stop');
+
+btnPlay.addEventListener('click', () => {
+  btnPlay.style.display = 'none';
+  btnStop.style.display = '';
+  startExecution();
+});
+
+btnStop.addEventListener('click', () => {
+  stopExecution();
+  btnStop.style.display = 'none';
+  btnPlay.style.display = '';
+});
 
 // ── Initialise ───────────────────────────────────────────────────────────────
 

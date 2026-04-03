@@ -15,6 +15,8 @@ export function setupDOM() {
       <button id="btn-new-start" class="toolbar-btn palette-btn" draggable="false"></button>
       <button id="btn-new-end" class="toolbar-btn palette-btn" draggable="false"></button>
       <button id="btn-new-choice" class="toolbar-btn palette-btn" draggable="false"></button>
+      <button id="btn-play" class="toolbar-btn"></button>
+      <button id="btn-stop" class="toolbar-btn" style="display:none;"></button>
     </div>
     <div id="zoom-toolbar"></div>
     <div id="main-area">
