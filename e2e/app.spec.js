@@ -3,6 +3,10 @@ import { dragNewNode, drag, getNodeBox, dragBetween } from './helpers.js';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
+  // Default mode is Fungus; switch to statechart for backward-compatible tests
+  await page.locator('.inspector-tab[data-tab="settings"]').click();
+  await page.locator('input[name="diagram-mode"][value="statechart"]').check();
+  await page.locator('.inspector-tab[data-tab="inspector"]').click();
 });
 
 // ─── Version 1: Toolbar & basic node creation ──────────────────────────────
@@ -955,6 +959,157 @@ test.describe('V24 – Fungus mode toolbar and naming', () => {
     await page.locator('input[name="diagram-mode"][value="statechart"]').check();
     await page.locator('.inspector-tab[data-tab="inspector"]').click();
     await expect(page.locator('#btn-new-state')).toContainText('State');
+  });
+});
+
+// ─── Version 25: Default Fungus mode, mode label, step execution ─────────
+
+test.describe('V25 – Default Fungus mode and settings order', () => {
+  // These tests check fresh page state before beforeEach switches to statechart
+  test('fungus radio is first in settings', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    const radios = page.locator('input[name="diagram-mode"]');
+    const first = radios.first();
+    await expect(first).toHaveValue('fungus');
+  });
+
+  test('app loads in Fungus mode on fresh page', async ({ page }) => {
+    // Navigate fresh (beforeEach already switched to statechart, so re-navigate)
+    await page.goto('/');
+    await expect(page.locator('#btn-new-start')).toBeHidden();
+    await expect(page.locator('#btn-new-state')).toContainText('Block');
+  });
+});
+
+test.describe('V25 – Mode label', () => {
+  test('mode label is visible', async ({ page }) => {
+    await expect(page.locator('#mode-label-text')).toBeVisible();
+  });
+
+  test('mode label shows "State Chart Mode" in statechart mode', async ({ page }) => {
+    // beforeEach already switched to statechart
+    await expect(page.locator('#mode-label-text')).toHaveText('State Chart Mode');
+  });
+
+  test('mode label shows hint about Settings tab', async ({ page }) => {
+    await expect(page.locator('#mode-label-hint')).toContainText('Settings tab');
+  });
+
+  test('mode label changes to "Fungus Mode" when switching', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await expect(page.locator('#mode-label-text')).toHaveText('Fungus Mode');
+  });
+});
+
+test.describe('V25 – Step-by-step execution', () => {
+  async function switchToFungusMode(page) {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+  }
+
+  test('Step button is visible in Fungus mode', async ({ page }) => {
+    await switchToFungusMode(page);
+    await expect(page.locator('#btn-play-step')).toBeVisible();
+  });
+
+  test('Play button shows "Play All" in Fungus mode', async ({ page }) => {
+    await switchToFungusMode(page);
+    await expect(page.locator('#play-label')).toHaveText('Play All');
+  });
+
+  test('Step button is hidden in State Chart mode', async ({ page }) => {
+    // Already in statechart from beforeEach
+    await expect(page.locator('#btn-play-step')).toBeHidden();
+  });
+
+  test('Play button shows "Play" in State Chart mode', async ({ page }) => {
+    await expect(page.locator('#play-label')).toHaveText('Play');
+  });
+
+  test('clicking Step starts execution and shows Next/Stop buttons', async ({ page }) => {
+    await switchToFungusMode(page);
+
+    // Create a block with a Game Started event and a Say command
+    await dragNewNode(page, '#btn-new-state');
+    const node = page.locator('.state-node');
+    await node.click();
+
+    // Set event to Game Started
+    await page.locator('.inspector-select').first().selectOption('gameStarted');
+
+    // Add a Say command
+    await page.locator('.inspector-add-cmd select').selectOption('say');
+
+    // Click empty canvas to deselect
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+
+    // Click Step button
+    await page.locator('#btn-play-step').click();
+    await page.waitForTimeout(200);
+
+    // Next and Stop buttons should be visible
+    await expect(page.locator('#btn-step-continue')).toBeVisible();
+    await expect(page.locator('#btn-stop')).toBeVisible();
+    // Play and Step buttons hidden
+    await expect(page.locator('#btn-play')).toBeHidden();
+    await expect(page.locator('#btn-play-step')).toBeHidden();
+
+    // Stop execution
+    await page.locator('#btn-stop').click();
+  });
+});
+
+// ─── Version 26: JSON copy, no resize in Fungus ──────────────────────────
+
+test.describe('V26 – JSON modal text selectable with copy button', () => {
+  test('JSON modal has a copy button', async ({ page }) => {
+    await page.locator('#btn-export-json').click();
+    await expect(page.locator('#json-modal-copy')).toBeVisible();
+    await page.keyboard.press('Escape');
+  });
+
+  test('JSON modal pre text is selectable', async ({ page }) => {
+    await page.locator('#btn-export-json').click();
+    const userSelect = await page.locator('#json-modal-body pre').evaluate(
+      el => getComputedStyle(el).userSelect
+    );
+    expect(userSelect).toBe('text');
+    await page.keyboard.press('Escape');
+  });
+});
+
+test.describe('V26 – No resize handles in Fungus mode', () => {
+  async function switchToFungusMode(page) {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+  }
+
+  test('no resize handles on active node in Fungus mode', async ({ page }) => {
+    await switchToFungusMode(page);
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await expect(page.locator('.resize-handle')).toHaveCount(0);
+  });
+
+  test('resize handles appear on active node in State Chart mode', async ({ page }) => {
+    // Already in statechart from beforeEach
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await expect(page.locator('.resize-handle')).toHaveCount(8);
+  });
+
+  test('block label has larger font in Fungus mode', async ({ page }) => {
+    await switchToFungusMode(page);
+    await dragNewNode(page, '#btn-new-state');
+    const fontSize = await page.locator('.state-node .node-label').evaluate(
+      el => parseFloat(getComputedStyle(el).fontSize)
+    );
+    expect(fontSize).toBeGreaterThanOrEqual(15);
   });
 });
 

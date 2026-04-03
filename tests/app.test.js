@@ -69,10 +69,11 @@ describe('Node creation', () => {
 describe('Node labels', () => {
   it('state node has editable label with default text', () => {
     const node = app.createNode('state', 0, 0);
-    expect(node.label).toContain('State');
+    // Default mode is fungus, so label is "New Block N"
+    expect(node.label).toMatch(/New Block|State/);
     const labelEl = node.el.querySelector('.node-label');
     expect(labelEl).toBeTruthy();
-    expect(labelEl.textContent).toContain('State');
+    expect(labelEl.textContent).toBeTruthy();
   });
 
   it('choice node has default label "?"', () => {
@@ -154,16 +155,24 @@ describe('Node activation', () => {
     expect(node.el.classList.contains('node-active')).toBe(true);
   });
 
-  it('activateNode adds resize handles for state nodes', () => {
+  it('activateNode adds resize handles for state nodes in statechart mode', () => {
+    const prevMode = app.S.diagramMode;
+    app.S.diagramMode = 'statechart';
     const node = app.createNode('state', 0, 0);
     app.activateNode(node);
     expect(node.el.querySelectorAll('.resize-handle').length).toBe(8);
+    app.deactivateNode();
+    app.S.diagramMode = prevMode;
   });
 
-  it('activateNode adds connection handle', () => {
+  it('activateNode adds connection handle in statechart mode', () => {
+    const prevMode = app.S.diagramMode;
+    app.S.diagramMode = 'statechart';
     const node = app.createNode('state', 0, 0);
     app.activateNode(node);
     expect(node.el.querySelector('.conn-handle')).toBeTruthy();
+    app.deactivateNode();
+    app.S.diagramMode = prevMode;
   });
 
   it('activateNode adds delete handle', () => {
@@ -298,11 +307,14 @@ describe('Connections', () => {
 // ─── Version 6: Auto text sized to fit ──────────────────────────────────────
 
 describe('Auto text font sizing', () => {
-  it('fitLabelFontSize sets a font size on the label', () => {
+  it('fitLabelFontSize sets a font size on the label in statechart mode', () => {
+    const prevMode = app.S.diagramMode;
+    app.S.diagramMode = 'statechart';
     const node = app.createNode('state', 0, 0);
     app.fitLabelFontSize(node);
     const labelEl = node.el.querySelector('.node-label');
     expect(labelEl.style.fontSize).toBeTruthy();
+    app.S.diagramMode = prevMode;
   });
 
   it('does nothing for start/end nodes', () => {
@@ -311,11 +323,14 @@ describe('Auto text font sizing', () => {
     app.fitLabelFontSize(node);
   });
 
-  it('is called during resize', () => {
+  it('is called during resize in statechart mode', () => {
+    const prevMode = app.S.diagramMode;
+    app.S.diagramMode = 'statechart';
     const node = app.createNode('state', 0, 0);
     app.resizeNode(node, 0, 0, 300, 200);
     const labelEl = node.el.querySelector('.node-label');
     expect(labelEl.style.fontSize).toBeTruthy();
+    app.S.diagramMode = prevMode;
   });
 });
 
@@ -417,7 +432,9 @@ describe('Node deletion', () => {
     expect(app.canvasEl.contains(node.el)).toBe(false);
   });
 
-  it('deleteNode preserves connections as dangling', () => {
+  it('deleteNode preserves connections as dangling in statechart mode', () => {
+    const prevMode = app.S.diagramMode;
+    app.S.diagramMode = 'statechart';
     const a = app.createNode('state', 0, 0);
     const b = app.createNode('state', 300, 0);
     app.createConnection(a, b);
@@ -429,9 +446,12 @@ describe('Node deletion', () => {
     expect(conn.fromId).toBeNull();
     expect(conn.danglingFrom).toBeTruthy();
     expect(conn.toId).toBe(b.id);
+    app.S.diagramMode = prevMode;
   });
 
-  it('deleteNode sets both ends dangling when middle node deleted', () => {
+  it('deleteNode sets both ends dangling when middle node deleted in statechart mode', () => {
+    const prevMode = app.S.diagramMode;
+    app.S.diagramMode = 'statechart';
     const a = app.createNode('state', 0, 0);
     const b = app.createNode('state', 200, 0);
     const c = app.createNode('state', 400, 0);
@@ -445,6 +465,7 @@ describe('Node deletion', () => {
     expect(conn1.danglingTo).toBeTruthy();
     expect(conn2.fromId).toBeNull();
     expect(conn2.danglingFrom).toBeTruthy();
+    app.S.diagramMode = prevMode;
   });
 
   it('deleteNode deactivates the node if active', () => {
@@ -459,6 +480,34 @@ describe('Node deletion', () => {
     const mmEl = node.mmEl;
     app.deleteNode(node);
     expect(document.getElementById('minimap-states').contains(mmEl)).toBe(false);
+  });
+
+  it('deleteNode in fungus mode removes connections and clears call references', () => {
+    app.enterFungusMode();
+    const a = app.createNode('state', 0, 0);
+    const b = app.createNode('state', 300, 0);
+    const c = app.createNode('state', 600, 0);
+    a.commands = [{ type: 'call', targetBlockId: b.id }];
+    c.commands = [{ type: 'menu', options: [
+      { text: 'Go B', targetBlockId: b.id },
+      { text: 'Other', targetBlockId: null },
+    ]}];
+    app.syncAutoConnections();
+
+    const autosBefore = app.S.connections.filter(c => c.auto && c.toId === b.id);
+    expect(autosBefore.length).toBeGreaterThan(0);
+
+    app.deleteNode(b);
+
+    // Call references should be cleared
+    expect(a.commands[0].targetBlockId).toBeNull();
+    expect(c.commands[0].options[0].targetBlockId).toBeNull();
+
+    // Auto-connections to deleted node should be gone
+    const autosAfter = app.S.connections.filter(c => c.auto && c.toId === b.id);
+    expect(autosAfter.length).toBe(0);
+
+    app.exitFungusMode();
   });
 });
 
@@ -666,8 +715,8 @@ describe('Inspector/Settings tabs', () => {
   it('settings panel has radio buttons for diagram modes', () => {
     const radios = document.querySelectorAll('input[name="diagram-mode"]');
     expect(radios.length).toBe(2);
-    expect(radios[0].value).toBe('statechart');
-    expect(radios[1].value).toBe('fungus');
+    expect(radios[0].value).toBe('fungus');
+    expect(radios[1].value).toBe('statechart');
   });
 });
 
@@ -866,6 +915,7 @@ describe('Fungus mode naming', () => {
   });
 
   it('new state nodes are named "State N" in statechart mode', () => {
+    app.exitFungusMode();
     const node = app.createNode('state', 0, 0);
     expect(node.label).toMatch(/^State \d+$/);
   });
@@ -881,5 +931,73 @@ describe('Fungus mode naming', () => {
     app.enterFungusMode();
     app.exitFungusMode();
     expect(btn.textContent).toContain('State');
+  });
+});
+
+// ─── Version 25: Default Fungus mode, mode label, step execution ───────────
+
+describe('Default Fungus mode', () => {
+  it('fungus radio is listed first in settings', () => {
+    const radios = document.querySelectorAll('input[name="diagram-mode"]');
+    expect(radios[0].value).toBe('fungus');
+  });
+
+  it('enterFungusMode can be called to set fungus as active mode', () => {
+    app.enterFungusMode();
+    expect(app.S.diagramMode).toBe('fungus');
+    expect(document.body.dataset.mode).toBe('fungus');
+    app.exitFungusMode();
+  });
+});
+
+describe('Mode label', () => {
+  it('mode label element exists', () => {
+    expect(document.getElementById('mode-label-text')).toBeTruthy();
+  });
+
+  it('mode label shows "Fungus Mode" when in fungus mode', () => {
+    expect(document.getElementById('mode-label-text').textContent).toBe('Fungus Mode');
+  });
+
+  it('mode label hint exists', () => {
+    expect(document.getElementById('mode-label-hint')).toBeTruthy();
+    expect(document.getElementById('mode-label-hint').textContent).toContain('Settings tab');
+  });
+});
+
+describe('Step-by-step execution', () => {
+  it('step button exists in DOM', () => {
+    expect(document.getElementById('btn-play-step')).toBeTruthy();
+  });
+
+  it('step continue button exists in DOM', () => {
+    expect(document.getElementById('btn-step-continue')).toBeTruthy();
+  });
+
+  it('play label shows "Play All" in fungus mode', () => {
+    expect(document.getElementById('play-label').textContent).toBe('Play All');
+  });
+});
+
+// ─── Version 26: JSON copy button, no resize in Fungus mode ────────────────
+
+describe('Fungus mode hides resize handles', () => {
+  afterEach(() => {
+    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
+  });
+
+  it('no resize handles on state nodes in fungus mode', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    expect(node.el.querySelectorAll('.resize-handle').length).toBe(0);
+  });
+
+  it('resize handles appear in statechart mode', () => {
+    app.exitFungusMode();
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    expect(node.el.querySelectorAll('.resize-handle').length).toBe(8);
+    app.deactivateNode();
   });
 });

@@ -7,7 +7,7 @@ export const S = {
   panX: 0,
   panY: 0,
   activeTool: 'select',
-  diagramMode: 'statechart',  // 'statechart' | 'fungus'
+  diagramMode: 'fungus',  // 'statechart' | 'fungus'
   nextId: 1,
   nextConnId: 1,
 
@@ -52,6 +52,8 @@ export const S = {
   executingNode: null,
   executingCommandIdx: -1,
 
-  // Callback invoked whenever selection changes (set by main.js)
+  // Callbacks (set by main.js)
   onSelectionChange: null,
+  onStepPause: null,
+  onExecutionEnd: null,
 };

@@ -235,32 +235,44 @@ Version 23 features - Fungus Flowchart mode
 Version 24 features - move JSON export button & change from settings cog to tabs
 ==================
 
-[] remove  choice block from toolbar when Fungus mode
+✅ remove  choice block from toolbar when Fungus mode
 
-[] when in fugus mode, default name should be "New Block 1", "New Block 2" etc. (in state mode, State 1, State 2 etc.)
-  - [] and in the toolbar, the widget should be labelled 'Block' not 'State'
+✅ when in fugus mode, default name should be "New Block 1", "New Block 2" etc. (in state mode, State 1, State 2 etc.)
+  - ✅ and in the toolbar, the widget should be labelled 'Block' not 'State'
 
 Remove past Inspector details for deleted / unselected object
-- [] when an object is deleted, the Inspector panel should be blank, since not object is selected
-  - [] this should be true at any other time when no object is selcted
-  - [] when a group of objects is selected, the Inspector panel should be blank
-  - [] so the Inspector only shows settings when an object is selected
+- ✅ when an object is deleted, the Inspector panel should be blank, since not object is selected
+  - ✅ this should be true at any other time when no object is selcted
+  - ✅ when a group of objects is selected, the Inspector panel should be blank
+  - ✅ so the Inspector only shows settings when an object is selected
 
 move JSON button
-- [] move the export to JSON button out of the inspector, so it is at the top right of the canvas
+- ✅ move the export to JSON button out of the inspector, so it is at the top right of the canvas
 
-- [] and add Vite and PlayWright tests for the above feature(s)
+- ✅ and add Vite and PlayWright tests for the above feature(s)
 
 Version 25 features
 ==================
 
-[] swap the order in the settings tab - make fungus first here, and also make fungus mode the default
+✅ swap the order in the settings tab - make fungus first here, and also make fungus mode the default
 
-[] at the top LEFT of the screen, show the curently active MODE "Fungus Mode"/"State Chart Mode" , and a note "(change in Settings tab)"
+✅ at the top LEFT of the screen, show the curently active MODE "Fungus Mode"/"State Chart Mode" , and a note "(change in Settings tab)"
 
-[] when in Fungus mode, rather than just a Play button:
-- [] have a Play All button
-- [] have a "Play Step by Step" button
-  - [] which will play one step, and then pause, and offer buttons to STOP and Continue when in Step mode and not all blocks have finished
+✅ when in Fungus mode, rather than just a Play button:
+- ✅ have a Play All button
+- ✅ have a "Play Step by Step" button
+  - ✅ which will play one step, and then pause, and offer buttons to STOP and Continue when in Step mode and not all blocks have finished
+  - ✅ so a bit like a simple debugger
 
-- [] and add Vite and PlayWright tests for the above feature(s)
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+Version 26 features
+==================
+
+- ✅ allow the export JSON text to be SELECTED, in fact add a little copy to clickboard icon at the top right of this popup please
+
+- ✅ in fugus mode, remove the block resize widgets, and increase the default font size for text in these blocks
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+

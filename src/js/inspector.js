@@ -419,15 +419,34 @@ export function showJsonExport() {
     <div id="json-modal">
       <div id="json-modal-header">
         <span>Diagram JSON</span>
-        <button id="json-modal-close" title="Close">&times;</button>
+        <div id="json-modal-actions">
+          <button id="json-modal-copy" class="json-modal-btn" title="Copy to clipboard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+          <button id="json-modal-close" class="json-modal-btn" title="Close">&times;</button>
+        </div>
       </div>
       <div id="json-modal-body"><pre></pre></div>
     </div>
   `;
   document.body.appendChild(overlay);
-  overlay.querySelector('pre').textContent = json;
+  const pre = overlay.querySelector('pre');
+  pre.textContent = json;
   const close = () => overlay.remove();
   overlay.querySelector('#json-modal-close').addEventListener('click', close);
+  overlay.querySelector('#json-modal-copy').addEventListener('click', () => {
+    navigator.clipboard.writeText(json).then(() => {
+      const btn = overlay.querySelector('#json-modal-copy');
+      btn.textContent = 'Copied!';
+      setTimeout(() => {
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+      }, 1500);
+    });
+  });
   overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
   document.addEventListener('keydown', function handler(e) {
     if (e.key === 'Escape') { close(); document.removeEventListener('keydown', handler); }

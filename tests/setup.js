@@ -9,8 +9,14 @@ export function setupDOM() {
       <button id="btn-new-start" class="toolbar-btn palette-btn" draggable="false"></button>
       <button id="btn-new-end" class="toolbar-btn palette-btn" draggable="false"></button>
       <button id="btn-new-choice" class="toolbar-btn palette-btn" draggable="false"></button>
-      <button id="btn-play" class="toolbar-btn"></button>
-      <button id="btn-stop" class="toolbar-btn" style="display:none;"></button>
+      <button id="btn-play" class="toolbar-btn"><span id="play-label">Play All</span></button>
+      <button id="btn-play-step" class="toolbar-btn" style="display:none;">Step</button>
+      <button id="btn-step-continue" class="toolbar-btn" style="display:none;">Next</button>
+      <button id="btn-stop" class="toolbar-btn" style="display:none;">Stop</button>
+    </div>
+    <div id="mode-label">
+      <span id="mode-label-text">Fungus Mode</span>
+      <span id="mode-label-hint">(change in Settings tab)</span>
     </div>
     <div id="zoom-toolbar">
       <button id="btn-fit-all" class="toolbar-btn"></button>
@@ -45,12 +51,12 @@ export function setupDOM() {
           <div class="settings-section">
             <div class="settings-section-title">Diagram Mode</div>
             <label class="settings-mode-option">
-              <input type="radio" name="diagram-mode" value="statechart" checked>
-              <span class="settings-mode-name">State Chart Diagram</span>
+              <input type="radio" name="diagram-mode" value="fungus" checked>
+              <span class="settings-mode-name">Fungus FlowChart</span>
             </label>
             <label class="settings-mode-option">
-              <input type="radio" name="diagram-mode" value="fungus">
-              <span class="settings-mode-name">Fungus FlowChart</span>
+              <input type="radio" name="diagram-mode" value="statechart">
+              <span class="settings-mode-name">State Chart Diagram</span>
             </label>
           </div>
         </div>

@@ -9,6 +9,8 @@ import { S } from './state.js';
 import { updateInspector } from './inspector.js';
 
 let running     = false;
+let stepping    = false;   // step-by-step mode
+let paused      = false;   // paused between steps
 let callStack   = [];     // [{ node, cmdIdx }] — for Call with mode 'continue'
 let currentNode = null;
 let currentCmd  = 0;
@@ -18,6 +20,8 @@ let audioElements = {};   // keyed by URL for music control
 let outputEl    = null;   // dialogue output panel
 
 export function isRunning() { return running; }
+export function isStepping() { return stepping; }
+export function isPaused() { return paused; }
 
 // ── Output panel (for Say commands) ──────────────────────────────────────────
 
@@ -71,8 +75,27 @@ export function startExecution() {
   executeBlock(entryNode);
 }
 
+export function startStepExecution() {
+  if (running) return;
+  stepping = true;
+  paused   = false;
+  startExecution();
+}
+
+let resuming = false;  // true when stepping past a pause
+
+export function stepNext() {
+  if (!running || !stepping || !paused) return;
+  paused = false;
+  resuming = true;
+  executeNextCommand();
+}
+
 export function stopExecution() {
   running = false;
+  stepping = false;
+  paused = false;
+  resuming = false;
   if (waitTimer) { clearTimeout(waitTimer); waitTimer = null; }
   if (menuOverlay) { menuOverlay.remove(); menuOverlay = null; }
   if (outputEl) { outputEl.remove(); outputEl = null; }
@@ -105,6 +128,16 @@ function executeBlock(node) {
 function executeNextCommand() {
   if (!running) return;
 
+  // In step mode, pause before each command (except when resuming from a pause)
+  if (stepping && currentCmd > 0 && !resuming) {
+    paused = true;
+    S.executingCommandIdx = currentCmd;
+    updateInspector();
+    if (S.onStepPause) S.onStepPause();
+    return;
+  }
+  resuming = false;
+
   if (currentCmd >= currentNode.commands.length) {
     // Block finished — check call stack
     currentNode.el.classList.remove('node-executing');
@@ -123,7 +156,11 @@ function executeNextCommand() {
     } else {
       appendOutput('<div class="exec-msg exec-info">Execution complete.</div>');
       running = false;
+      stepping = false;
+      paused = false;
+      resuming = false;
       updateInspector();
+      if (S.onExecutionEnd) S.onExecutionEnd();
     }
     return;
   }

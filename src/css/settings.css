@@ -109,3 +109,28 @@
   border-radius: 4px;
   padding: 2px;
 }
+
+/* ── Mode label (top-left below toolbar) ───────────────────────────────────── */
+
+#mode-label {
+  position: fixed;
+  top: 50px;
+  left: 12px;
+  z-index: 50;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  pointer-events: none;
+}
+
+#mode-label-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #60a5fa;
+}
+
+#mode-label-hint {
+  font-size: 10px;
+  color: #4b5563;
+  font-style: italic;
+}

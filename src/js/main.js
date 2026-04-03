@@ -16,7 +16,7 @@ import { getBorderPoint } from './connections/geometry.js';
 import { renderConnGroup, updateConnection } from './connections/conn-render.js';
 import { recalcPairOffsets } from './connections/conn-model.js';
 import { updateInspector, showJsonExport } from './inspector.js';
-import { startExecution, stopExecution, isRunning } from './engine.js';
+import { startExecution, startStepExecution, stepNext, stopExecution, isRunning, isStepping, isPaused } from './engine.js';
 import { enterFungusMode, exitFungusMode, classifyBlock, applyFungusStyles, syncAutoConnections } from './fungus-mode.js';
 
 // ── Toolbar: Fit All ─────────────────────────────────────────────────────────
@@ -423,22 +423,63 @@ restoreBtn.addEventListener('click', () => {
 S.onSelectionChange = updateInspector;
 document.getElementById('btn-export-json').addEventListener('click', showJsonExport);
 
-// ── Play / Stop ──────────────────────────────────────────────────────────────
+// ── Play / Stop / Step ───────────────────────────────────────────────────────
 
-const btnPlay = document.getElementById('btn-play');
-const btnStop = document.getElementById('btn-stop');
+const btnPlay         = document.getElementById('btn-play');
+const btnPlayStep     = document.getElementById('btn-play-step');
+const btnStepContinue = document.getElementById('btn-step-continue');
+const btnStop         = document.getElementById('btn-stop');
+const playLabel       = document.getElementById('play-label');
+const modeLabelText   = document.getElementById('mode-label-text');
+
+function showPlayButtons() {
+  btnPlay.style.display = '';
+  btnPlayStep.style.display = S.diagramMode === 'fungus' ? '' : 'none';
+  btnStepContinue.style.display = 'none';
+  btnStop.style.display = 'none';
+}
+
+function showRunningButtons() {
+  btnPlay.style.display = 'none';
+  btnPlayStep.style.display = 'none';
+  btnStepContinue.style.display = 'none';
+  btnStop.style.display = '';
+}
+
+function showStepPausedButtons() {
+  btnPlay.style.display = 'none';
+  btnPlayStep.style.display = 'none';
+  btnStepContinue.style.display = '';
+  btnStop.style.display = '';
+}
 
 btnPlay.addEventListener('click', () => {
-  btnPlay.style.display = 'none';
-  btnStop.style.display = '';
+  showRunningButtons();
   startExecution();
+});
+
+btnPlayStep.addEventListener('click', () => {
+  showRunningButtons();
+  startStepExecution();
+});
+
+btnStepContinue.addEventListener('click', () => {
+  showRunningButtons();
+  stepNext();
 });
 
 btnStop.addEventListener('click', () => {
   stopExecution();
-  btnStop.style.display = 'none';
-  btnPlay.style.display = '';
+  showPlayButtons();
 });
+
+S.onStepPause = () => {
+  showStepPausedButtons();
+};
+
+S.onExecutionEnd = () => {
+  showPlayButtons();
+};
 
 // ── Inspector / Settings tabs ────────────────────────────────────────────────
 
@@ -459,15 +500,29 @@ for (const tab of document.querySelectorAll('.inspector-tab')) {
   });
 }
 
+function updateModeUI() {
+  if (S.diagramMode === 'fungus') {
+    modeLabelText.textContent = 'Fungus Mode';
+    playLabel.textContent = 'Play All';
+  } else {
+    modeLabelText.textContent = 'State Chart Mode';
+    playLabel.textContent = 'Play';
+  }
+  showPlayButtons();
+}
+
 for (const radio of document.querySelectorAll('input[name="diagram-mode"]')) {
   radio.addEventListener('change', () => {
     if (radio.value === 'fungus') enterFungusMode();
     else exitFungusMode();
+    updateModeUI();
   });
 }
 
 // ── Initialise ───────────────────────────────────────────────────────────────
 
+enterFungusMode();
+updateModeUI();
 applyTransform();
 
 // ── Re-exports (facade for tests) ───────────────────────────────────────────
@@ -487,3 +542,4 @@ export { selectConn, deselectConn } from './connections/conn-selection.js';
 export { getBorderPoint, getPairPerpendicular } from './connections/geometry.js';
 export { updateInspector } from './inspector.js';
 export { classifyBlock, applyFungusStyles, syncAutoConnections, enterFungusMode, exitFungusMode } from './fungus-mode.js';
+export { startExecution, startStepExecution, stepNext, stopExecution, isRunning, isStepping, isPaused } from './engine.js';

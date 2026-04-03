@@ -19,6 +19,20 @@ body[data-mode="fungus"] .end-node {
   pointer-events: none;
 }
 
+/* Hide resize handles and reset button on blocks */
+body[data-mode="fungus"] .resize-handle {
+  display: none;
+}
+
+body[data-mode="fungus"] .node-reset-btn {
+  display: none;
+}
+
+/* Increase default font size for block labels */
+body[data-mode="fungus"] .state-node .node-label {
+  font-size: 15px;
+}
+
 /* ── Fungus block type styles ──────────────────────────────────────────────── */
 
 /* Event Block: blue rounded rectangle */

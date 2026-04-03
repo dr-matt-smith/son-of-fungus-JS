@@ -4,6 +4,8 @@ import { commitEditing } from './node-editing.js';
 import { addResizeHandles, removeResizeHandles } from './resize-handles.js';
 import { addConnHandle, removeConnHandle } from '../connections/conn-handle.js';
 import { deselectConn } from '../connections/conn-selection.js';
+import { deleteConnection } from '../connections/conn-model.js';
+import { syncAutoConnections, applyFungusStyles } from '../fungus-mode.js';
 import { updateCursor } from '../transform.js';
 
 export function addNodeDeleteHandle(node) {
@@ -30,7 +32,7 @@ export function activateNode(node) {
   deactivateNode();
   S.activeNode = node;
   node.el.classList.add('node-active');
-  if (node.type === 'state' || node.type === 'choice') {
+  if ((node.type === 'state' || node.type === 'choice') && S.diagramMode !== 'fungus') {
     addResizeHandles(node);
   }
   if (node.type !== 'end' && S.diagramMode !== 'fungus') addConnHandle(node);
@@ -140,30 +142,50 @@ export function deleteNode(node) {
     S.activeNode = null;
   }
 
-  const cx = node.x + node.w / 2;
-  const cy = node.y + node.h / 2;
-  for (const conn of S.connections) {
-    if (conn.fromId === node.id) {
-      const to = S.nodes.find(n => n.id === conn.toId);
-      if (to) {
-        const toC = { x: to.x + to.w / 2, y: to.y + to.h / 2 };
-        const bp = getBorderPoint(node, toC.x, toC.y);
-        conn.danglingFrom = { x: bp.x, y: bp.y };
-      } else {
-        conn.danglingFrom = { x: cx, y: cy };
+  if (S.diagramMode === 'fungus') {
+    // In fungus mode: clear call/menu references to this block, delete connections
+    for (const n of S.nodes) {
+      for (const cmd of n.commands) {
+        if (cmd.type === 'call' && cmd.targetBlockId === node.id) {
+          cmd.targetBlockId = null;
+        }
+        if (cmd.type === 'menu') {
+          for (const opt of cmd.options) {
+            if (opt.targetBlockId === node.id) opt.targetBlockId = null;
+          }
+        }
       }
-      conn.fromId = null;
     }
-    if (conn.toId === node.id) {
-      const from = S.nodes.find(n => n.id === conn.fromId);
-      if (from) {
-        const fromC = { x: from.x + from.w / 2, y: from.y + from.h / 2 };
-        const bp = getBorderPoint(node, fromC.x, fromC.y);
-        conn.danglingTo = { x: bp.x, y: bp.y };
-      } else {
-        conn.danglingTo = { x: cx, y: cy };
+    // Delete all connections to/from this node
+    const toDelete = S.connections.filter(c => c.fromId === node.id || c.toId === node.id);
+    for (const conn of toDelete) deleteConnection(conn);
+  } else {
+    // In statechart mode: leave connections as dangling
+    const cx = node.x + node.w / 2;
+    const cy = node.y + node.h / 2;
+    for (const conn of S.connections) {
+      if (conn.fromId === node.id) {
+        const to = S.nodes.find(n => n.id === conn.toId);
+        if (to) {
+          const toC = { x: to.x + to.w / 2, y: to.y + to.h / 2 };
+          const bp = getBorderPoint(node, toC.x, toC.y);
+          conn.danglingFrom = { x: bp.x, y: bp.y };
+        } else {
+          conn.danglingFrom = { x: cx, y: cy };
+        }
+        conn.fromId = null;
       }
-      conn.toId = null;
+      if (conn.toId === node.id) {
+        const from = S.nodes.find(n => n.id === conn.fromId);
+        if (from) {
+          const fromC = { x: from.x + from.w / 2, y: from.y + from.h / 2 };
+          const bp = getBorderPoint(node, fromC.x, fromC.y);
+          conn.danglingTo = { x: bp.x, y: bp.y };
+        } else {
+          conn.danglingTo = { x: cx, y: cy };
+        }
+        conn.toId = null;
+      }
     }
   }
 
@@ -171,8 +193,13 @@ export function deleteNode(node) {
   node.mmEl.remove();
   S.nodes.splice(S.nodes.indexOf(node), 1);
 
-  for (const conn of S.connections) {
-    updateConnection(conn);
+  if (S.diagramMode === 'fungus') {
+    applyFungusStyles();
+    syncAutoConnections();
+  } else {
+    for (const conn of S.connections) {
+      updateConnection(conn);
+    }
   }
   refreshMinimap();
   if (S.onSelectionChange) S.onSelectionChange();

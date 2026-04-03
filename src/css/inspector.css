@@ -268,17 +268,32 @@
   color: #d1d5db;
 }
 
-#json-modal-close {
+#json-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.json-modal-btn {
   background: none;
   border: none;
   color: #9ca3af;
-  font-size: 18px;
+  font-size: 14px;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  transition: color 0.12s, background 0.12s;
+  display: inline-flex;
+  align-items: center;
 }
 
-#json-modal-close:hover {
+.json-modal-btn:hover {
   color: #f3f4f6;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+#json-modal-close {
+  font-size: 18px;
 }
 
 #json-modal-body {
@@ -295,4 +310,6 @@
   white-space: pre-wrap;
   word-break: break-word;
   line-height: 1.5;
+  user-select: text;
+  cursor: text;
 }

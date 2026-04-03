@@ -42,6 +42,12 @@ export function fitLabelFontSize(node) {
   const labelEl = node.el.querySelector('.node-label');
   if (!labelEl) return;
 
+  // In fungus mode, use CSS font size (no auto-fit shrinking)
+  if (S.diagramMode === 'fungus') {
+    labelEl.style.fontSize = '';
+    return;
+  }
+
   const MAX_FONT = 200;
   const MIN_FONT = 6;
 
