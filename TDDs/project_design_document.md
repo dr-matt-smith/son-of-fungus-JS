@@ -204,7 +204,7 @@ Version 21 features
 Version 22 features - edit block name in inspector panel
 ==================
 
-- [] when a state/block is selected, allow its name to be edited in the inspector panel on the right
-  - [] and the state/block name should change in the diagram dynamically as the user types
+- ✅ when a state/block is selected, allow its name to be edited in the inspector panel on the right
+  - ✅ and the state/block name should change in the diagram dynamically as the user types
 
-- [] and add Vite and PlayWright tests for the above feature(s)
+- ✅ and add Vite and PlayWright tests for the above feature(s)

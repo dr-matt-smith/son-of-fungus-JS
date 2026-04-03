@@ -612,6 +612,76 @@ test.describe('V21 – Hand tool in zoom toolbar', () => {
   });
 });
 
+// ─── Version 22: Edit block name in inspector panel ───────────────────────
+
+test.describe('V22 – Edit block name in inspector panel', () => {
+  test('inspector shows editable name input when state node is selected', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    const nameInput = page.locator('.inspector-name-input');
+    await expect(nameInput).toBeVisible();
+    await expect(nameInput).toHaveValue(/State/);
+  });
+
+  test('inspector shows editable name input when choice node is selected', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-choice');
+    await page.locator('.choice-node').click();
+    const nameInput = page.locator('.inspector-name-input');
+    await expect(nameInput).toBeVisible();
+    await expect(nameInput).toHaveValue('?');
+  });
+
+  test('inspector does NOT show name input for start node', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-start');
+    await page.locator('.start-node').click();
+    await expect(page.locator('.inspector-name-input')).toHaveCount(0);
+  });
+
+  test('inspector does NOT show name input for end node', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-end');
+    await page.locator('.end-node').click();
+    await expect(page.locator('.inspector-name-input')).toHaveCount(0);
+  });
+
+  test('typing in name input updates the diagram label dynamically', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    const nameInput = page.locator('.inspector-name-input');
+    await nameInput.fill('MyBlock');
+    const label = page.locator('.state-node .node-label');
+    await expect(label).toHaveText('MyBlock');
+  });
+
+  test('diagram label updates as the user types each character', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    const nameInput = page.locator('.inspector-name-input');
+    await nameInput.fill('');
+    await nameInput.type('AB');
+    const label = page.locator('.state-node .node-label');
+    await expect(label).toHaveText('AB');
+  });
+
+  test('name input reflects current label when node is reselected', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    const node = page.locator('.state-node');
+
+    // Select and rename
+    await node.click();
+    const nameInput = page.locator('.inspector-name-input');
+    await nameInput.fill('Renamed');
+
+    // Deselect
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+
+    // Reselect
+    await node.click();
+    await expect(page.locator('.inspector-name-input')).toHaveValue('Renamed');
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

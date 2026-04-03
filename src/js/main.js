@@ -457,3 +457,4 @@ export { createConnection, deleteConnection } from './connections/conn-model.js'
 export { updateConnection } from './connections/conn-render.js';
 export { selectConn, deselectConn } from './connections/conn-selection.js';
 export { getBorderPoint, getPairPerpendicular } from './connections/geometry.js';
+export { updateInspector } from './inspector.js';

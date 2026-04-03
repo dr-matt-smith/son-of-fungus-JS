@@ -562,3 +562,74 @@ describe('Hand tool in zoom toolbar', () => {
     expect(handBtn.classList.contains('active')).toBe(false);
   });
 });
+
+// ─── Version 22: Edit block name in inspector panel ────────────────────────
+
+describe('Edit block name in inspector panel', () => {
+  it('inspector shows an editable name input for state nodes', () => {
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+    const nameInput = document.querySelector('.inspector-name-input');
+    expect(nameInput).toBeTruthy();
+    expect(nameInput.tagName).toBe('INPUT');
+    expect(nameInput.value).toBe(node.label);
+  });
+
+  it('inspector shows an editable name input for choice nodes', () => {
+    const node = app.createNode('choice', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+    const nameInput = document.querySelector('.inspector-name-input');
+    expect(nameInput).toBeTruthy();
+    expect(nameInput.value).toBe(node.label);
+  });
+
+  it('inspector does NOT show name input for start nodes', () => {
+    const node = app.createNode('start', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+    const nameInput = document.querySelector('.inspector-name-input');
+    expect(nameInput).toBeNull();
+  });
+
+  it('inspector does NOT show name input for end nodes', () => {
+    const node = app.createNode('end', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+    const nameInput = document.querySelector('.inspector-name-input');
+    expect(nameInput).toBeNull();
+  });
+
+  it('typing in the name input updates the node label', () => {
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+    const nameInput = document.querySelector('.inspector-name-input');
+    nameInput.value = 'NewName';
+    nameInput.dispatchEvent(new Event('input'));
+    expect(node.label).toBe('NewName');
+  });
+
+  it('typing in the name input updates the diagram label element', () => {
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+    const nameInput = document.querySelector('.inspector-name-input');
+    nameInput.value = 'LiveUpdate';
+    nameInput.dispatchEvent(new Event('input'));
+    const labelEl = node.el.querySelector('.node-label');
+    expect(labelEl.textContent).toBe('LiveUpdate');
+  });
+
+  it('empty input does not clear the node label', () => {
+    const node = app.createNode('state', 0, 0);
+    const original = node.label;
+    app.activateNode(node);
+    app.updateInspector();
+    const nameInput = document.querySelector('.inspector-name-input');
+    nameInput.value = '   ';
+    nameInput.dispatchEvent(new Event('input'));
+    expect(node.label).toBe(original);
+  });
+});

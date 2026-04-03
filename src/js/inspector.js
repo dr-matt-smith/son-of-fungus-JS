@@ -1,4 +1,5 @@
 import { S } from './state.js';
+import { fitLabelFontSize } from './nodes/node-element.js';
 import { EVENT_TYPES, COMMAND_TYPES, createCommand } from './commands.js';
 
 const inspectorEl    = document.getElementById('inspector');
@@ -76,7 +77,6 @@ function renderNodeInspector(n) {
 
   const rows = [['Type', n.type], ['ID', n.id]];
   if (n.type === 'state' || n.type === 'choice') {
-    rows.push(['Name', n.label]);
     rows.push(['Size', `${n.w} × ${n.h}`]);
   }
   rows.push(['Position', `${Math.round(n.x)}, ${Math.round(n.y)}`]);
@@ -85,6 +85,38 @@ function renderNodeInspector(n) {
   const incoming = S.connections.filter(c => c.toId === n.id).length;
   rows.push(['Connections', `${outgoing} out / ${incoming} in`]);
   setPropsRows(rows);
+
+  // Editable name field for state/choice nodes
+  if (n.type === 'state' || n.type === 'choice') {
+    const nameRow = document.createElement('tr');
+    const nameTd = document.createElement('td');
+    nameTd.textContent = 'Name';
+    const valueTd = document.createElement('td');
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.className = 'inspector-input inspector-name-input';
+    nameInput.value = n.label;
+    nameInput.addEventListener('input', () => {
+      const val = nameInput.value.trim();
+      if (val) {
+        n.label = val;
+        const labelEl = n.el.querySelector('.node-label');
+        if (labelEl) labelEl.textContent = val;
+        fitLabelFontSize(n);
+      }
+    });
+    nameInput.addEventListener('keydown', (e) => e.stopPropagation());
+    valueTd.appendChild(nameInput);
+    nameRow.appendChild(nameTd);
+    nameRow.appendChild(valueTd);
+    // Insert after the ID row (index 1)
+    const idRow = tbody.rows[1];
+    if (idRow && idRow.nextSibling) {
+      tbody.insertBefore(nameRow, idRow.nextSibling);
+    } else {
+      tbody.appendChild(nameRow);
+    }
+  }
 
   // Event section
   const eventSection = document.createElement('div');
