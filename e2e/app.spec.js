@@ -1113,6 +1113,94 @@ test.describe('V26 – No resize handles in Fungus mode', () => {
   });
 });
 
+// ─── Version 27: Run Log, Audio dropdown ──────────────────────────────────
+
+test.describe('V27 – Run Log', () => {
+  test('run log button is visible on canvas', async ({ page }) => {
+    await expect(page.locator('#btn-run-log')).toBeVisible();
+  });
+
+  test('clicking run log shows modal with log content', async ({ page }) => {
+    await page.locator('#btn-run-log').click();
+    await expect(page.locator('#json-modal-overlay')).toBeVisible();
+    const header = await page.locator('#json-modal-header span').first().textContent();
+    expect(header).toBe('Run Log');
+    await page.keyboard.press('Escape');
+  });
+
+  test('run log has copy button', async ({ page }) => {
+    await page.locator('#btn-run-log').click();
+    await expect(page.locator('#json-modal-copy')).toBeVisible();
+    await page.keyboard.press('Escape');
+  });
+
+  test('run log shows entries after execution', async ({ page }) => {
+    // Switch to fungus mode, create block with Game Started + Say
+    async function switchToFungusMode(page) {
+      await page.locator('.inspector-tab[data-tab="settings"]').click();
+      await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+      await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    }
+    await switchToFungusMode(page);
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-select').first().selectOption('gameStarted');
+    await page.locator('.inspector-add-cmd select').selectOption('say');
+
+    // Deselect and play
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+    await page.locator('#btn-play').click();
+    await page.waitForTimeout(1500);
+
+    // Check run log
+    await page.locator('#btn-run-log').click();
+    const logText = await page.locator('#json-modal-body pre').textContent();
+    expect(logText).toContain('Execution started');
+    expect(logText).toContain('Say:');
+    expect(logText).toContain('Execution complete');
+    await page.keyboard.press('Escape');
+  });
+});
+
+test.describe('V27 – Audio file dropdown', () => {
+  test('playSound command shows audio file dropdown', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('playSound');
+
+    // Should have a select for Audio File
+    const audioSelect = page.locator('.cmd-field select').first();
+    await expect(audioSelect).toBeVisible();
+
+    // Check it has the audio files
+    const options = await audioSelect.locator('option').allTextContents();
+    expect(options.some(o => o.includes('yum.mp3'))).toBe(true);
+    expect(options.some(o => o.includes('die.mp3'))).toBe(true);
+  });
+
+  test('playMusic command shows audio file dropdown', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('playMusic');
+
+    const audioSelect = page.locator('.cmd-field select').first();
+    await expect(audioSelect).toBeVisible();
+    const options = await audioSelect.locator('option').allTextContents();
+    expect(options.some(o => o.includes('yum.mp3'))).toBe(true);
+  });
+
+  test('each audio file in /audio is playable', async ({ page }) => {
+    // Verify each audio file returns a 200 response
+    const audioFiles = ['/audio/die.mp3', '/audio/food_sounds/yum.mp3'];
+    for (const file of audioFiles) {
+      const response = await page.request.get(`http://localhost:4173${file}`);
+      expect(response.status()).toBe(200);
+    }
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

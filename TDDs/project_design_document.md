@@ -276,3 +276,17 @@ Version 26 features
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
+Version 27 features
+==================
+
+- ✅ add a "Run Log" button, next to the Export JSON button
+  - ✅ this should be a timestamped log of the seqauence of the execution of the flowchart
+  - ✅ it should be reset each time Play All is clicked
+  - ✅ just like JSON it should be selectable, and a button to copy it to the clickboard
+
+drop down of audio files
+- ✅ for the Audio URL of a Play Sound command, please add a drop-down menu, listing the URLs for all the sounds in the /audio folder (and any sub-folders of audio)
+  - [] show the path, e.f. /audio/die.mp3 and /audio/food_sounds/yum.mp3
+- ✅ please test that the sound actually plays, for each sound in the /public/audio folder
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)

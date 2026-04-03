@@ -2,6 +2,8 @@ import { S } from './state.js';
 import { fitLabelFontSize } from './nodes/node-element.js';
 import { EVENT_TYPES, COMMAND_TYPES, createCommand } from './commands.js';
 import { applyFungusStyles, syncAutoConnections } from './fungus-mode.js';
+import { getRunLog } from './engine.js';
+import { AUDIO_FILES } from './audio-manifest.js';
 
 const inspectorEl    = document.getElementById('inspector');
 const emptyMsg       = document.getElementById('inspector-empty');
@@ -291,10 +293,12 @@ function renderCommandFields(container, cmd, node) {
       container.appendChild(labeledInput('Value', cmd.value, v => { cmd.value = v; }));
       break;
     case 'playMusic':
-    case 'playSound':
-      container.appendChild(labeledInput('Audio URL', cmd.audioUrl, v => { cmd.audioUrl = v; }));
+    case 'playSound': {
+      const audioOptions = [['', '— none —'], ...AUDIO_FILES.map(f => [f, f])];
+      container.appendChild(labeledSelect('Audio File', cmd.audioUrl || '', audioOptions, v => { cmd.audioUrl = v; }));
       container.appendChild(labeledInput('Volume', cmd.volume, v => { cmd.volume = parseFloat(v) || 0; }));
       break;
+    }
     case 'wait':
       container.appendChild(labeledInput('Duration (s)', cmd.duration, v => { cmd.duration = parseFloat(v) || 0; }));
       break;
@@ -440,6 +444,51 @@ export function showJsonExport() {
   overlay.querySelector('#json-modal-close').addEventListener('click', close);
   overlay.querySelector('#json-modal-copy').addEventListener('click', () => {
     navigator.clipboard.writeText(json).then(() => {
+      const btn = overlay.querySelector('#json-modal-copy');
+      btn.textContent = 'Copied!';
+      setTimeout(() => {
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+      }, 1500);
+    });
+  });
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  document.addEventListener('keydown', function handler(e) {
+    if (e.key === 'Escape') { close(); document.removeEventListener('keydown', handler); }
+  });
+}
+
+export function showRunLog() {
+  const log = getRunLog();
+  const text = log.length === 0
+    ? '(No execution log yet — click Play All first)'
+    : log.map(e => `[${e.ts}] ${e.message}`).join('\n');
+
+  const overlay = document.createElement('div');
+  overlay.id = 'json-modal-overlay';
+  overlay.innerHTML = `
+    <div id="json-modal">
+      <div id="json-modal-header">
+        <span>Run Log</span>
+        <div id="json-modal-actions">
+          <button id="json-modal-copy" class="json-modal-btn" title="Copy to clipboard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
+          <button id="json-modal-close" class="json-modal-btn" title="Close">&times;</button>
+        </div>
+      </div>
+      <div id="json-modal-body"><pre></pre></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector('pre').textContent = text;
+  const close = () => overlay.remove();
+  overlay.querySelector('#json-modal-close').addEventListener('click', close);
+  overlay.querySelector('#json-modal-copy').addEventListener('click', () => {
+    navigator.clipboard.writeText(text).then(() => {
       const btn = overlay.querySelector('#json-modal-copy');
       btn.textContent = 'Copied!';
       setTimeout(() => {

@@ -31,7 +31,10 @@ export function setupDOM() {
         <div id="canvas" style="width:4000px;height:3000px;">
           <svg id="connections-svg" xmlns="http://www.w3.org/2000/svg"></svg>
         </div>
-        <button id="btn-export-json" class="toolbar-btn">Export JSON</button>
+        <div id="canvas-overlay-buttons">
+          <button id="btn-export-json" class="toolbar-btn">Export JSON</button>
+          <button id="btn-run-log" class="toolbar-btn">Run Log</button>
+        </div>
       </div>
       <div id="divider"></div>
       <div id="inspector">

@@ -18,10 +18,18 @@ let waitTimer   = null;
 let menuOverlay = null;
 let audioElements = {};   // keyed by URL for music control
 let outputEl    = null;   // dialogue output panel
+let runLog      = [];     // timestamped execution log entries
 
 export function isRunning() { return running; }
 export function isStepping() { return stepping; }
 export function isPaused() { return paused; }
+export function getRunLog() { return runLog; }
+
+function logEntry(message) {
+  const now = new Date();
+  const ts = now.toLocaleTimeString('en-GB', { hour12: false }) + '.' + String(now.getMilliseconds()).padStart(3, '0');
+  runLog.push({ ts, message });
+}
 
 // ── Output panel (for Say commands) ──────────────────────────────────────────
 
@@ -70,8 +78,10 @@ export function startExecution() {
   clearOutput();
   ensureOutputPanel();
   callStack = [];
+  runLog = [];
   S.executingNode = null;
   S.executingCommandIdx = -1;
+  logEntry(`Execution started — entry block: "${entryNode.label}" (id:${entryNode.id})`);
   executeBlock(entryNode);
 }
 
@@ -120,6 +130,7 @@ function executeBlock(node) {
   node.el.classList.add('node-executing');
   S.executingNode = node;
   S.executingCommandIdx = 0;
+  logEntry(`Enter block: "${node.label}" (id:${node.id})`);
   updateInspector();
 
   executeNextCommand();
@@ -154,6 +165,7 @@ function executeNextCommand() {
       updateInspector();
       executeNextCommand();
     } else {
+      logEntry('Execution complete');
       appendOutput('<div class="exec-msg exec-info">Execution complete.</div>');
       running = false;
       stepping = false;
@@ -206,18 +218,20 @@ function substituteVars(text) {
 function execSay(cmd) {
   const text = substituteVars(cmd.text);
   const charName = cmd.character ? `<strong>${cmd.character}:</strong> ` : '';
+  logEntry(`Say: ${cmd.character ? cmd.character + ': ' : ''}${text}`);
   appendOutput(`<div class="exec-say">${charName}${text}</div>`);
-  // Auto-advance after a short delay
   waitTimer = setTimeout(() => { waitTimer = null; executeNextCommand(); }, 600);
 }
 
 function execCall(cmd) {
   const target = S.nodes.find(n => n.id === cmd.targetBlockId);
   if (!target) {
+    logEntry('Call: target block not found');
     appendOutput('<div class="exec-msg exec-error">Call: target block not found.</div>');
     executeNextCommand();
     return;
   }
+  logEntry(`Call: "${target.label}" (mode: ${cmd.mode})`);
   if (cmd.mode === 'continue') {
     callStack.push({ node: currentNode, cmdIdx: currentCmd });
   }
@@ -225,6 +239,7 @@ function execCall(cmd) {
 }
 
 function execMenu(cmd) {
+  logEntry(`Menu: ${cmd.options.map(o => o.text).join(' / ')}`);
   ensureOutputPanel();
   menuOverlay = document.createElement('div');
   menuOverlay.className = 'exec-menu';
@@ -262,19 +277,20 @@ function execSetVariable(cmd) {
     S.variables.push(v);
   }
   v.value = cmd.value;
+  logEntry(`Set variable: ${cmd.variableName} = ${cmd.value}`);
   executeNextCommand();
 }
 
 function execWait(cmd) {
+  logEntry(`Wait: ${cmd.duration}s`);
   const ms = (cmd.duration || 1) * 1000;
   waitTimer = setTimeout(() => { waitTimer = null; executeNextCommand(); }, ms);
 }
 
 function execSendMessage(cmd) {
-  // Find blocks with messageReceived event matching this message
+  logEntry(`Send message: "${cmd.message}"`);
   const targets = S.nodes.filter(n => n.event?.type === 'messageReceived' && n.event.message === cmd.message);
   if (targets.length > 0) {
-    // Execute first matching block (push current as continue)
     callStack.push({ node: currentNode, cmdIdx: currentCmd });
     executeBlock(targets[0]);
   } else {
@@ -283,6 +299,7 @@ function execSendMessage(cmd) {
 }
 
 function execPlayMusic(cmd) {
+  logEntry(`Play music: ${cmd.audioUrl || '(none)'}`);
   if (!cmd.audioUrl) { executeNextCommand(); return; }
   try {
     if (audioElements[cmd.audioUrl]) audioElements[cmd.audioUrl].pause();
@@ -296,6 +313,7 @@ function execPlayMusic(cmd) {
 }
 
 function execPlaySound(cmd) {
+  logEntry(`Play sound: ${cmd.audioUrl || '(none)'}`);
   if (!cmd.audioUrl) { executeNextCommand(); return; }
   try {
     const audio = new Audio(cmd.audioUrl);
@@ -311,6 +329,7 @@ function execPlaySound(cmd) {
 }
 
 function execStopAudio() {
+  logEntry('Stop audio');
   for (const [url, audio] of Object.entries(audioElements)) {
     audio.pause();
     audio.currentTime = 0;

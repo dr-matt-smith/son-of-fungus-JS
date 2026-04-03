@@ -15,7 +15,7 @@ import { cancelConnEditing } from './connections/conn-editing.js';
 import { getBorderPoint } from './connections/geometry.js';
 import { renderConnGroup, updateConnection } from './connections/conn-render.js';
 import { recalcPairOffsets } from './connections/conn-model.js';
-import { updateInspector, showJsonExport } from './inspector.js';
+import { updateInspector, showJsonExport, showRunLog } from './inspector.js';
 import { startExecution, startStepExecution, stepNext, stopExecution, isRunning, isStepping, isPaused } from './engine.js';
 import { enterFungusMode, exitFungusMode, classifyBlock, applyFungusStyles, syncAutoConnections } from './fungus-mode.js';
 
@@ -422,6 +422,7 @@ restoreBtn.addEventListener('click', () => {
 
 S.onSelectionChange = updateInspector;
 document.getElementById('btn-export-json').addEventListener('click', showJsonExport);
+document.getElementById('btn-run-log').addEventListener('click', showRunLog);
 
 // ── Play / Stop / Step ───────────────────────────────────────────────────────
 
@@ -542,4 +543,4 @@ export { selectConn, deselectConn } from './connections/conn-selection.js';
 export { getBorderPoint, getPairPerpendicular } from './connections/geometry.js';
 export { updateInspector } from './inspector.js';
 export { classifyBlock, applyFungusStyles, syncAutoConnections, enterFungusMode, exitFungusMode } from './fungus-mode.js';
-export { startExecution, startStepExecution, stepNext, stopExecution, isRunning, isStepping, isPaused } from './engine.js';
+export { startExecution, startStepExecution, stepNext, stopExecution, isRunning, isStepping, isPaused, getRunLog } from './engine.js';

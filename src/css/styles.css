@@ -124,11 +124,16 @@ html, body {
 
 /* ── Canvas container (positioned by #main-area flex in inspector.css) ─────── */
 
-.canvas-overlay-btn {
+#canvas-overlay-buttons {
   position: absolute;
   top: 8px;
   right: 8px;
   z-index: 50;
+  display: flex;
+  gap: 4px;
+}
+
+.canvas-overlay-btn {
   background: #1f2937;
   border: 1px solid #374151;
   border-radius: 5px;
