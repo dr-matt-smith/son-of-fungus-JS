@@ -4,8 +4,36 @@
 
 Vite project -
 
-run with 
+## 0. don't forget to install Node packages
+
+```bash
+npm install
+```
+
+
+## 1. run dev version
 
 ```bash
 npm run dev
 ```
+
+## 2. build dist(ribution) version in `dist`
+
+```bash
+npm run build 
+```
+
+and preview the build with:
+```bash
+ npm run preview
+```
+
+## ISSUE with PythonAnywhere publish
+
+the refs in the  `inxdex.html` for CSS and JS need to be changed from  `./` to  `./son-of-fungus/` for it to work when viewing:
+- https://drmattsmith.PythonAnywhere.com/media/public/son-of-fungus
+
+very annoying! 
+
+
+

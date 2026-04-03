@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StateGen</title>
+  <script type="module" crossorigin src="./assets/index-DoIiYNwv.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-C3-9J5A7.css">
+</head>
+<body>
+
+  <!-- ── Toolbar ─────────────────────────────────────────────────────────── -->
+  <div id="toolbar">
+
+    <div class="toolbar-group">
+      <button id="btn-hand-tool" class="toolbar-btn tool-btn" title="Hand Tool – pan canvas (H or middle-mouse drag)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v1M10 5V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8"/>
+          <path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+        </svg>
+        Hand
+      </button>
+    </div>
+
+    <div class="toolbar-sep"></div>
+
+    <div class="toolbar-group">
+      <!-- State node (rectangle) -->
+      <button id="btn-new-state" class="toolbar-btn palette-btn" draggable="false"
+              title="Drag onto canvas to create a new State node">
+        <span class="palette-icon-state" aria-hidden="true"></span>
+        State
+      </button>
+
+      <!-- Start state (filled circle) -->
+      <button id="btn-new-start" class="toolbar-btn palette-btn" draggable="false"
+              title="Drag onto canvas to create a Start state">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <circle cx="7" cy="7" r="5.5" fill="currentColor"/>
+        </svg>
+        Start
+      </button>
+
+      <!-- End state (double circle) -->
+      <button id="btn-new-end" class="toolbar-btn palette-btn" draggable="false"
+              title="Drag onto canvas to create an End state">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="7" cy="7" r="3"   fill="currentColor"/>
+        </svg>
+        End
+      </button>
+
+      <!-- Choice (diamond) node -->
+      <button id="btn-new-choice" class="toolbar-btn palette-btn" draggable="false"
+              title="Drag onto canvas to create a Choice (diamond) node">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <polygon points="7,1 13,7 7,13 1,7" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        Choice
+      </button>
+    </div>
+
+    <div class="toolbar-sep"></div>
+
+    <div class="toolbar-group">
+      <button id="btn-play" class="toolbar-btn" title="Run the flowchart">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <polygon points="3,1 12,7 3,13" fill="currentColor"/>
+        </svg>
+        Play
+      </button>
+      <button id="btn-stop" class="toolbar-btn" title="Stop execution" style="display:none;">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <rect x="2" y="2" width="10" height="10" fill="currentColor"/>
+        </svg>
+        Stop
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ── Zoom toolbar (bottom-left) ──────────────────────────────────────── -->
+  <div id="zoom-toolbar">
+    <button id="btn-fit-all" class="toolbar-btn" title="Fit All – zoom to show all diagram elements (F)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="15 3 21 3 21 9"/>
+        <polyline points="9 21 3 21 3 15"/>
+        <line x1="21" y1="3" x2="14" y2="10"/>
+        <line x1="3"  y1="21" x2="10" y2="14"/>
+      </svg>
+    </button>
+
+    <div class="toolbar-sep"></div>
+
+    <button id="btn-zoom-out" class="toolbar-btn" title="Zoom Out (-)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+    </button>
+
+    <input id="zoom-slider" type="range" min="8" max="500" value="100" title="Zoom slider">
+
+    <button id="btn-zoom-in" class="toolbar-btn" title="Zoom In (= or +)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5"  y1="12" x2="19" y2="12"/>
+      </svg>
+    </button>
+
+    <span id="zoom-label" class="zoom-label">100%</span>
+  </div>
+
+  <!-- ── Main area (canvas + divider + inspector) ─────────────────────── -->
+  <div id="main-area">
+    <div id="canvas-container">
+      <div id="canvas">
+        <svg id="connections-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+    </div>
+
+    <div id="divider"></div>
+
+    <div id="inspector">
+      <div id="inspector-header">
+        <span>Inspector</span>
+        <button id="btn-export-json" class="toolbar-btn" title="Export diagram as JSON">Export JSON</button>
+      </div>
+      <div id="inspector-body">
+        <p id="inspector-empty">No object selected</p>
+        <div id="inspector-props" style="display:none;">
+          <table id="inspector-table">
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Minimap ─────────────────────────────────────────────────────────── -->
+  <div id="minimap" title="Minimap – drag the red rectangle to scroll the canvas">
+    <div id="minimap-states"></div>
+    <div id="minimap-viewport"></div>
+    <span id="minimap-label">MAP</span>
+    <button id="minimap-minimize" title="Minimize minimap">_</button>
+  </div>
+  <button id="minimap-restore" title="Show minimap">Minimap</button>
+
+</body>
+</html>

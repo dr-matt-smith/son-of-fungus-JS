@@ -1,0 +1,6 @@
+{
+  "enabledMcpjsonServers": [
+    "celbridge"
+  ],
+  "enableAllProjectMcpServers": true
+}
