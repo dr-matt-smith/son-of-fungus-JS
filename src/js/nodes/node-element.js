@@ -25,6 +25,12 @@ export function buildNodeElement(type, id) {
     el.innerHTML = '<span class="node-label-fixed">end</span>';
   }
 
+  // ID label at top-right inside the node
+  const idSpan = document.createElement('span');
+  idSpan.className = 'node-id-label';
+  idSpan.textContent = `id: ${id}`;
+  el.appendChild(idSpan);
+
   if (type === 'state' || type === 'choice') {
     const btn = document.createElement('button');
     btn.className = 'node-reset-btn';

@@ -569,18 +569,18 @@ S.onExecutionEnd = () => {
 
 const inspectorPanel = document.getElementById('inspector-panel');
 const settingsPanel  = document.getElementById('settings-panel');
+const messagesPanel  = document.getElementById('messages-panel');
+
+const allPanels = [inspectorPanel, settingsPanel, messagesPanel];
 
 for (const tab of document.querySelectorAll('.inspector-tab')) {
   tab.addEventListener('click', () => {
     for (const t of document.querySelectorAll('.inspector-tab')) t.classList.remove('active');
     tab.classList.add('active');
-    if (tab.dataset.tab === 'inspector') {
-      inspectorPanel.style.display = '';
-      settingsPanel.style.display = 'none';
-    } else {
-      inspectorPanel.style.display = 'none';
-      settingsPanel.style.display = '';
-    }
+    for (const p of allPanels) p.style.display = 'none';
+    if (tab.dataset.tab === 'inspector') inspectorPanel.style.display = '';
+    else if (tab.dataset.tab === 'settings') settingsPanel.style.display = '';
+    else if (tab.dataset.tab === 'messages') { messagesPanel.style.display = ''; renderMessagesList(); }
   });
 }
 
@@ -602,6 +602,57 @@ for (const radio of document.querySelectorAll('input[name="diagram-mode"]')) {
     updateModeUI();
   });
 }
+
+// ── Messages tab ────────────────────────────────────────────────────────────
+
+const messagesList   = document.getElementById('messages-list');
+const messagesNewInput = document.getElementById('messages-new-input');
+const messagesAddBtn = document.getElementById('messages-add-btn');
+
+function renderMessagesList() {
+  messagesList.innerHTML = '';
+  for (let i = 0; i < S.messages.length; i++) {
+    const row = document.createElement('div');
+    row.className = 'messages-item';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'inspector-input';
+    input.value = S.messages[i];
+    input.addEventListener('change', () => {
+      const val = input.value.trim();
+      if (val) S.messages[i] = val;
+      else { S.messages.splice(i, 1); renderMessagesList(); }
+    });
+    input.addEventListener('keydown', (e) => e.stopPropagation());
+    row.appendChild(input);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'messages-delete-btn';
+    delBtn.textContent = '×';
+    delBtn.title = 'Delete message';
+    delBtn.addEventListener('click', () => { S.messages.splice(i, 1); renderMessagesList(); });
+    row.appendChild(delBtn);
+
+    messagesList.appendChild(row);
+  }
+}
+
+messagesAddBtn.addEventListener('click', () => {
+  const val = messagesNewInput.value.trim();
+  if (val && !S.messages.includes(val)) {
+    S.messages.push(val);
+    messagesNewInput.value = '';
+    renderMessagesList();
+  }
+});
+
+messagesNewInput.addEventListener('keydown', (e) => {
+  e.stopPropagation();
+  if (e.key === 'Enter') messagesAddBtn.click();
+});
+
+export { renderMessagesList };
 
 // ── Initialise ───────────────────────────────────────────────────────────────
 

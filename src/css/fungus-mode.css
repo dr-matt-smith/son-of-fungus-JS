@@ -66,15 +66,16 @@ body[data-mode="fungus"] .state-node .node-label {
 
 .fungus-event-label {
   position: absolute;
-  top: -20px;
+  bottom: 100%;
   left: 0;
   right: 0;
   text-align: center;
   font-size: 11px;
   color: #d1d5db;
-  white-space: nowrap;
+  white-space: pre-wrap;
   pointer-events: none;
-  line-height: 1;
+  line-height: 1.3;
+  margin-bottom: 2px;
 }
 
 /* ── Description label below block ───────────────────────────────────────── */

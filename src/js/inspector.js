@@ -246,9 +246,11 @@ function renderNodeInspector(n) {
 
   // Extra fields for message/key events
   if (n.event?.type === 'messageReceived') {
-    const input = createInput(n.event.message || '', v => { n.event.message = v; });
-    input.placeholder = 'Message name';
-    eventSection.appendChild(input);
+    const msgOptions = [['', '— select message —'], ...S.messages.map(m => [m, m])];
+    eventSection.appendChild(labeledSelect('Message', n.event.message || '', msgOptions, v => {
+      n.event.message = v;
+      onNodeDataChanged();
+    }));
   }
   if (n.event?.type === 'keyPressed') {
     const input = createInput(n.event.key || '', v => { n.event.key = v; });
@@ -394,9 +396,11 @@ function renderCommandFields(container, cmd, node) {
     case 'wait':
       container.appendChild(labeledInput('Duration (s)', cmd.duration, v => { cmd.duration = parseFloat(v) || 0; }));
       break;
-    case 'sendMessage':
-      container.appendChild(labeledInput('Message', cmd.message, v => { cmd.message = v; }));
+    case 'sendMessage': {
+      const msgOptions = [['', '— select message —'], ...S.messages.map(m => [m, m])];
+      container.appendChild(labeledSelect('Message', cmd.message || '', msgOptions, v => { cmd.message = v; }));
       break;
+    }
   }
 }
 

@@ -110,6 +110,52 @@
   padding: 2px;
 }
 
+/* ── Messages panel ───────────────────────────────────────────────────────── */
+
+#messages-panel {
+  padding: 12px;
+}
+
+.messages-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.messages-item .inspector-input {
+  flex: 1;
+}
+
+.messages-delete-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.messages-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.messages-add-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.messages-add-row .inspector-input {
+  flex: 1;
+}
+
+.messages-add-row .toolbar-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
 /* ── Mode label (top-left below toolbar) ───────────────────────────────────── */
 
 #mode-label {

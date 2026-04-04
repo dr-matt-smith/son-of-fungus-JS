@@ -35,11 +35,19 @@ export function setupDOM() {
           <button id="btn-export-json" class="toolbar-btn">Export JSON</button>
           <button id="btn-run-log" class="toolbar-btn">Run Log</button>
         </div>
+        <div id="minimap" style="width:200px;height:150px;">
+          <div id="minimap-states"></div>
+          <div id="minimap-viewport"></div>
+          <span id="minimap-label">MAP</span>
+          <button id="minimap-minimize">_</button>
+        </div>
+        <button id="minimap-restore" style="display:none;">Minimap</button>
       </div>
       <div id="divider"></div>
       <div id="inspector">
         <div id="inspector-tabs">
           <button class="inspector-tab active" data-tab="inspector">Inspector</button>
+          <button class="inspector-tab" data-tab="messages">Messages</button>
           <button class="inspector-tab" data-tab="settings">Settings</button>
         </div>
         <div id="inspector-panel" class="tab-panel">
@@ -63,14 +71,17 @@ export function setupDOM() {
             </label>
           </div>
         </div>
+        <div id="messages-panel" class="tab-panel" style="display:none;">
+          <div class="settings-section">
+            <div class="settings-section-title">Event Messages</div>
+            <div id="messages-list"></div>
+            <div class="messages-add-row">
+              <input id="messages-new-input" type="text" class="inspector-input" placeholder="New message name…">
+              <button id="messages-add-btn" class="toolbar-btn">Add</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div id="minimap" style="width:200px;height:150px;">
-      <div id="minimap-states"></div>
-      <div id="minimap-viewport"></div>
-      <span id="minimap-label">MAP</span>
-      <button id="minimap-minimize">_</button>
-    </div>
-    <button id="minimap-restore" style="display:none;">Minimap</button>
   `;
 }

@@ -45,7 +45,10 @@ export function updateEventAnnotation(node) {
   }
 
   const eventInfo = EVENT_TYPES[eventType];
-  const text = `<${eventInfo ? eventInfo.label : eventType}>`;
+  let text = `<${eventInfo ? eventInfo.label : eventType}>`;
+  if (eventType === 'messageReceived' && node.event.message) {
+    text += `\n"${node.event.message}"`;
+  }
 
   if (!label) {
     label = document.createElement('span');

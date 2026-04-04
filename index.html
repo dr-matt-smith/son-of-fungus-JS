@@ -149,6 +149,15 @@
         <button id="btn-export-json" class="toolbar-btn canvas-overlay-btn" title="Export diagram as JSON">Export JSON</button>
         <button id="btn-run-log" class="toolbar-btn canvas-overlay-btn" title="View execution run log">Run Log</button>
       </div>
+
+      <!-- ── Minimap ─────────────────────────────────────────────────────── -->
+      <div id="minimap" title="Minimap – drag the red rectangle to scroll the canvas">
+        <div id="minimap-states"></div>
+        <div id="minimap-viewport"></div>
+        <span id="minimap-label">MAP</span>
+        <button id="minimap-minimize" title="Minimize minimap">_</button>
+      </div>
+      <button id="minimap-restore" title="Show minimap">Minimap</button>
     </div>
 
     <div id="divider"></div>
@@ -156,6 +165,7 @@
     <div id="inspector">
       <div id="inspector-tabs">
         <button class="inspector-tab active" data-tab="inspector">Inspector</button>
+        <button class="inspector-tab" data-tab="messages">Messages</button>
         <button class="inspector-tab" data-tab="settings">Settings</button>
       </div>
 
@@ -212,17 +222,20 @@
           </label>
         </div>
       </div>
+
+      <!-- Messages panel -->
+      <div id="messages-panel" class="tab-panel" style="display:none;">
+        <div class="settings-section">
+          <div class="settings-section-title">Event Messages</div>
+          <div id="messages-list"></div>
+          <div class="messages-add-row">
+            <input id="messages-new-input" type="text" class="inspector-input" placeholder="New message name…">
+            <button id="messages-add-btn" class="toolbar-btn">Add</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-
-  <!-- ── Minimap ─────────────────────────────────────────────────────────── -->
-  <div id="minimap" title="Minimap – drag the red rectangle to scroll the canvas">
-    <div id="minimap-states"></div>
-    <div id="minimap-viewport"></div>
-    <span id="minimap-label">MAP</span>
-    <button id="minimap-minimize" title="Minimize minimap">_</button>
-  </div>
-  <button id="minimap-restore" title="Show minimap">Minimap</button>
 
   <script type="module" src="src/js/main.js"></script>
 </body>

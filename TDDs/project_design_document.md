@@ -408,4 +408,41 @@ Version 33 features - improve some fungus inspector features
 
 
 
+Version 34 features - move minimap away from inspector area
+==================
+
+
+- ✅ please move the minimap to the bottom right of the stage
+  - ✅ so it does not / cannot be in the Inspector region in the right-hand side of the screen
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+
+
+Version 35 features - add some diagram feaures and make messages more rigorous
+==================
+
+
+- ✅ for all modes, in the diagrams show the ID of a block/state in small text at the top right inside the shapes border
+  - ✅ e.g. "id: 1"
+
+- ✅ in fugus mode, add a new tab "Messages"
+  - ✅ allow the user to add/edit/delete a list of event messages
+
+- ✅ for fungus block command "Send Message"
+  - ✅ make the message now come from a drop-down list of messages defined in the Messages tab
+
+- ✅ for fungus block EXECUTE ON EVENT  "Message Received"
+  - ✅ make the message to send be from a drop-down list of messages defined in the Messages tab
+
+- ✅ for fungus block which has EXECUTE ON EVENT  "Message Received" defined
+  - ✅ in the diagram, below its title <Message Received>, add a line stating the name of the message
+
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+
+
 

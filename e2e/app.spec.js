@@ -1629,6 +1629,116 @@ test.describe('V33 – Description on stage', () => {
   });
 });
 
+// ─── Version 34: Minimap inside canvas area ──────────────────────────────
+
+test.describe('V34 – Minimap in canvas area', () => {
+  test('minimap is inside canvas-container', async ({ page }) => {
+    const minimap = page.locator('#canvas-container #minimap');
+    await expect(minimap).toBeVisible();
+  });
+
+  test('minimap does not overlap inspector panel', async ({ page }) => {
+    const minimapBox = await page.locator('#minimap').boundingBox();
+    const inspectorBox = await page.locator('#inspector').boundingBox();
+    // Minimap right edge should be to the left of the inspector left edge
+    expect(minimapBox.x + minimapBox.width).toBeLessThanOrEqual(inspectorBox.x + 1);
+  });
+
+  test('minimap-restore button is inside canvas-container', async ({ page }) => {
+    const restoreBtn = page.locator('#canvas-container #minimap-restore');
+    // It exists in DOM (hidden by default)
+    await expect(restoreBtn).toHaveCount(1);
+  });
+});
+
+// ─── Version 35: ID labels, Messages tab, message dropdowns ──────────────
+
+test.describe('V35 – Node ID label', () => {
+  test('blocks show id label at top right', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    const idLabel = page.locator('.state-node .node-id-label');
+    await expect(idLabel).toBeVisible();
+    await expect(idLabel).toHaveText(/id: \d+/);
+  });
+});
+
+test.describe('V35 – Messages tab', () => {
+  test('messages tab exists and can be clicked', async ({ page }) => {
+    const tab = page.locator('.inspector-tab[data-tab="messages"]');
+    await expect(tab).toBeVisible();
+    await tab.click();
+    await expect(page.locator('#messages-panel')).toBeVisible();
+  });
+
+  test('can add a message via input and button', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="messages"]').click();
+    await page.locator('#messages-new-input').fill('testMessage');
+    await page.locator('#messages-add-btn').click();
+
+    const items = page.locator('.messages-item');
+    await expect(items).toHaveCount(1);
+    const input = items.first().locator('input');
+    await expect(input).toHaveValue('testMessage');
+  });
+
+  test('can delete a message', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="messages"]').click();
+    await page.locator('#messages-new-input').fill('msg1');
+    await page.locator('#messages-add-btn').click();
+    await expect(page.locator('.messages-item')).toHaveCount(1);
+
+    await page.locator('.messages-delete-btn').click();
+    await expect(page.locator('.messages-item')).toHaveCount(0);
+  });
+});
+
+test.describe('V35 – Send Message dropdown', () => {
+  test('sendMessage command shows dropdown with defined messages', async ({ page }) => {
+    // Add a message first
+    await page.locator('.inspector-tab[data-tab="messages"]').click();
+    await page.locator('#messages-new-input').fill('hello');
+    await page.locator('#messages-add-btn').click();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    // Create block with sendMessage command
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('sendMessage');
+
+    // Check the message dropdown has the defined message
+    const msgSelect = page.locator('.cmd-field select');
+    const options = await msgSelect.locator('option').allTextContents();
+    expect(options).toContain('hello');
+  });
+});
+
+test.describe('V35 – Message Received annotation', () => {
+  test('Message Received block shows message name on diagram', async ({ page }) => {
+    // Add message
+    await page.locator('.inspector-tab[data-tab="messages"]').click();
+    await page.locator('#messages-new-input').fill('myEvent');
+    await page.locator('#messages-add-btn').click();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    // Switch to fungus mode
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    // Create block with Message Received event
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-event-select').selectOption('messageReceived');
+    // Select the message from dropdown
+    await page.locator('.cmd-field select').first().selectOption('myEvent');
+
+    // Check annotation on diagram
+    const annotation = page.locator('.fungus-event-label');
+    await expect(annotation).toContainText('<Message Received>');
+    await expect(annotation).toContainText('"myEvent"');
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

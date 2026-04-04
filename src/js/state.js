@@ -14,6 +14,7 @@ export const S = {
   nodes: [],
   connections: [],
   variables: [],    // flowchart-level variables: { name, type, value }
+  messages: [],     // user-defined event messages (array of strings)
 
   // Currently active / selected
   activeNode: null,

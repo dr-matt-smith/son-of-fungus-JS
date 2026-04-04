@@ -1,6 +1,6 @@
 /* ── Minimap ───────────────────────────────────────────────────────────────── */
 #minimap {
-  position: fixed;
+  position: absolute;
   bottom: 16px;
   right: 16px;
   width: 200px;
@@ -109,7 +109,7 @@
 
 /* Restore button (shown when minimap is minimized) */
 #minimap-restore {
-  position: fixed;
+  position: absolute;
   bottom: 16px;
   right: 16px;
   padding: 6px 12px;

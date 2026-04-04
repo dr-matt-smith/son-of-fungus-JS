@@ -688,9 +688,10 @@ describe('Edit block name in inspector panel', () => {
 describe('Inspector/Settings tabs', () => {
   it('inspector tabs exist in DOM', () => {
     const tabs = document.querySelectorAll('.inspector-tab');
-    expect(tabs.length).toBe(2);
+    expect(tabs.length).toBe(3);
     expect(tabs[0].dataset.tab).toBe('inspector');
-    expect(tabs[1].dataset.tab).toBe('settings');
+    expect(tabs[1].dataset.tab).toBe('messages');
+    expect(tabs[2].dataset.tab).toBe('settings');
   });
 
   it('inspector tab is active by default', () => {
@@ -1151,7 +1152,8 @@ describe('Fungus event annotation', () => {
     node.event = { type: 'messageReceived', message: 'test' };
     app.applyFungusStyles();
     const label = node.el.querySelector('.fungus-event-label');
-    expect(label.textContent).toBe('<Message Received>');
+    expect(label.textContent).toContain('<Message Received>');
+    expect(label.textContent).toContain('"test"');
   });
 });
 
@@ -1408,6 +1410,114 @@ describe('Fungus description on stage', () => {
     const label = node.el.querySelector('.fungus-desc-label');
     expect(label).toBeTruthy();
     expect(label.textContent).toBe('Live update');
+  });
+});
+
+// ─── Version 34: Minimap inside canvas-container ────────────────────────────
+
+describe('Minimap in canvas area', () => {
+  it('minimap is inside canvas-container', () => {
+    const container = document.getElementById('canvas-container');
+    const minimap = document.getElementById('minimap');
+    expect(container.contains(minimap)).toBe(true);
+  });
+
+  it('minimap-restore button is inside canvas-container', () => {
+    const container = document.getElementById('canvas-container');
+    const restoreBtn = document.getElementById('minimap-restore');
+    expect(container.contains(restoreBtn)).toBe(true);
+  });
+
+  it('minimap is NOT a direct child of body', () => {
+    const minimap = document.getElementById('minimap');
+    expect(minimap.parentElement.id).not.toBe('');
+    expect(minimap.parentElement.tagName).not.toBe('BODY');
+  });
+});
+
+// ─── Version 35: ID labels, Messages tab, message dropdowns ─────────────────
+
+describe('Node ID label', () => {
+  it('state node has id label element', () => {
+    const node = app.createNode('state', 0, 0);
+    const idLabel = node.el.querySelector('.node-id-label');
+    expect(idLabel).toBeTruthy();
+    expect(idLabel.textContent).toBe(`id: ${node.id}`);
+  });
+
+  it('choice node has id label element', () => {
+    const node = app.createNode('choice', 0, 0);
+    const idLabel = node.el.querySelector('.node-id-label');
+    expect(idLabel).toBeTruthy();
+    expect(idLabel.textContent).toBe(`id: ${node.id}`);
+  });
+
+  it('start node has id label element', () => {
+    const node = app.createNode('start', 0, 0);
+    const idLabel = node.el.querySelector('.node-id-label');
+    expect(idLabel).toBeTruthy();
+  });
+});
+
+describe('Messages tab', () => {
+  it('messages tab exists in DOM', () => {
+    const tab = document.querySelector('.inspector-tab[data-tab="messages"]');
+    expect(tab).toBeTruthy();
+  });
+
+  it('messages panel exists in DOM', () => {
+    const panel = document.getElementById('messages-panel');
+    expect(panel).toBeTruthy();
+  });
+
+  it('messages can be added to S.messages', () => {
+    app.S.messages = [];
+    app.S.messages.push('testMsg');
+    expect(app.S.messages).toContain('testMsg');
+    app.S.messages = [];
+  });
+});
+
+describe('Message Received shows message name on diagram', () => {
+  afterEach(() => {
+    if (app.S.diagramMode !== 'fungus') app.enterFungusMode();
+  });
+
+  it('annotation includes message name for messageReceived event', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.event = { type: 'messageReceived', message: 'myMsg' };
+    app.applyFungusStyles();
+    const label = node.el.querySelector('.fungus-event-label');
+    expect(label.textContent).toContain('<Message Received>');
+    expect(label.textContent).toContain('"myMsg"');
+  });
+
+  it('annotation does not show message name when message is empty', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.event = { type: 'messageReceived', message: '' };
+    app.applyFungusStyles();
+    const label = node.el.querySelector('.fungus-event-label');
+    expect(label.textContent).toBe('<Message Received>');
+  });
+});
+
+describe('Send Message uses dropdown', () => {
+  afterEach(() => {
+    app.deactivateNode();
+    app.S.messages = [];
+  });
+
+  it('sendMessage command shows select dropdown for message', () => {
+    app.S.messages = ['hello', 'goodbye'];
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'sendMessage', message: '' });
+    app.activateNode(node);
+    app.updateInspector();
+
+    const selects = document.querySelectorAll('.cmd-field select');
+    expect(selects.length).toBeGreaterThan(0);
   });
 });
 
