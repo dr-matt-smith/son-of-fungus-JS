@@ -43,22 +43,24 @@ document.addEventListener('mouseup', () => {
 
 let selectedCmdIdx = -1;
 
-function cmdSummary(cmd) {
-  const label = COMMAND_TYPES[cmd.type]?.label || cmd.type;
+function cmdDetail(cmd) {
   switch (cmd.type) {
-    case 'say':       return `${label}    "${(cmd.text || '').substring(0, 20)}${(cmd.text || '').length > 20 ? '…' : ''}"`;
+    case 'say': {
+      const t = cmd.text || '';
+      return `"${t.substring(0, 24)}${t.length > 24 ? '…' : ''}"`;
+    }
     case 'call': {
       const target = S.nodes.find(n => n.id === cmd.targetBlockId);
-      return `${label}    <${target ? target.label : 'None'}> · ${cmd.mode === 'stop' ? 'Stop' : 'Continue'}`;
+      return `<${target ? target.label : 'None'}> : ${cmd.mode === 'stop' ? 'Stop' : 'Continue'}`;
     }
-    case 'menu':      return `${label}    ${cmd.options.length} options`;
-    case 'wait':      return `${label}    ${cmd.duration}s`;
-    case 'playSound': return `${label}    ${cmd.audioUrl || '(none)'}`;
-    case 'playMusic': return `${label}    ${cmd.audioUrl || '(none)'}`;
-    case 'sendMessage': return `${label}    "${cmd.message || ''}"`;
-    case 'setVariable': return `${label}    ${cmd.variableName || ''} = ${cmd.value ?? ''}`;
-    case 'stopAudio':   return label;
-    default:          return label;
+    case 'menu':        return `${cmd.options.length} options`;
+    case 'wait':        return `${cmd.duration}s`;
+    case 'playSound':   return cmd.audioUrl || '(none)';
+    case 'playMusic':   return cmd.audioUrl || '(none)';
+    case 'sendMessage': return `"${cmd.message || ''}"`;
+    case 'setVariable': return `${cmd.variableName || ''} = ${cmd.value ?? ''}`;
+    case 'stopAudio':   return '';
+    default:            return '';
   }
 }
 
@@ -302,7 +304,51 @@ function renderNodeInspector(n) {
       if (S.executingCommandIdx === idx && S.executingNode === n) {
         row.classList.add('cmd-executing');
       }
-      row.textContent = cmdSummary(cmd);
+
+      // Move arrows — always 2 columns: [down] [up]
+      const arrows = document.createElement('span');
+      arrows.className = 'fungus-cmd-arrows';
+
+      if (idx < n.commands.length - 1) {
+        const dn = document.createElement('button');
+        dn.className = 'fungus-cmd-arrow';
+        dn.textContent = '↓';
+        dn.title = 'Move down';
+        dn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx + 1, 0, n.commands.splice(idx, 1)[0]); if (selectedCmdIdx === idx) selectedCmdIdx++; onNodeDataChanged(); updateInspector(); });
+        arrows.appendChild(dn);
+      } else {
+        const spacer = document.createElement('span');
+        spacer.className = 'fungus-cmd-arrow-spacer';
+        arrows.appendChild(spacer);
+      }
+
+      if (idx > 0) {
+        const up = document.createElement('button');
+        up.className = 'fungus-cmd-arrow';
+        up.textContent = '↑';
+        up.title = 'Move up';
+        up.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx - 1, 0, n.commands.splice(idx, 1)[0]); if (selectedCmdIdx === idx) selectedCmdIdx--; onNodeDataChanged(); updateInspector(); });
+        arrows.appendChild(up);
+      } else {
+        const spacer = document.createElement('span');
+        spacer.className = 'fungus-cmd-arrow-spacer';
+        arrows.appendChild(spacer);
+      }
+
+      row.appendChild(arrows);
+
+      // Verb
+      const verb = document.createElement('span');
+      verb.className = 'fungus-cmd-verb';
+      verb.textContent = COMMAND_TYPES[cmd.type]?.label || cmd.type;
+      row.appendChild(verb);
+
+      // Detail
+      const detail = document.createElement('span');
+      detail.className = 'fungus-cmd-detail';
+      detail.textContent = cmdDetail(cmd);
+      row.appendChild(detail);
+
       row.addEventListener('click', () => { selectedCmdIdx = idx; updateInspector(); });
       cmdList.appendChild(row);
     });
@@ -344,25 +390,9 @@ function renderNodeInspector(n) {
       renderCommandFields(fields, cmd, n);
       editor.appendChild(fields);
 
-      // Move up / down / delete buttons
+      // Delete button
       const btnRow = document.createElement('div');
       btnRow.className = 'fungus-cmd-btn-row';
-      if (selectedCmdIdx > 0) {
-        const upBtn = document.createElement('button');
-        upBtn.className = 'cmd-btn';
-        upBtn.textContent = '↑';
-        upBtn.title = 'Move up';
-        upBtn.addEventListener('click', () => { n.commands.splice(selectedCmdIdx - 1, 0, n.commands.splice(selectedCmdIdx, 1)[0]); selectedCmdIdx--; onNodeDataChanged(); updateInspector(); });
-        btnRow.appendChild(upBtn);
-      }
-      if (selectedCmdIdx < n.commands.length - 1) {
-        const downBtn = document.createElement('button');
-        downBtn.className = 'cmd-btn';
-        downBtn.textContent = '↓';
-        downBtn.title = 'Move down';
-        downBtn.addEventListener('click', () => { n.commands.splice(selectedCmdIdx + 1, 0, n.commands.splice(selectedCmdIdx, 1)[0]); selectedCmdIdx++; onNodeDataChanged(); updateInspector(); });
-        btnRow.appendChild(downBtn);
-      }
       const delBtn = document.createElement('button');
       delBtn.className = 'cmd-btn cmd-btn-del';
       delBtn.textContent = '× Delete';

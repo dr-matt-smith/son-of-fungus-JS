@@ -1797,6 +1797,54 @@ test.describe('V36 – Fungus command summary list', () => {
   });
 });
 
+// ─── Version 37: Command summary row refinement ─────────────────────────
+
+test.describe('V37 – Command summary row layout', () => {
+  test('summary rows have verb and detail columns', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('say');
+
+    const verb = page.locator('.fungus-cmd-verb');
+    await expect(verb).toHaveText('Say');
+    const detail = page.locator('.fungus-cmd-detail');
+    await expect(detail).toBeVisible();
+  });
+
+  test('summary rows have move arrows', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('say');
+    await page.locator('.inspector-add-cmd select').selectOption('wait');
+
+    const arrows = page.locator('.fungus-cmd-arrow');
+    await expect(arrows.first()).toBeVisible();
+  });
+
+  test('editor has only delete button (no move arrows)', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('say');
+
+    // Command auto-selects, editor should be visible
+    const editorBtns = page.locator('.fungus-cmd-btn-row .cmd-btn');
+    await expect(editorBtns).toHaveCount(1);
+    await expect(editorBtns.first()).toContainText('Delete');
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

@@ -177,6 +177,10 @@
   gap: 4px;
 }
 
+body[data-mode="fungus"] .inspector-cmd-list {
+  gap: 0;
+}
+
 .inspector-cmd-item {
   background: #111827;
   border: 1px solid #262f3d;
@@ -241,20 +245,36 @@
 /* ── Fungus mode: command summary list ────────────────────────────────────── */
 
 .fungus-cmd-summary {
-  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  padding: 3px 6px;
   font-size: 11px;
   color: #d1d5db;
   background: #111827;
   border: 1px solid #262f3d;
-  border-radius: 3px;
+  border-radius: 0;
   cursor: pointer;
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.fungus-cmd-summary:first-child {
+  border-radius: 3px 3px 0 0;
+}
+
+.fungus-cmd-summary:last-child {
+  border-radius: 0 0 3px 3px;
+}
+
+.fungus-cmd-summary:only-child {
+  border-radius: 3px;
+}
+
+.fungus-cmd-summary + .fungus-cmd-summary {
+  border-top: none;
 }
 
 .fungus-cmd-summary:hover {
-  border-color: #4b5563;
+  background: #1e293b;
 }
 
 .fungus-cmd-summary.fungus-cmd-selected {
@@ -263,9 +283,56 @@
   color: #f0fdf4;
 }
 
+.fungus-cmd-summary.fungus-cmd-selected + .fungus-cmd-summary {
+  border-top-color: #22c55e;
+}
+
 .fungus-cmd-summary.cmd-executing {
   border-color: #22c55e;
   box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
+}
+
+.fungus-cmd-arrows {
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  margin-right: 6px;
+  min-width: 20px;
+}
+
+.fungus-cmd-arrow {
+  background: none;
+  border: 1px solid #4b5563;
+  border-radius: 3px;
+  color: #d1d5db;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 1px 3px;
+  line-height: 1;
+}
+
+.fungus-cmd-arrow:hover {
+  color: #f3f4f6;
+  background: #374151;
+  border-color: #6b7280;
+}
+
+.fungus-cmd-arrow-spacer {
+  display: inline-block;
+  width: 20px;
+}
+
+.fungus-cmd-verb {
+  font-weight: 600;
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+.fungus-cmd-detail {
+  color: #9ca3af;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fungus-cmd-editor {

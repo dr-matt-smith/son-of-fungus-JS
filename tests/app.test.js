@@ -1600,6 +1600,78 @@ describe('Fungus command summary list', () => {
   });
 });
 
+// ─── Version 37: Command summary row refinement ────────────────────────────
+
+describe('Fungus command summary row layout', () => {
+  afterEach(() => {
+    app.deactivateNode();
+    if (app.S.diagramMode !== 'fungus') app.enterFungusMode();
+  });
+
+  it('summary rows have verb and detail elements', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'say', text: 'hello world', character: '' });
+    app.activateNode(node);
+    app.updateInspector();
+
+    const row = document.querySelector('.fungus-cmd-summary');
+    expect(row.querySelector('.fungus-cmd-verb')).toBeTruthy();
+    expect(row.querySelector('.fungus-cmd-verb').textContent).toBe('Say');
+    expect(row.querySelector('.fungus-cmd-detail')).toBeTruthy();
+    expect(row.querySelector('.fungus-cmd-detail').textContent).toContain('hello world');
+  });
+
+  it('summary rows have move arrows', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'say', text: 'a', character: '' });
+    node.commands.push({ type: 'wait', duration: 1 });
+    app.activateNode(node);
+    app.updateInspector();
+
+    const rows = document.querySelectorAll('.fungus-cmd-summary');
+    // First row should have down arrow only
+    const firstArrows = rows[0].querySelectorAll('.fungus-cmd-arrow');
+    expect(firstArrows.length).toBe(1);
+    expect(firstArrows[0].textContent).toBe('↓');
+
+    // Second row should have up arrow only
+    const secondArrows = rows[1].querySelectorAll('.fungus-cmd-arrow');
+    expect(secondArrows.length).toBe(1);
+    expect(secondArrows[0].textContent).toBe('↑');
+  });
+
+  it('editor does NOT have move up/down buttons', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'say', text: 'a', character: '' });
+    node.commands.push({ type: 'wait', duration: 1 });
+    app.activateNode(node);
+    app.updateInspector();
+
+    document.querySelector('.fungus-cmd-summary').click();
+    const editor = document.querySelector('.fungus-cmd-editor');
+    const btns = editor.querySelectorAll('.fungus-cmd-btn-row .cmd-btn');
+    // Should only have delete button
+    expect(btns.length).toBe(1);
+    expect(btns[0].textContent).toContain('Delete');
+  });
+
+  it('call command detail shows target block and mode', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    const target = app.createNode('state', 100, 0);
+    node.commands.push({ type: 'call', targetBlockId: target.id, mode: 'stop' });
+    app.activateNode(node);
+    app.updateInspector();
+
+    const detail = document.querySelector('.fungus-cmd-detail');
+    expect(detail.textContent).toContain(target.label);
+    expect(detail.textContent).toContain('Stop');
+  });
+});
+
 describe('Audio manifest', () => {
   it('AUDIO_FILES is exported and contains entries', () => {
     // Import is via the app facade; audio-manifest is used by inspector
