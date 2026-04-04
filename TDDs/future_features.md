@@ -1,22 +1,10 @@
 
 
-Version X features - settings button / events tab
-==================
 
-
-- [] change the tab "Messages" to "Events"
-
-- [] remove the "Settings" tab, and instead have a "Settings" button (with a Cog icon) at the top right of the screen
-  - [] when pressed the Inspector/Events tabs are hidden, and a Settings tab takes over this right-hand side of the screen
-  - [] have a "Close Settings" button
-  - [] when the settings is being shown, it should show the Fungus/State Chart modes that are currently in the Settings Tab
-
-- [] and add Vite and PlayWright tests for the above feature(s)
 
 
 Version X features - variables
 ==================
-
 
 - [] add a new tab "Variables"
   - [] introduce global variables (for both fungus and state chart modes)
@@ -24,11 +12,7 @@ Version X features - variables
   - [] variables can be of types: Boolean / Integer / Float / String
     - [] when Enum is selected, the user chooses from one of the Enum sets declared in the Enums tab
 
-
 - [] and add Vite and PlayWright tests for the above feature(s)
-
-
-
 
 
 Version X features - enums
@@ -51,6 +35,28 @@ Version X features - enums
 - [] and add Vite and PlayWright tests for the above feature(s)
 
 
+
+Version X features - command Set Variable
+==================
+
+- [] add a new Fungus command "Set Variable (value)"
+  - [] the user chooses the variable to be set from the variables defined in the Variables tab
+  - [] the user can enter a new value for the variable (of the appropriate data type)
+
+- [] add a new Fungus command "Set Variable (copy another)"
+  - [] the user chooses the variable to be set from the variables defined in the Variables tab
+  - [] the user then chooses the variable whose value is to be copied into the variable to be set
+
+- [] and add Vite and PlayWright tests for the above feature(s)
+
+
+
+Version X features - XXXX
+==================
+
+- [] add a new tab "Variables"
+
+- [] and add Vite and PlayWright tests for the above feature(s)
 
 
 

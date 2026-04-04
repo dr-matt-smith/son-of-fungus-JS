@@ -4,9 +4,9 @@ import { dragNewNode, drag, getNodeBox, dragBetween } from './helpers.js';
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
   // Default mode is Fungus; switch to statechart for backward-compatible tests
-  await page.locator('.inspector-tab[data-tab="settings"]').click();
+  await page.locator('#btn-settings-cog').click();
   await page.locator('input[name="diagram-mode"][value="statechart"]').check();
-  await page.locator('.inspector-tab[data-tab="inspector"]').click();
+  await page.locator('#btn-close-settings').click();
 });
 
 // ─── Version 1: Toolbar & basic node creation ──────────────────────────────
@@ -688,33 +688,37 @@ test.describe('V22 – Edit block name in inspector panel', () => {
 
 // ─── Version 23: Fungus FlowChart mode ────────────────────────────────────
 
-test.describe('V23 – Inspector/Settings tabs', () => {
-  test('inspector and settings tabs are visible', async ({ page }) => {
+test.describe('V23 – Inspector/Events tabs and Settings cog', () => {
+  test('inspector and events tabs are visible', async ({ page }) => {
     await expect(page.locator('.inspector-tab[data-tab="inspector"]')).toBeVisible();
-    await expect(page.locator('.inspector-tab[data-tab="settings"]')).toBeVisible();
+    await expect(page.locator('.inspector-tab[data-tab="messages"]')).toBeVisible();
+  });
+
+  test('settings cog button is visible', async ({ page }) => {
+    await expect(page.locator('#btn-settings-cog')).toBeVisible();
   });
 
   test('inspector tab is active by default', async ({ page }) => {
     await expect(page.locator('.inspector-tab[data-tab="inspector"]')).toHaveClass(/active/);
-    await expect(page.locator('.inspector-tab[data-tab="settings"]')).not.toHaveClass(/active/);
   });
 
-  test('clicking settings tab shows settings panel', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+  test('clicking settings cog shows settings panel and hides tabs', async ({ page }) => {
+    await page.locator('#btn-settings-cog').click();
     await expect(page.locator('#settings-panel')).toBeVisible();
     await expect(page.locator('#inspector-panel')).toBeHidden();
-    await expect(page.locator('.inspector-tab[data-tab="settings"]')).toHaveClass(/active/);
+    await expect(page.locator('#inspector-tabs')).toBeHidden();
   });
 
-  test('clicking inspector tab switches back', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+  test('close settings button restores tabs and inspector', async ({ page }) => {
+    await page.locator('#btn-settings-cog').click();
+    await page.locator('#btn-close-settings').click();
     await expect(page.locator('#inspector-panel')).toBeVisible();
     await expect(page.locator('#settings-panel')).toBeHidden();
+    await expect(page.locator('#inspector-tabs')).toBeVisible();
   });
 
   test('settings panel has diagram mode radio buttons with preview diagrams', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     const radios = page.locator('input[name="diagram-mode"]');
     await expect(radios).toHaveCount(2);
     const previews = page.locator('.settings-mode-preview');
@@ -724,15 +728,15 @@ test.describe('V23 – Inspector/Settings tabs', () => {
 
 test.describe('V23 – Fungus FlowChart mode', () => {
   async function switchToFungusMode(page) {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
   }
 
   async function switchToStatechartMode(page) {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="statechart"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
   }
 
   test('switching to Fungus mode hides start and end palette buttons', async ({ page }) => {
@@ -930,9 +934,9 @@ test.describe('V24 – Export JSON button on canvas', () => {
 
 test.describe('V24 – Fungus mode toolbar and naming', () => {
   async function switchToFungusMode(page) {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
   }
 
   test('choice button is hidden in Fungus mode', async ({ page }) => {
@@ -955,9 +959,9 @@ test.describe('V24 – Fungus mode toolbar and naming', () => {
 
   test('state button shows "State" text after exiting Fungus mode', async ({ page }) => {
     await switchToFungusMode(page);
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="statechart"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
     await expect(page.locator('#btn-new-state')).toContainText('State');
   });
 });
@@ -967,7 +971,7 @@ test.describe('V24 – Fungus mode toolbar and naming', () => {
 test.describe('V25 – Default Fungus mode and settings order', () => {
   // These tests check fresh page state before beforeEach switches to statechart
   test('fungus radio is first in settings', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     const radios = page.locator('input[name="diagram-mode"]');
     const first = radios.first();
     await expect(first).toHaveValue('fungus');
@@ -991,12 +995,12 @@ test.describe('V25 – Mode label', () => {
     await expect(page.locator('#mode-label-text')).toHaveText('State Chart Mode');
   });
 
-  test('mode label shows hint about Settings tab', async ({ page }) => {
-    await expect(page.locator('#mode-label-hint')).toContainText('Settings tab');
+  test('mode label shows hint about Settings', async ({ page }) => {
+    await expect(page.locator('#mode-label-hint')).toContainText('Settings');
   });
 
   test('mode label changes to "Fungus Mode" when switching', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
     await expect(page.locator('#mode-label-text')).toHaveText('Fungus Mode');
   });
@@ -1004,9 +1008,9 @@ test.describe('V25 – Mode label', () => {
 
 test.describe('V25 – Step-by-step execution', () => {
   async function switchToFungusMode(page) {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
   }
 
   test('Step button is visible in Fungus mode', async ({ page }) => {
@@ -1084,9 +1088,9 @@ test.describe('V26 – JSON modal text selectable with copy button', () => {
 
 test.describe('V26 – No resize handles in Fungus mode', () => {
   async function switchToFungusMode(page) {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
   }
 
   test('no resize handles on active node in Fungus mode', async ({ page }) => {
@@ -1137,9 +1141,9 @@ test.describe('V27 – Run Log', () => {
   test('run log shows entries after execution', async ({ page }) => {
     // Switch to fungus mode, create block with Game Started + Say
     async function switchToFungusMode(page) {
-      await page.locator('.inspector-tab[data-tab="settings"]').click();
+      await page.locator('#btn-settings-cog').click();
       await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-      await page.locator('.inspector-tab[data-tab="inspector"]').click();
+      await page.locator('#btn-close-settings').click();
     }
     await switchToFungusMode(page);
     await dragNewNode(page, '#btn-new-state');
@@ -1206,9 +1210,9 @@ test.describe('V27 – Audio file dropdown', () => {
 test.describe('V28 – Run Log Style', () => {
   test('run log uses *Enter block* format for block entries', async ({ page }) => {
     // Switch to fungus mode
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     // Create block with Game Started + Say
     await dragNewNode(page, '#btn-new-state');
@@ -1231,9 +1235,9 @@ test.describe('V28 – Run Log Style', () => {
 
   test('run log command entries are prefixed with id and block name', async ({ page }) => {
     // Switch to fungus mode
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     // Create block with Game Started + Say
     await dragNewNode(page, '#btn-new-state');
@@ -1257,9 +1261,9 @@ test.describe('V28 – Run Log Style', () => {
 
   test('execution started line is NOT prefixed with id', async ({ page }) => {
     // Switch to fungus mode
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     // Create block with Game Started (no commands)
     await dragNewNode(page, '#btn-new-state');
@@ -1289,9 +1293,9 @@ test.describe('V28 – Run Log Style', () => {
 test.describe('V29 – Fungus block default style', () => {
   test('new block in fungus mode has fungus-standard-block class', async ({ page }) => {
     // Switch to fungus mode
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     const node = page.locator('.state-node');
@@ -1299,9 +1303,9 @@ test.describe('V29 – Fungus block default style', () => {
   });
 
   test('new block does NOT have event or branching class initially', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     const node = page.locator('.state-node');
@@ -1313,9 +1317,9 @@ test.describe('V29 – Fungus block default style', () => {
 test.describe('V29 – Fungus event annotation', () => {
   test('block with Game Started event shows annotation on diagram', async ({ page }) => {
     // Switch to fungus mode
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     // Create block and set Game Started event
     await dragNewNode(page, '#btn-new-state');
@@ -1329,9 +1333,9 @@ test.describe('V29 – Fungus event annotation', () => {
   });
 
   test('block with no event has no annotation', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1342,9 +1346,9 @@ test.describe('V29 – Fungus event annotation', () => {
   });
 
   test('annotation is removed when event is set back to None', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1357,9 +1361,9 @@ test.describe('V29 – Fungus event annotation', () => {
   });
 
   test('block changes to event style when event is set', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     const node = page.locator('.state-node');
@@ -1419,9 +1423,9 @@ test.describe('V30 – Play Sound wait checkbox', () => {
 
 test.describe('V31 – Auto-select on drop in fungus mode', () => {
   test('new block is selected after drag-drop in fungus mode', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     const node = page.locator('.state-node');
@@ -1429,9 +1433,9 @@ test.describe('V31 – Auto-select on drop in fungus mode', () => {
   });
 
   test('inspector shows properties after drag-drop in fungus mode', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     // Inspector should show the name section
@@ -1441,9 +1445,9 @@ test.describe('V31 – Auto-select on drop in fungus mode', () => {
 
 test.describe('V31 – Fungus inspector layout', () => {
   test('Name and Description appear at top of inspector in fungus mode', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1453,9 +1457,9 @@ test.describe('V31 – Fungus inspector layout', () => {
   });
 
   test('Size, Position, Connections are hidden in fungus mode', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1467,9 +1471,9 @@ test.describe('V31 – Fungus inspector layout', () => {
   });
 
   test('Size, Position, Connections are shown in statechart mode', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="statechart"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1483,9 +1487,9 @@ test.describe('V31 – Fungus inspector layout', () => {
 
 test.describe('V31 – Fungus context menu', () => {
   test('right-click on block shows context menu with Delete and Duplicate', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     const node = page.locator('.state-node');
@@ -1498,9 +1502,9 @@ test.describe('V31 – Fungus context menu', () => {
   });
 
   test('context menu Delete removes the block', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await expect(page.locator('.state-node')).toHaveCount(1);
@@ -1512,9 +1516,9 @@ test.describe('V31 – Fungus context menu', () => {
   });
 
   test('context menu Duplicate creates a copy of the block', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await expect(page.locator('.state-node')).toHaveCount(1);
@@ -1526,9 +1530,9 @@ test.describe('V31 – Fungus context menu', () => {
   });
 
   test('delete "x" handle is hidden in fungus mode', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1545,9 +1549,9 @@ test.describe('V31 – Fungus context menu', () => {
 
 test.describe('V32 – Fungus inspector id label', () => {
   test('id label appears next to Name header in fungus mode', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1558,9 +1562,9 @@ test.describe('V32 – Fungus inspector id label', () => {
   });
 
   test('props table is empty in fungus mode (no Type/ID rows)', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1574,9 +1578,9 @@ test.describe('V32 – Fungus inspector id label', () => {
 
 test.describe('V33 – Execute on Event label', () => {
   test('fungus mode shows "Execute on Event" label with inline dropdown', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1588,9 +1592,9 @@ test.describe('V33 – Execute on Event label', () => {
   });
 
   test('statechart mode shows "Event Trigger" label', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="statechart"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1602,9 +1606,9 @@ test.describe('V33 – Execute on Event label', () => {
 
 test.describe('V33 – Description on stage', () => {
   test('description appears below block when typed in inspector', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1618,9 +1622,9 @@ test.describe('V33 – Description on stage', () => {
   });
 
   test('no description label when description is empty', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1721,9 +1725,9 @@ test.describe('V35 – Message Received annotation', () => {
     await page.locator('.inspector-tab[data-tab="inspector"]').click();
 
     // Switch to fungus mode
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     // Create block with Message Received event
     await dragNewNode(page, '#btn-new-state');
@@ -1743,9 +1747,9 @@ test.describe('V35 – Message Received annotation', () => {
 
 test.describe('V36 – Fungus command summary list', () => {
   test('commands appear as summary rows in fungus mode', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1757,9 +1761,9 @@ test.describe('V36 – Fungus command summary list', () => {
   });
 
   test('clicking summary row highlights it green and shows editor', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1771,9 +1775,9 @@ test.describe('V36 – Fungus command summary list', () => {
   });
 
   test('editor shows fields for the selected command', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1784,9 +1788,9 @@ test.describe('V36 – Fungus command summary list', () => {
   });
 
   test('statechart mode uses inline command items (no summary)', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="statechart"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1801,9 +1805,9 @@ test.describe('V36 – Fungus command summary list', () => {
 
 test.describe('V37 – Command summary row layout', () => {
   test('summary rows have verb and detail columns', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1816,9 +1820,9 @@ test.describe('V37 – Command summary row layout', () => {
   });
 
   test('summary rows have move arrows', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
@@ -1830,9 +1834,9 @@ test.describe('V37 – Command summary row layout', () => {
   });
 
   test('editor has only delete button (no move arrows)', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('#btn-settings-cog').click();
     await page.locator('input[name="diagram-mode"][value="fungus"]').check();
-    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+    await page.locator('#btn-close-settings').click();
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();

@@ -16,7 +16,7 @@ export function setupDOM() {
     </div>
     <div id="mode-label">
       <span id="mode-label-text">Fungus Mode</span>
-      <span id="mode-label-hint">(change in Settings tab)</span>
+      <span id="mode-label-hint">(change in Settings ⚙)</span>
     </div>
     <div id="zoom-toolbar">
       <button id="btn-fit-all" class="toolbar-btn"></button>
@@ -47,8 +47,8 @@ export function setupDOM() {
       <div id="inspector">
         <div id="inspector-tabs">
           <button class="inspector-tab active" data-tab="inspector">Inspector</button>
-          <button class="inspector-tab" data-tab="messages">Messages</button>
-          <button class="inspector-tab" data-tab="settings">Settings</button>
+          <button class="inspector-tab" data-tab="messages">Events</button>
+          <button id="btn-settings-cog" class="settings-cog-btn" title="Settings">⚙</button>
         </div>
         <div id="inspector-panel" class="tab-panel">
           <div id="inspector-body">
@@ -59,6 +59,10 @@ export function setupDOM() {
           </div>
         </div>
         <div id="settings-panel" class="tab-panel" style="display:none;">
+          <div class="settings-header">
+            <span class="settings-header-title">Settings</span>
+            <button id="btn-close-settings" class="toolbar-btn">Close Settings</button>
+          </div>
           <div class="settings-section">
             <div class="settings-section-title">Diagram Mode</div>
             <label class="settings-mode-option">

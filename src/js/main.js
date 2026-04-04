@@ -570,19 +570,39 @@ S.onExecutionEnd = () => {
 const inspectorPanel = document.getElementById('inspector-panel');
 const settingsPanel  = document.getElementById('settings-panel');
 const messagesPanel  = document.getElementById('messages-panel');
+const inspectorTabs  = document.getElementById('inspector-tabs');
+const settingsCogBtn = document.getElementById('btn-settings-cog');
+const closeSettingsBtn = document.getElementById('btn-close-settings');
 
-const allPanels = [inspectorPanel, settingsPanel, messagesPanel];
+const contentPanels = [inspectorPanel, settingsPanel, messagesPanel];
+
+function showTab(tabName) {
+  // Exit settings overlay if active
+  inspectorTabs.style.display = '';
+  for (const p of contentPanels) p.style.display = 'none';
+  for (const t of document.querySelectorAll('.inspector-tab')) {
+    t.classList.toggle('active', t.dataset.tab === tabName);
+  }
+  if (tabName === 'inspector') inspectorPanel.style.display = '';
+  else if (tabName === 'messages') { messagesPanel.style.display = ''; renderMessagesList(); }
+}
 
 for (const tab of document.querySelectorAll('.inspector-tab')) {
-  tab.addEventListener('click', () => {
-    for (const t of document.querySelectorAll('.inspector-tab')) t.classList.remove('active');
-    tab.classList.add('active');
-    for (const p of allPanels) p.style.display = 'none';
-    if (tab.dataset.tab === 'inspector') inspectorPanel.style.display = '';
-    else if (tab.dataset.tab === 'settings') settingsPanel.style.display = '';
-    else if (tab.dataset.tab === 'messages') { messagesPanel.style.display = ''; renderMessagesList(); }
-  });
+  tab.addEventListener('click', () => showTab(tab.dataset.tab));
 }
+
+settingsCogBtn.addEventListener('click', () => {
+  // Hide tabs and other panels, show settings
+  inspectorTabs.style.display = 'none';
+  for (const p of contentPanels) p.style.display = 'none';
+  settingsPanel.style.display = '';
+});
+
+closeSettingsBtn.addEventListener('click', () => {
+  // Return to whatever tab was active (default to inspector)
+  const activeTab = document.querySelector('.inspector-tab.active');
+  showTab(activeTab ? activeTab.dataset.tab : 'inspector');
+});
 
 function updateModeUI() {
   if (S.diagramMode === 'fungus') {

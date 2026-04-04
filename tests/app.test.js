@@ -685,13 +685,16 @@ describe('Edit block name in inspector panel', () => {
 
 // ─── Version 23: Fungus FlowChart mode ─────────────────────────────────────
 
-describe('Inspector/Settings tabs', () => {
-  it('inspector tabs exist in DOM', () => {
+describe('Inspector/Events tabs and Settings cog', () => {
+  it('inspector tabs exist in DOM (Inspector + Events)', () => {
     const tabs = document.querySelectorAll('.inspector-tab');
-    expect(tabs.length).toBe(3);
+    expect(tabs.length).toBe(2);
     expect(tabs[0].dataset.tab).toBe('inspector');
     expect(tabs[1].dataset.tab).toBe('messages');
-    expect(tabs[2].dataset.tab).toBe('settings');
+  });
+
+  it('settings cog button exists', () => {
+    expect(document.getElementById('btn-settings-cog')).toBeTruthy();
   });
 
   it('inspector tab is active by default', () => {
@@ -704,13 +707,20 @@ describe('Inspector/Settings tabs', () => {
     expect(document.getElementById('settings-panel').style.display).toBe('none');
   });
 
-  it('clicking settings tab shows settings panel and hides inspector', () => {
-    const settingsTab = document.querySelector('.inspector-tab[data-tab="settings"]');
-    settingsTab.click();
+  it('clicking settings cog shows settings panel and hides tabs', () => {
+    document.getElementById('btn-settings-cog').click();
     expect(document.getElementById('settings-panel').style.display).toBe('');
     expect(document.getElementById('inspector-panel').style.display).toBe('none');
+    expect(document.getElementById('inspector-tabs').style.display).toBe('none');
     // restore
-    document.querySelector('.inspector-tab[data-tab="inspector"]').click();
+    document.getElementById('btn-close-settings').click();
+  });
+
+  it('close settings button restores tabs', () => {
+    document.getElementById('btn-settings-cog').click();
+    document.getElementById('btn-close-settings').click();
+    expect(document.getElementById('inspector-tabs').style.display).toBe('');
+    expect(document.getElementById('inspector-panel').style.display).toBe('');
   });
 
   it('settings panel has radio buttons for diagram modes', () => {
@@ -962,7 +972,7 @@ describe('Mode label', () => {
 
   it('mode label hint exists', () => {
     expect(document.getElementById('mode-label-hint')).toBeTruthy();
-    expect(document.getElementById('mode-label-hint').textContent).toContain('Settings tab');
+    expect(document.getElementById('mode-label-hint').textContent).toContain('Settings');
   });
 });
 

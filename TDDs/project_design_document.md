@@ -470,6 +470,17 @@ Version 37 features - add command list summary refinement
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 
+Version 38 features - settings button / events tab
+==================
+
+- ✅ change the tab "Messages" to "Events"
+
+- ✅ remove the "Settings" tab, and instead have a "Settings" button (with a Cog icon) at the top right of the screen
+  - ✅ when pressed the Inspector/Events tabs are hidden, and a Settings tab takes over this right-hand side of the screen
+  - ✅ have a "Close Settings" button
+  - ✅ when the settings is being shown, it should show the Fungus/State Chart modes that are currently in the Settings Tab
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
 
