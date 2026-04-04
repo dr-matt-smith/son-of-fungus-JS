@@ -3,16 +3,6 @@
 
 
 
-Version X features - variables
-==================
-
-- [] add a new tab "Variables"
-  - [] introduce global variables (for both fungus and state chart modes)
-  - [] this should allow the user to add/remove/edit global variables
-  - [] variables can be of types: Boolean / Integer / Float / String
-    - [] when Enum is selected, the user chooses from one of the Enum sets declared in the Enums tab
-
-- [] and add Vite and PlayWright tests for the above feature(s)
 
 
 Version X features - enums
@@ -28,8 +18,7 @@ Version X features - enums
     - [] these string values are the default to be displayed for Enum Menu choices
 
 - [] refine Menu commands
-  - [] rename the existing Menu command to "String Menu"
-  - [] add a new Command type for blocks "Enum Menu"
+  - [] add a new Command type for blocks "Menu-enum"
     - [] the choices for Enum Menu items will be the String alternative for an enum (if defined), otherwise the UPPER CASE enum value itself
 
 - [] and add Vite and PlayWright tests for the above feature(s)
@@ -49,6 +38,34 @@ Version X features - command Set Variable
 
 - [] and add Vite and PlayWright tests for the above feature(s)
 
+
+Version X features - new commands "If" and "Else" and "Else If"
+==================
+
+- [] add a new Fungus command "If"
+  - [] the user chooses the variable to be set from the variables defined in the Variables tab
+  - [] the user can enter a new value for the variable (of the appropriate data type)
+  - 
+
+
+Version X features - light and dark theme
+==================
+
+- [] add to the Settings panel a dark/light theme toggle
+  - [] ensure this theme applies to both modes and all tabs
+  - [] everything should still be readable, in both themes
+
+- [] and add Vite and PlayWright tests for the above feature(s)
+
+Version X features - color code command summary rows in inspector
+==================
+
+- [] selected command is always highlighed in green
+  - [] when not selected, please color code different commands
+  - [] use this screenshot as a guide, and when any new commands are added, give each new command a different colour:
+    - ![](/screenshots/)
+
+- [] and add Vite and PlayWright tests for the above feature(s)
 
 
 Version X features - XXXX

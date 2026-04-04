@@ -193,6 +193,89 @@
   font-size: 11px;
 }
 
+/* ── Variables panel ──────────────────────────────────────────────────────── */
+
+#variables-panel {
+  padding: 12px;
+}
+
+.variable-wrapper {
+  margin-bottom: 4px;
+}
+
+.variable-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.variable-header {
+  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.variable-col-type { width: 75px; flex-shrink: 0; }
+.variable-col-name { width: 18ch; flex: 0 0 auto; }
+.variable-col-value { flex: 1; }
+.variable-col-del { width: 24px; flex-shrink: 0; }
+
+.variable-type-select {
+  width: 75px;
+  flex-shrink: 0;
+  margin-top: 0;
+}
+
+.variable-name-input {
+  width: 18ch;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.variable-value-input {
+  flex: 1;
+  min-width: 40px;
+}
+
+.variable-value-checkbox {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0 22px 0 4px;
+}
+
+.variable-string-row {
+  margin-top: 2px;
+  padding-left: 79px;
+}
+
+.variable-add-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #374151;
+  align-items: center;
+}
+
+.variable-add-row .inspector-input {
+  flex: 1;
+}
+
+.variable-add-row .toolbar-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.variable-string-textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 36px;
+}
+
 /* ── Mode label (top-left below toolbar) ───────────────────────────────────── */
 
 #mode-label {

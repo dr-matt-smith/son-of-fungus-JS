@@ -567,14 +567,15 @@ S.onExecutionEnd = () => {
 
 // ── Inspector / Settings tabs ────────────────────────────────────────────────
 
-const inspectorPanel = document.getElementById('inspector-panel');
-const settingsPanel  = document.getElementById('settings-panel');
-const messagesPanel  = document.getElementById('messages-panel');
-const inspectorTabs  = document.getElementById('inspector-tabs');
-const settingsCogBtn = document.getElementById('btn-settings-cog');
+const inspectorPanel  = document.getElementById('inspector-panel');
+const settingsPanel   = document.getElementById('settings-panel');
+const messagesPanel   = document.getElementById('messages-panel');
+const variablesPanel  = document.getElementById('variables-panel');
+const inspectorTabs   = document.getElementById('inspector-tabs');
+const settingsCogBtn  = document.getElementById('btn-settings-cog');
 const closeSettingsBtn = document.getElementById('btn-close-settings');
 
-const contentPanels = [inspectorPanel, settingsPanel, messagesPanel];
+const contentPanels = [inspectorPanel, settingsPanel, messagesPanel, variablesPanel];
 
 function showTab(tabName) {
   // Exit settings overlay if active
@@ -585,6 +586,7 @@ function showTab(tabName) {
   }
   if (tabName === 'inspector') inspectorPanel.style.display = '';
   else if (tabName === 'messages') { messagesPanel.style.display = ''; renderMessagesList(); }
+  else if (tabName === 'variables') { variablesPanel.style.display = ''; renderVariablesList(); }
 }
 
 for (const tab of document.querySelectorAll('.inspector-tab')) {
@@ -673,6 +675,179 @@ messagesNewInput.addEventListener('keydown', (e) => {
 });
 
 export { renderMessagesList };
+
+// ── Variables tab ───────────────────────────────────────────────────────────
+
+const VAR_TYPES = ['Boolean', 'Integer', 'Float', 'String'];
+const VAR_DEFAULTS = { Boolean: false, Integer: 0, Float: 0.0, String: '' };
+
+const variablesList    = document.getElementById('variables-list');
+const variablesNewType = document.getElementById('variables-new-type');
+const variablesNewName = document.getElementById('variables-new-name');
+const variablesAddBtn  = document.getElementById('variables-add-btn');
+
+function renderVariablesList() {
+  variablesList.innerHTML = '';
+
+  // Column headers
+  if (S.variables.length > 0) {
+    const header = document.createElement('div');
+    header.className = 'variable-item variable-header';
+    header.innerHTML = '<span class="variable-col-type">Data Type</span>' +
+                       '<span class="variable-col-name">Variable Name</span>' +
+                       '<span class="variable-col-value"></span>' +
+                       '<span class="variable-col-del"></span>';
+    variablesList.appendChild(header);
+  }
+
+  for (let i = 0; i < S.variables.length; i++) {
+    const v = S.variables[i];
+    const wrapper = document.createElement('div');
+    wrapper.className = 'variable-wrapper';
+
+    const row = document.createElement('div');
+    row.className = 'variable-item';
+
+    // Type select (first)
+    const typeSelect = document.createElement('select');
+    typeSelect.className = 'inspector-select variable-type-select';
+    for (const t of VAR_TYPES) {
+      const opt = document.createElement('option');
+      opt.value = t;
+      opt.textContent = t;
+      if (t === v.type) opt.selected = true;
+      typeSelect.appendChild(opt);
+    }
+    typeSelect.addEventListener('change', () => {
+      const oldType = v.type;
+      const oldValue = v.value;
+      v.type = typeSelect.value;
+      // Convert value intelligently
+      if (v.type === 'Integer') {
+        const n = parseFloat(oldValue);
+        v.value = isNaN(n) ? 0 : Math.trunc(n);
+      } else if (v.type === 'Float') {
+        const n = parseFloat(oldValue);
+        v.value = isNaN(n) ? 0 : n;
+      } else if (v.type === 'Boolean') {
+        v.value = !!oldValue;
+      } else {
+        v.value = String(oldValue ?? '');
+      }
+      renderVariablesList();
+    });
+    row.appendChild(typeSelect);
+
+    // Name input (second)
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.className = 'inspector-input variable-name-input';
+    nameInput.value = v.name;
+    nameInput.addEventListener('change', () => {
+      const val = nameInput.value.trim();
+      if (val) v.name = val;
+      else { S.variables.splice(i, 1); renderVariablesList(); }
+    });
+    nameInput.addEventListener('keydown', (e) => e.stopPropagation());
+    row.appendChild(nameInput);
+
+    // Value input (third) — all types get inline value
+    row.appendChild(buildValueInput(v));
+
+    // Delete
+    const delBtn = document.createElement('button');
+    delBtn.className = 'messages-delete-btn';
+    delBtn.textContent = '×';
+    delBtn.title = 'Delete variable';
+    delBtn.addEventListener('click', () => { S.variables.splice(i, 1); renderVariablesList(); });
+    row.appendChild(delBtn);
+
+    wrapper.appendChild(row);
+
+    // String: if value is long, show a textarea on a second line
+    if (v.type === 'String' && String(v.value ?? '').length > 12) {
+      const textRow = document.createElement('div');
+      textRow.className = 'variable-string-row';
+      const textarea = document.createElement('textarea');
+      textarea.className = 'inspector-input variable-string-textarea';
+      textarea.rows = 2;
+      textarea.value = String(v.value ?? '');
+      textarea.addEventListener('input', () => {
+        v.value = textarea.value;
+        // Re-render if crossing the threshold
+        if (textarea.value.length <= 12) renderVariablesList();
+      });
+      textarea.addEventListener('keydown', (e) => e.stopPropagation());
+      textRow.appendChild(textarea);
+      wrapper.appendChild(textRow);
+    }
+
+    variablesList.appendChild(wrapper);
+  }
+}
+
+function buildValueInput(v) {
+  if (v.type === 'Boolean') {
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'variable-value-checkbox';
+    cb.checked = !!v.value;
+    cb.addEventListener('change', () => { v.value = cb.checked; });
+    return cb;
+  }
+  const input = document.createElement('input');
+  input.className = 'inspector-input variable-value-input';
+  if (v.type === 'Integer') {
+    input.type = 'number';
+    input.step = '1';
+    input.value = String(v.value ?? 0);
+    input.addEventListener('change', () => { v.value = parseInt(input.value, 10) || 0; input.value = String(v.value); });
+    input.addEventListener('keydown', (e) => {
+      e.stopPropagation();
+      // Block decimal point and 'e'
+      if (e.key === '.' || e.key === 'e' || e.key === 'E') e.preventDefault();
+    });
+    return input;
+  } else if (v.type === 'Float') {
+    input.type = 'text';
+    input.inputMode = 'decimal';
+    input.value = String(v.value ?? 0);
+    input.addEventListener('change', () => { v.value = parseFloat(input.value) || 0; input.value = String(v.value); });
+    input.addEventListener('keydown', (e) => {
+      // Allow navigation, backspace, delete, tab, arrows, minus, decimal
+      if (e.ctrlKey || e.metaKey || ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'].includes(e.key)) return;
+      if (e.key === '-' || e.key === '.') return;
+      if (e.key >= '0' && e.key <= '9') return;
+      e.preventDefault();
+    });
+  } else {
+    input.type = 'text';
+    input.value = String(v.value ?? '');
+    input.addEventListener('change', () => {
+      v.value = input.value;
+      if (input.value.length > 12) renderVariablesList();
+    });
+  }
+  input.addEventListener('keydown', (e) => e.stopPropagation());
+  return input;
+}
+
+variablesAddBtn.addEventListener('click', () => {
+  const name = variablesNewName.value.trim();
+  if (name) {
+    const type = variablesNewType.value;
+    S.variables.push({ name, type, value: VAR_DEFAULTS[type] });
+    variablesNewName.value = '';
+    renderVariablesList();
+  }
+});
+
+variablesNewName.addEventListener('keydown', (e) => {
+  e.stopPropagation();
+  if (e.key === 'Enter') variablesAddBtn.click();
+});
+
+export { renderVariablesList, VAR_TYPES };
 
 // ── Initialise ───────────────────────────────────────────────────────────────
 

@@ -48,6 +48,7 @@ export function setupDOM() {
         <div id="inspector-tabs">
           <button class="inspector-tab active" data-tab="inspector">Inspector</button>
           <button class="inspector-tab" data-tab="messages">Events</button>
+          <button class="inspector-tab" data-tab="variables">Variables</button>
           <button id="btn-settings-cog" class="settings-cog-btn" title="Settings">⚙</button>
         </div>
         <div id="inspector-panel" class="tab-panel">
@@ -82,6 +83,22 @@ export function setupDOM() {
             <div class="messages-add-row">
               <input id="messages-new-input" type="text" class="inspector-input" placeholder="New message name…">
               <button id="messages-add-btn" class="toolbar-btn">Add</button>
+            </div>
+          </div>
+        </div>
+        <div id="variables-panel" class="tab-panel" style="display:none;">
+          <div class="settings-section">
+            <div class="settings-section-title">Global Variables</div>
+            <div id="variables-list"></div>
+            <div class="variable-add-row">
+              <select id="variables-new-type" class="inspector-select variable-type-select">
+                <option value="Boolean">Boolean</option>
+                <option value="Integer">Integer</option>
+                <option value="Float">Float</option>
+                <option value="String" selected>String</option>
+              </select>
+              <input id="variables-new-name" type="text" class="inspector-input variable-name-input" placeholder="Variable name…">
+              <button id="variables-add-btn" class="toolbar-btn">Add</button>
             </div>
           </div>
         </div>

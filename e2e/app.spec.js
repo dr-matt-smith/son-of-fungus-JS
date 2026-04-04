@@ -1849,6 +1849,58 @@ test.describe('V37 – Command summary row layout', () => {
   });
 });
 
+// ─── Version 39: Variables tab ────────────────────────────────────────────
+
+test.describe('V39 – Variables tab', () => {
+  test('variables tab exists and can be clicked', async ({ page }) => {
+    const tab = page.locator('.inspector-tab[data-tab="variables"]');
+    await expect(tab).toBeVisible();
+    await tab.click();
+    await expect(page.locator('#variables-panel')).toBeVisible();
+  });
+
+  test('can add a variable', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="variables"]').click();
+    await page.locator('#variables-new-name').fill('score');
+    await page.locator('#variables-add-btn').click();
+
+    const items = page.locator('.variable-wrapper');
+    await expect(items).toHaveCount(1);
+    const nameInput = items.first().locator('.variable-name-input');
+    await expect(nameInput).toHaveValue('score');
+  });
+
+  test('can change variable type', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="variables"]').click();
+    await page.locator('#variables-new-name').fill('count');
+    await page.locator('#variables-add-btn').click();
+
+    const typeSelect = page.locator('.variable-wrapper .variable-type-select');
+    await typeSelect.selectOption('Integer');
+    await expect(typeSelect).toHaveValue('Integer');
+  });
+
+  test('Boolean variable shows checkbox', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="variables"]').click();
+    await page.locator('#variables-new-name').fill('flag');
+    await page.locator('#variables-add-btn').click();
+
+    await page.locator('.variable-wrapper .variable-type-select').selectOption('Boolean');
+    const cb = page.locator('.variable-value-checkbox');
+    await expect(cb).toBeVisible();
+  });
+
+  test('can delete a variable', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="variables"]').click();
+    await page.locator('#variables-new-name').fill('temp');
+    await page.locator('#variables-add-btn').click();
+    await expect(page.locator('.variable-wrapper')).toHaveCount(1);
+
+    await page.locator('.variable-item .messages-delete-btn').click();
+    await expect(page.locator('.variable-wrapper')).toHaveCount(0);
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

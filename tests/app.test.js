@@ -688,9 +688,10 @@ describe('Edit block name in inspector panel', () => {
 describe('Inspector/Events tabs and Settings cog', () => {
   it('inspector tabs exist in DOM (Inspector + Events)', () => {
     const tabs = document.querySelectorAll('.inspector-tab');
-    expect(tabs.length).toBe(2);
+    expect(tabs.length).toBe(3);
     expect(tabs[0].dataset.tab).toBe('inspector');
     expect(tabs[1].dataset.tab).toBe('messages');
+    expect(tabs[2].dataset.tab).toBe('variables');
   });
 
   it('settings cog button exists', () => {
@@ -1679,6 +1680,43 @@ describe('Fungus command summary row layout', () => {
     const detail = document.querySelector('.fungus-cmd-detail');
     expect(detail.textContent).toContain(target.label);
     expect(detail.textContent).toContain('Stop');
+  });
+});
+
+// ─── Version 39: Variables tab ──────────────────────────────────────────────
+
+describe('Variables tab', () => {
+  afterEach(() => { app.S.variables = []; });
+
+  it('variables tab exists in DOM', () => {
+    const tab = document.querySelector('.inspector-tab[data-tab="variables"]');
+    expect(tab).toBeTruthy();
+  });
+
+  it('variables panel exists in DOM', () => {
+    expect(document.getElementById('variables-panel')).toBeTruthy();
+  });
+
+  it('can add a variable to S.variables', () => {
+    app.S.variables.push({ name: 'score', type: 'Integer', value: 0 });
+    expect(app.S.variables.length).toBe(1);
+    expect(app.S.variables[0].name).toBe('score');
+    expect(app.S.variables[0].type).toBe('Integer');
+  });
+
+  it('variables support Boolean type', () => {
+    app.S.variables.push({ name: 'flag', type: 'Boolean', value: true });
+    expect(app.S.variables[0].value).toBe(true);
+  });
+
+  it('variables support Float type', () => {
+    app.S.variables.push({ name: 'speed', type: 'Float', value: 1.5 });
+    expect(app.S.variables[0].value).toBe(1.5);
+  });
+
+  it('variables support String type', () => {
+    app.S.variables.push({ name: 'playerName', type: 'String', value: 'Alice' });
+    expect(app.S.variables[0].value).toBe('Alice');
   });
 });
 

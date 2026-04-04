@@ -482,6 +482,29 @@ Version 38 features - settings button / events tab
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 
+Version 39 features - variables
+==================
 
+- ✅ add a new tab "Variables"
+  - ✅ introduce global variables (for both fungus and state chart modes)
+  - ✅ this should allow the user to add/remove/edit global variables
+  - ✅ variables can be of types: Boolean / Integer / Float / String
+
+- ✅ refine: 
+  - ✅ For string variables, can you have a second row, containing a text     
+    box, to allow string variables to contain long strings. Also, have the   
+    data type first - before the variable name. Also, add column names, Data
+    Type / Variable Name / Value.
+  
+- ✅ refine:
+  - ✅ only have string value on separate line if its contents can't fit without scrolling in the value box on the same line
+      - so all types have: Type / name / value
+      - but if string content is long, then its value becomes a text box on a new line
+  - ✅ have a clear horizontal line between existing variables, and the new one to be created 
+    - ✅ so once "Add" has been clicked, the variable goes up into the declared variables section
+
+  - ✅ reduced the text box for variable name to 18 characters, so there is more room for the value for string and numeric variables
+  
+- ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
