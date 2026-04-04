@@ -292,11 +292,17 @@ function renderCommandFields(container, cmd, node) {
       container.appendChild(labeledInput('Variable', cmd.variableName, v => { cmd.variableName = v; }));
       container.appendChild(labeledInput('Value', cmd.value, v => { cmd.value = v; }));
       break;
-    case 'playMusic':
+    case 'playMusic': {
+      const audioOptions = [['', '— none —'], ...AUDIO_FILES.map(f => [f, f])];
+      container.appendChild(labeledSelect('Audio File', cmd.audioUrl || '', audioOptions, v => { cmd.audioUrl = v; }));
+      container.appendChild(labeledInput('Volume', cmd.volume, v => { cmd.volume = parseFloat(v) || 0; }));
+      break;
+    }
     case 'playSound': {
       const audioOptions = [['', '— none —'], ...AUDIO_FILES.map(f => [f, f])];
       container.appendChild(labeledSelect('Audio File', cmd.audioUrl || '', audioOptions, v => { cmd.audioUrl = v; }));
       container.appendChild(labeledInput('Volume', cmd.volume, v => { cmd.volume = parseFloat(v) || 0; }));
+      container.appendChild(labeledCheckbox('Wait for sound to finish playing', cmd.waitUntilFinished ?? false, v => { cmd.waitUntilFinished = v; }));
       break;
     }
     case 'wait':
@@ -357,6 +363,21 @@ function labeledSelect(label, value, options, onChange) {
   }
   sel.addEventListener('change', () => onChange(sel.value));
   row.appendChild(sel);
+  return row;
+}
+
+function labeledCheckbox(label, checked, onChange) {
+  const row = document.createElement('div');
+  row.className = 'cmd-field';
+  const lbl = document.createElement('label');
+  lbl.className = 'cmd-checkbox-label';
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.checked = checked;
+  cb.addEventListener('change', () => onChange(cb.checked));
+  lbl.appendChild(cb);
+  lbl.appendChild(document.createTextNode(' ' + label));
+  row.appendChild(lbl);
   return row;
 }
 

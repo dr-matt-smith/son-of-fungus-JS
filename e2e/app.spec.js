@@ -1372,6 +1372,49 @@ test.describe('V29 – Fungus event annotation', () => {
   });
 });
 
+// ─── Version 30: Play Sound wait checkbox ─────────────────────────────────
+
+test.describe('V30 – Play Sound wait checkbox', () => {
+  test('playSound command shows wait checkbox in inspector', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('playSound');
+
+    const checkbox = page.locator('.cmd-checkbox-label input[type="checkbox"]');
+    await expect(checkbox).toBeVisible();
+    await expect(checkbox).not.toBeChecked();
+  });
+
+  test('playMusic command does NOT show wait checkbox', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('playMusic');
+
+    const checkbox = page.locator('.cmd-checkbox-label input[type="checkbox"]');
+    await expect(checkbox).toHaveCount(0);
+  });
+
+  test('wait checkbox can be toggled', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('playSound');
+
+    const checkbox = page.locator('.cmd-checkbox-label input[type="checkbox"]');
+    await expect(checkbox).not.toBeChecked();
+    await checkbox.check();
+    await expect(checkbox).toBeChecked();
+  });
+
+  test('wait checkbox label text is correct', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('playSound');
+
+    const label = page.locator('.cmd-checkbox-label');
+    await expect(label).toContainText('Wait for sound to finish playing');
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

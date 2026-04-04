@@ -1155,6 +1155,39 @@ describe('Fungus event annotation', () => {
   });
 });
 
+// ─── Version 30: Play Sound wait until finished checkbox ────────────────────
+
+describe('Play Sound wait checkbox', () => {
+  it('playSound command defaults waitUntilFinished to false', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'playSound', audioUrl: '', volume: 1.0, waitUntilFinished: false });
+    expect(node.commands[0].waitUntilFinished).toBe(false);
+  });
+
+  it('inspector shows wait checkbox for playSound command', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'playSound', audioUrl: '', volume: 1.0, waitUntilFinished: false });
+    app.activateNode(node);
+    app.updateInspector();
+
+    const checkbox = document.querySelector('.cmd-checkbox-label input[type="checkbox"]');
+    expect(checkbox).toBeTruthy();
+    expect(checkbox.checked).toBe(false);
+    app.deactivateNode();
+  });
+
+  it('inspector does NOT show wait checkbox for playMusic command', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'playMusic', audioUrl: '', volume: 1.0 });
+    app.activateNode(node);
+    app.updateInspector();
+
+    const checkbox = document.querySelector('.cmd-checkbox-label input[type="checkbox"]');
+    expect(checkbox).toBeFalsy();
+    app.deactivateNode();
+  });
+});
+
 describe('Audio manifest', () => {
   it('AUDIO_FILES is exported and contains entries', () => {
     // Import is via the app facade; audio-manifest is used by inspector
