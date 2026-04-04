@@ -39,6 +39,29 @@ document.addEventListener('mouseup', () => {
   document.body.style.cursor = '';
 });
 
+// ── Selected command tracking (fungus mode) ─────────────────────────────────
+
+let selectedCmdIdx = -1;
+
+function cmdSummary(cmd) {
+  const label = COMMAND_TYPES[cmd.type]?.label || cmd.type;
+  switch (cmd.type) {
+    case 'say':       return `${label}    "${(cmd.text || '').substring(0, 20)}${(cmd.text || '').length > 20 ? '…' : ''}"`;
+    case 'call': {
+      const target = S.nodes.find(n => n.id === cmd.targetBlockId);
+      return `${label}    <${target ? target.label : 'None'}> · ${cmd.mode === 'stop' ? 'Stop' : 'Continue'}`;
+    }
+    case 'menu':      return `${label}    ${cmd.options.length} options`;
+    case 'wait':      return `${label}    ${cmd.duration}s`;
+    case 'playSound': return `${label}    ${cmd.audioUrl || '(none)'}`;
+    case 'playMusic': return `${label}    ${cmd.audioUrl || '(none)'}`;
+    case 'sendMessage': return `${label}    "${cmd.message || ''}"`;
+    case 'setVariable': return `${label}    ${cmd.variableName || ''} = ${cmd.value ?? ''}`;
+    case 'stopAudio':   return label;
+    default:          return label;
+  }
+}
+
 // ── Fungus mode reactivity ──────────────────────────────────────────────────
 
 function onNodeDataChanged() {
@@ -64,6 +87,7 @@ function setPropsRows(rows) {
 }
 
 function showEmpty() {
+  selectedCmdIdx = -1;
   emptyMsg.style.display = 'block';
   propsContainer.style.display = 'none';
   // Remove sections from both propsContainer and inspectorBody
@@ -266,77 +290,163 @@ function renderNodeInspector(n) {
   const cmdList = document.createElement('div');
   cmdList.className = 'inspector-cmd-list';
 
-  n.commands.forEach((cmd, idx) => {
-    const item = document.createElement('div');
-    item.className = 'inspector-cmd-item';
-    if (S.executingCommandIdx === idx && S.executingNode === n) {
-      item.classList.add('cmd-executing');
+  // Clamp selected index
+  if (selectedCmdIdx >= n.commands.length) selectedCmdIdx = n.commands.length - 1;
+
+  if (isFungus) {
+    // ── Fungus mode: summary list + editor ──────────────────────────────
+    n.commands.forEach((cmd, idx) => {
+      const row = document.createElement('div');
+      row.className = 'fungus-cmd-summary';
+      if (idx === selectedCmdIdx) row.classList.add('fungus-cmd-selected');
+      if (S.executingCommandIdx === idx && S.executingNode === n) {
+        row.classList.add('cmd-executing');
+      }
+      row.textContent = cmdSummary(cmd);
+      row.addEventListener('click', () => { selectedCmdIdx = idx; updateInspector(); });
+      cmdList.appendChild(row);
+    });
+    cmdsSection.appendChild(cmdList);
+
+    // Add command dropdown
+    const addRow = document.createElement('div');
+    addRow.className = 'inspector-add-cmd';
+    const addSelect = document.createElement('select');
+    addSelect.className = 'inspector-select';
+    addSelect.innerHTML = '<option value="">+ Add command...</option>';
+    for (const [key, ct] of Object.entries(COMMAND_TYPES)) {
+      addSelect.innerHTML += `<option value="${key}">${ct.label} (${ct.category})</option>`;
     }
+    addSelect.addEventListener('change', () => {
+      if (!addSelect.value) return;
+      n.commands.push(createCommand(addSelect.value));
+      selectedCmdIdx = n.commands.length - 1;
+      onNodeDataChanged();
+      updateInspector();
+    });
+    addRow.appendChild(addSelect);
+    cmdsSection.appendChild(addRow);
 
-    const header = document.createElement('div');
-    header.className = 'inspector-cmd-header';
+    // ── Command editor (for selected command) ───────────────────────────
+    if (selectedCmdIdx >= 0 && selectedCmdIdx < n.commands.length) {
+      const cmd = n.commands[selectedCmdIdx];
+      const editor = document.createElement('div');
+      editor.className = 'inspector-section fungus-cmd-editor';
 
-    const label = COMMAND_TYPES[cmd.type]?.label || cmd.type;
-    const catLabel = COMMAND_TYPES[cmd.type]?.category || '';
-    header.innerHTML = `<span class="cmd-label">${label}</span><span class="cmd-cat">${catLabel}</span>`;
+      const editorTitle = document.createElement('div');
+      editorTitle.className = 'inspector-section-title';
+      editorTitle.textContent = COMMAND_TYPES[cmd.type]?.label || cmd.type;
+      editor.appendChild(editorTitle);
 
-    const btnGroup = document.createElement('span');
-    btnGroup.className = 'cmd-btn-group';
+      // Command-specific fields
+      const fields = document.createElement('div');
+      fields.className = 'inspector-cmd-fields';
+      renderCommandFields(fields, cmd, n);
+      editor.appendChild(fields);
 
-    if (idx > 0) {
-      const upBtn = document.createElement('button');
-      upBtn.className = 'cmd-btn';
-      upBtn.textContent = '↑';
-      upBtn.title = 'Move up';
-      upBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx - 1, 0, n.commands.splice(idx, 1)[0]); onNodeDataChanged(); updateInspector(); });
-      btnGroup.appendChild(upBtn);
+      // Move up / down / delete buttons
+      const btnRow = document.createElement('div');
+      btnRow.className = 'fungus-cmd-btn-row';
+      if (selectedCmdIdx > 0) {
+        const upBtn = document.createElement('button');
+        upBtn.className = 'cmd-btn';
+        upBtn.textContent = '↑';
+        upBtn.title = 'Move up';
+        upBtn.addEventListener('click', () => { n.commands.splice(selectedCmdIdx - 1, 0, n.commands.splice(selectedCmdIdx, 1)[0]); selectedCmdIdx--; onNodeDataChanged(); updateInspector(); });
+        btnRow.appendChild(upBtn);
+      }
+      if (selectedCmdIdx < n.commands.length - 1) {
+        const downBtn = document.createElement('button');
+        downBtn.className = 'cmd-btn';
+        downBtn.textContent = '↓';
+        downBtn.title = 'Move down';
+        downBtn.addEventListener('click', () => { n.commands.splice(selectedCmdIdx + 1, 0, n.commands.splice(selectedCmdIdx, 1)[0]); selectedCmdIdx++; onNodeDataChanged(); updateInspector(); });
+        btnRow.appendChild(downBtn);
+      }
+      const delBtn = document.createElement('button');
+      delBtn.className = 'cmd-btn cmd-btn-del';
+      delBtn.textContent = '× Delete';
+      delBtn.title = 'Remove command';
+      delBtn.addEventListener('click', () => { n.commands.splice(selectedCmdIdx, 1); selectedCmdIdx = -1; onNodeDataChanged(); updateInspector(); });
+      btnRow.appendChild(delBtn);
+      editor.appendChild(btnRow);
+
+      cmdsSection.appendChild(editor);
     }
-    if (idx < n.commands.length - 1) {
-      const downBtn = document.createElement('button');
-      downBtn.className = 'cmd-btn';
-      downBtn.textContent = '↓';
-      downBtn.title = 'Move down';
-      downBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx + 1, 0, n.commands.splice(idx, 1)[0]); onNodeDataChanged(); updateInspector(); });
-      btnGroup.appendChild(downBtn);
+  } else {
+    // ── Statechart mode: original inline layout ─────────────────────────
+    n.commands.forEach((cmd, idx) => {
+      const item = document.createElement('div');
+      item.className = 'inspector-cmd-item';
+      if (S.executingCommandIdx === idx && S.executingNode === n) {
+        item.classList.add('cmd-executing');
+      }
+
+      const header = document.createElement('div');
+      header.className = 'inspector-cmd-header';
+
+      const label = COMMAND_TYPES[cmd.type]?.label || cmd.type;
+      const catLabel = COMMAND_TYPES[cmd.type]?.category || '';
+      header.innerHTML = `<span class="cmd-label">${label}</span><span class="cmd-cat">${catLabel}</span>`;
+
+      const btnGroup = document.createElement('span');
+      btnGroup.className = 'cmd-btn-group';
+
+      if (idx > 0) {
+        const upBtn = document.createElement('button');
+        upBtn.className = 'cmd-btn';
+        upBtn.textContent = '↑';
+        upBtn.title = 'Move up';
+        upBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx - 1, 0, n.commands.splice(idx, 1)[0]); onNodeDataChanged(); updateInspector(); });
+        btnGroup.appendChild(upBtn);
+      }
+      if (idx < n.commands.length - 1) {
+        const downBtn = document.createElement('button');
+        downBtn.className = 'cmd-btn';
+        downBtn.textContent = '↓';
+        downBtn.title = 'Move down';
+        downBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx + 1, 0, n.commands.splice(idx, 1)[0]); onNodeDataChanged(); updateInspector(); });
+        btnGroup.appendChild(downBtn);
+      }
+      const delBtn = document.createElement('button');
+      delBtn.className = 'cmd-btn cmd-btn-del';
+      delBtn.textContent = '×';
+      delBtn.title = 'Remove command';
+      delBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx, 1); onNodeDataChanged(); updateInspector(); });
+      btnGroup.appendChild(delBtn);
+
+      header.appendChild(btnGroup);
+      item.appendChild(header);
+
+      // Command-specific fields
+      const fields = document.createElement('div');
+      fields.className = 'inspector-cmd-fields';
+      renderCommandFields(fields, cmd, n);
+      item.appendChild(fields);
+
+      cmdList.appendChild(item);
+    });
+
+    cmdsSection.appendChild(cmdList);
+
+    // Add command dropdown
+    const addRow = document.createElement('div');
+    addRow.className = 'inspector-add-cmd';
+    const addSelect = document.createElement('select');
+    addSelect.className = 'inspector-select';
+    addSelect.innerHTML = '<option value="">+ Add command...</option>';
+    for (const [key, ct] of Object.entries(COMMAND_TYPES)) {
+      addSelect.innerHTML += `<option value="${key}">${ct.label} (${ct.category})</option>`;
     }
-    const delBtn = document.createElement('button');
-    delBtn.className = 'cmd-btn cmd-btn-del';
-    delBtn.textContent = '×';
-    delBtn.title = 'Remove command';
-    delBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx, 1); onNodeDataChanged(); updateInspector(); });
-    btnGroup.appendChild(delBtn);
-
-    header.appendChild(btnGroup);
-    item.appendChild(header);
-
-    // Command-specific fields
-    const fields = document.createElement('div');
-    fields.className = 'inspector-cmd-fields';
-    renderCommandFields(fields, cmd, n);
-    item.appendChild(fields);
-
-    cmdList.appendChild(item);
-  });
-
-  cmdsSection.appendChild(cmdList);
-
-  // Add command dropdown
-  const addRow = document.createElement('div');
-  addRow.className = 'inspector-add-cmd';
-  const addSelect = document.createElement('select');
-  addSelect.className = 'inspector-select';
-  addSelect.innerHTML = '<option value="">+ Add command...</option>';
-  for (const [key, ct] of Object.entries(COMMAND_TYPES)) {
-    addSelect.innerHTML += `<option value="${key}">${ct.label} (${ct.category})</option>`;
+    addSelect.addEventListener('change', () => {
+      if (!addSelect.value) return;
+      n.commands.push(createCommand(addSelect.value));
+      onNodeDataChanged();
+      updateInspector();
+    });
+    addRow.appendChild(addSelect);
+    cmdsSection.appendChild(addRow);
   }
-  addSelect.addEventListener('change', () => {
-    if (!addSelect.value) return;
-    n.commands.push(createCommand(addSelect.value));
-    onNodeDataChanged();
-    updateInspector();
-  });
-  addRow.appendChild(addSelect);
-  cmdsSection.appendChild(addRow);
 
   // Append sections after the table
   propsContainer.appendChild(eventSection);

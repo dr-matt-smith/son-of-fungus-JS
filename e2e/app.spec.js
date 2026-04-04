@@ -1739,6 +1739,64 @@ test.describe('V35 – Message Received annotation', () => {
   });
 });
 
+// ─── Version 36: Command summary list & editor ──────────────────────────
+
+test.describe('V36 – Fungus command summary list', () => {
+  test('commands appear as summary rows in fungus mode', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('say');
+
+    const summaries = page.locator('.fungus-cmd-summary');
+    await expect(summaries).toHaveCount(1);
+    await expect(summaries.first()).toContainText('Say');
+  });
+
+  test('clicking summary row highlights it green and shows editor', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('say');
+
+    // The newly added command should auto-select
+    await expect(page.locator('.fungus-cmd-selected')).toHaveCount(1);
+    await expect(page.locator('.fungus-cmd-editor')).toBeVisible();
+  });
+
+  test('editor shows fields for the selected command', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('say');
+
+    // Editor should show character and text fields
+    await expect(page.locator('.fungus-cmd-editor .cmd-field')).toHaveCount(2);
+  });
+
+  test('statechart mode uses inline command items (no summary)', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="statechart"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('say');
+
+    await expect(page.locator('.fungus-cmd-summary')).toHaveCount(0);
+    await expect(page.locator('.inspector-cmd-item')).toHaveCount(1);
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

@@ -1516,8 +1516,87 @@ describe('Send Message uses dropdown', () => {
     app.activateNode(node);
     app.updateInspector();
 
+    // In fungus mode, click the command summary to open the editor
+    const summary = document.querySelector('.fungus-cmd-summary');
+    if (summary) summary.click();
+
     const selects = document.querySelectorAll('.cmd-field select');
     expect(selects.length).toBeGreaterThan(0);
+  });
+});
+
+// ─── Version 36: Command summary list & editor ─────────────────────────────
+
+describe('Fungus command summary list', () => {
+  afterEach(() => {
+    app.deactivateNode();
+    if (app.S.diagramMode !== 'fungus') app.enterFungusMode();
+  });
+
+  it('commands shown as summary rows in fungus mode', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'say', text: 'hi', character: '' });
+    node.commands.push({ type: 'wait', duration: 2 });
+    app.activateNode(node);
+    app.updateInspector();
+
+    const summaries = document.querySelectorAll('.fungus-cmd-summary');
+    expect(summaries.length).toBe(2);
+    expect(summaries[0].textContent).toContain('Say');
+    expect(summaries[1].textContent).toContain('Wait');
+  });
+
+  it('clicking a summary row highlights it with green', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'say', text: 'hi', character: '' });
+    app.activateNode(node);
+    app.updateInspector();
+
+    const summary = document.querySelector('.fungus-cmd-summary');
+    summary.click();
+
+    const selected = document.querySelector('.fungus-cmd-selected');
+    expect(selected).toBeTruthy();
+  });
+
+  it('selecting a command shows editor section', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'say', text: 'hello', character: '' });
+    app.activateNode(node);
+    app.updateInspector();
+
+    document.querySelector('.fungus-cmd-summary').click();
+
+    const editor = document.querySelector('.fungus-cmd-editor');
+    expect(editor).toBeTruthy();
+    expect(editor.textContent).toContain('Say');
+  });
+
+  it('no editor shown when no command is selected', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'say', text: 'hello', character: '' });
+    app.activateNode(node);
+    app.updateInspector();
+
+    const editor = document.querySelector('.fungus-cmd-editor');
+    expect(editor).toBeFalsy();
+  });
+
+  it('statechart mode still uses inline fields', () => {
+    app.exitFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'say', text: 'hello', character: '' });
+    app.activateNode(node);
+    app.updateInspector();
+
+    const summaries = document.querySelectorAll('.fungus-cmd-summary');
+    expect(summaries.length).toBe(0);
+    const items = document.querySelectorAll('.inspector-cmd-item');
+    expect(items.length).toBe(1);
   });
 });
 
