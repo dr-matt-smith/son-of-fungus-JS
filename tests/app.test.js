@@ -1808,6 +1808,36 @@ describe('Set Variable (copy) command', () => {
   });
 });
 
+// ─── Version 42: Light/Dark theme ───────────────────────────────────────────
+
+describe('Theme toggle', () => {
+  afterEach(() => { delete document.documentElement.dataset.theme; });
+
+  it('theme radio buttons exist in settings', () => {
+    const radios = document.querySelectorAll('input[name="theme"]');
+    expect(radios.length).toBe(2);
+  });
+
+  it('dark is the default theme', () => {
+    expect(document.documentElement.dataset.theme).toBeUndefined();
+  });
+
+  it('selecting light theme sets data-theme on html', () => {
+    const lightRadio = document.querySelector('input[name="theme"][value="light"]');
+    lightRadio.checked = true;
+    lightRadio.dispatchEvent(new Event('change'));
+    expect(document.documentElement.dataset.theme).toBe('light');
+  });
+
+  it('selecting dark theme removes data-theme', () => {
+    document.documentElement.dataset.theme = 'light';
+    const darkRadio = document.querySelector('input[name="theme"][value="dark"]');
+    darkRadio.checked = true;
+    darkRadio.dispatchEvent(new Event('change'));
+    expect(document.documentElement.dataset.theme).toBeUndefined();
+  });
+});
+
 describe('Audio manifest', () => {
   it('AUDIO_FILES is exported and contains entries', () => {
     // Import is via the app facade; audio-manifest is used by inspector

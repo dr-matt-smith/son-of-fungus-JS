@@ -608,6 +608,18 @@ closeSettingsBtn.addEventListener('click', () => {
   showTab(activeTab ? activeTab.dataset.tab : 'inspector');
 });
 
+// ── Theme toggle ────────────────────────────────────────────────────────────
+
+for (const radio of document.querySelectorAll('input[name="theme"]')) {
+  radio.addEventListener('change', () => {
+    if (radio.value === 'light') {
+      document.documentElement.dataset.theme = 'light';
+    } else {
+      delete document.documentElement.dataset.theme;
+    }
+  });
+}
+
 function updateModeUI() {
   if (S.diagramMode === 'fungus') {
     modeLabelText.textContent = 'Fungus Mode';

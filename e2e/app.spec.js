@@ -2017,6 +2017,40 @@ test.describe('V41 – Set Variable (copy) command', () => {
   });
 });
 
+// ─── Version 42: Light/Dark theme ────────────────────────────────────────
+
+test.describe('V42 – Theme toggle', () => {
+  test('theme radio buttons exist in settings', async ({ page }) => {
+    await page.locator('#btn-settings-cog').click();
+    const radios = page.locator('input[name="theme"]');
+    await expect(radios).toHaveCount(2);
+  });
+
+  test('selecting light theme changes appearance', async ({ page }) => {
+    await page.locator('#btn-settings-cog').click();
+    await page.locator('input[name="theme"][value="light"]').check();
+    const theme = await page.locator('html').getAttribute('data-theme');
+    expect(theme).toBe('light');
+  });
+
+  test('selecting dark theme removes data-theme', async ({ page }) => {
+    await page.locator('#btn-settings-cog').click();
+    await page.locator('input[name="theme"][value="light"]').check();
+    await page.locator('input[name="theme"][value="dark"]').check();
+    const theme = await page.locator('html').getAttribute('data-theme');
+    expect(theme).toBeNull();
+  });
+
+  test('light theme body has lighter background', async ({ page }) => {
+    await page.locator('#btn-settings-cog').click();
+    await page.locator('input[name="theme"][value="light"]').check();
+    await page.locator('#btn-close-settings').click();
+    const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    // Light bg should not be dark (#111827 = rgb(17, 24, 39))
+    expect(bg).not.toBe('rgb(17, 24, 39)');
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

@@ -1,20 +1,5 @@
 
 
-
-Version X features - command Set Variable
-==================
-
-- [] add a new Fungus command "Set Variable (value)"
-  - [] the user chooses the variable to be set from the variables defined in the Variables tab
-  - [] the user can enter a new value for the variable (of the appropriate data type)
-
-- [] add a new Fungus command "Set Variable (copy another)"
-  - [] the user chooses the variable to be set from the variables defined in the Variables tab
-  - [] the user then chooses the variable whose value is to be copied into the variable to be set
-
-- [] and add Vite and PlayWright tests for the above feature(s)
-
-
 Version X features - new commands "If" and "Else" and "Else If"
 ==================
 

@@ -66,6 +66,17 @@ export function setupDOM() {
             <button id="btn-close-settings" class="toolbar-btn">Close Settings</button>
           </div>
           <div class="settings-section">
+            <div class="settings-section-title">Theme</div>
+            <label class="settings-mode-option">
+              <input type="radio" name="theme" value="dark" checked>
+              <span class="settings-mode-name">Dark</span>
+            </label>
+            <label class="settings-mode-option">
+              <input type="radio" name="theme" value="light">
+              <span class="settings-mode-name">Light</span>
+            </label>
+          </div>
+          <div class="settings-section">
             <div class="settings-section-title">Diagram Mode</div>
             <label class="settings-mode-option">
               <input type="radio" name="diagram-mode" value="fungus" checked>

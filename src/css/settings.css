@@ -2,7 +2,7 @@
 
 #inspector-tabs {
   display: flex;
-  border-bottom: 1px solid #374151;
+  border-bottom: 1px solid var(--border-color);
   user-select: none;
   flex-shrink: 0;
 }
@@ -13,7 +13,7 @@
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 12px;
   font-weight: 600;
   font-family: inherit;
@@ -22,7 +22,7 @@
 }
 
 .inspector-tab:hover {
-  color: #9ca3af;
+  color: var(--text-secondary);
 }
 
 .inspector-tab.active {
@@ -45,7 +45,7 @@
   margin-left: auto;
   background: none;
   border: none;
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 18px;
   cursor: pointer;
   padding: 4px 8px;
@@ -54,7 +54,7 @@
 }
 
 .settings-cog-btn:hover {
-  color: #d1d5db;
+  color: var(--text-primary);
 }
 
 /* ── Settings panel ────────────────────────────────────────────────────────── */
@@ -64,13 +64,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  border-bottom: 1px solid #374151;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .settings-header-title {
   font-size: 13px;
   font-weight: 600;
-  color: #d1d5db;
+  color: var(--text-primary);
 }
 
 .settings-header .toolbar-btn {
@@ -89,7 +89,7 @@
 .settings-section-title {
   font-size: 11px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 10px;
@@ -101,20 +101,20 @@
   gap: 10px;
   padding: 10px;
   margin-bottom: 8px;
-  background: #111827;
-  border: 1px solid #262f3d;
+  background: var(--bg-card);
+  border: 1px solid var(--border-dark);
   border-radius: 6px;
   cursor: pointer;
   transition: border-color 0.12s;
 }
 
 .settings-mode-option:hover {
-  border-color: #374151;
+  border-color: var(--border-color);
 }
 
 .settings-mode-option:has(input:checked) {
   border-color: #3b82f6;
-  background: #1a2744;
+  background: var(--bg-selected);
 }
 
 .settings-mode-option input[type="radio"] {
@@ -135,14 +135,14 @@
 .settings-mode-name {
   font-size: 12px;
   font-weight: 600;
-  color: #d1d5db;
+  color: var(--text-primary);
 }
 
 .settings-mode-preview {
   width: 100%;
   height: auto;
   max-height: 60px;
-  background: #0d1117;
+  background: var(--bg-body);
   border-radius: 4px;
   padding: 2px;
 }
@@ -213,7 +213,7 @@
   margin-bottom: 4px;
   font-size: 10px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
@@ -264,7 +264,7 @@
   gap: 4px;
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid #374151;
+  border-top: 1px solid var(--border-color);
   align-items: center;
 }
 
@@ -290,8 +290,8 @@
 }
 
 .enum-card {
-  background: #111827;
-  border: 1px solid #374151;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 8px;
   margin-bottom: 8px;
@@ -318,7 +318,7 @@
 
 .enum-col-header {
   font-size: 9px;
-  color: #6b7280;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
   margin-bottom: 4px;
@@ -359,6 +359,6 @@
 
 #mode-label-hint {
   font-size: 10px;
-  color: #4b5563;
+  color: var(--text-dim);
   font-style: italic;
 }

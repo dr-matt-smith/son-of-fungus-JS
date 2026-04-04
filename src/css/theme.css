@@ -1,0 +1,57 @@
+/* ── Theme variables (dark = default) ─────────────────────────────────────── */
+
+:root {
+  --bg-body: #111827;
+  --bg-panel: #1f2937;
+  --bg-card: #111827;
+  --bg-input: #111827;
+  --bg-canvas: #111827;
+  --bg-toolbar: #1f2937;
+  --bg-modal: #1a1a2e;
+
+  --text-primary: #d1d5db;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --text-dim: #4b5563;
+
+  --border-color: #374151;
+  --border-dark: #262f3d;
+
+  --node-bg: #1e2937;
+  --node-border: #2563eb;
+
+  --grid-dot: #273146;
+
+  --bg-selected: #1a2744;
+
+  --shadow-color: rgba(0, 0, 0, 0.6);
+}
+
+/* ── Light theme overrides ───────────────────────────────────────────────── */
+
+[data-theme="light"] {
+  --bg-body: #f3f4f6;
+  --bg-panel: #ffffff;
+  --bg-card: #f9fafb;
+  --bg-input: #ffffff;
+  --bg-canvas: #e5e7eb;
+  --bg-toolbar: #ffffff;
+  --bg-modal: #ffffff;
+
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #4b5563;
+  --text-dim: #6b7280;
+
+  --border-color: #d1d5db;
+  --border-dark: #e5e7eb;
+
+  --node-bg: #ffffff;
+  --node-border: #3b82f6;
+
+  --grid-dot: #d1d5db;
+
+  --bg-selected: #dbeafe;
+
+  --shadow-color: rgba(0, 0, 0, 0.15);
+}

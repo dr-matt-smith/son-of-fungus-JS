@@ -534,3 +534,12 @@ Version 41 features - command Set Variable
   - ✅ the user then chooses the variable whose value is to be copied into the variable to be set
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
+
+Version 42 features - light and dark theme
+==================
+
+- ✅ add to the Settings panel a dark/light theme toggle
+  - ✅ ensure this theme applies to both modes and all tabs
+  - ✅ everything should still be readable, in both themes
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
