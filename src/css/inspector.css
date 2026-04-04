@@ -278,7 +278,6 @@ body[data-mode="fungus"] .inspector-cmd-list {
 }
 
 .fungus-cmd-summary.fungus-cmd-selected {
-  background: #14532d;
   border-color: #22c55e;
   color: #f0fdf4;
 }
@@ -291,6 +290,35 @@ body[data-mode="fungus"] .inspector-cmd-list {
   border-color: #22c55e;
   box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
 }
+
+/* ── Command type colors (unselected) ─────────────────────────────────────── */
+.fungus-cmd-say            { background: #3b1f4a; }  /* purple */
+.fungus-cmd-menu           { background: #1a3a2a; }  /* teal */
+.fungus-cmd-call           { background: #2a2a2a; }  /* gray */
+.fungus-cmd-setVariable    { background: #3a2a1a; }  /* brown */
+.fungus-cmd-setVarValue    { background: #3a2a1a; }  /* brown */
+.fungus-cmd-setVarCopy     { background: #3a2a1a; }  /* brown */
+.fungus-cmd-playMusic      { background: #1a2a3a; }  /* steel blue */
+.fungus-cmd-playSound      { background: #1a2a3a; }  /* steel blue */
+.fungus-cmd-stopAudio      { background: #1a2a3a; }  /* steel blue */
+.fungus-cmd-wait           { background: #3a3a1a; }  /* olive */
+.fungus-cmd-sendMessage    { background: #1a3a3a; }  /* cyan */
+
+[data-theme="light"] .fungus-cmd-say          { background: #f3e8ff; }
+[data-theme="light"] .fungus-cmd-menu         { background: #d1fae5; }
+[data-theme="light"] .fungus-cmd-call         { background: #e5e7eb; }
+[data-theme="light"] .fungus-cmd-setVariable  { background: #fef3c7; }
+[data-theme="light"] .fungus-cmd-setVarValue  { background: #fef3c7; }
+[data-theme="light"] .fungus-cmd-setVarCopy   { background: #fef3c7; }
+[data-theme="light"] .fungus-cmd-playMusic    { background: #dbeafe; }
+[data-theme="light"] .fungus-cmd-playSound    { background: #dbeafe; }
+[data-theme="light"] .fungus-cmd-stopAudio    { background: #dbeafe; }
+[data-theme="light"] .fungus-cmd-wait         { background: #fef9c3; }
+[data-theme="light"] .fungus-cmd-sendMessage  { background: #ccfbf1; }
+
+/* Selected always overrides with green */
+.fungus-cmd-summary.fungus-cmd-selected { background: #14532d; }
+[data-theme="light"] .fungus-cmd-summary.fungus-cmd-selected { background: #bbf7d0; color: #14532d; }
 
 .fungus-cmd-arrows {
   display: flex;

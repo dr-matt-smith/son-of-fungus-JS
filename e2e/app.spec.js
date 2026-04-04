@@ -2051,6 +2051,36 @@ test.describe('V42 – Theme toggle', () => {
   });
 });
 
+// ─── Version 43: Command color coding ────────────────────────────────────
+
+test.describe('V43 – Command color coding', () => {
+  test('say command row has fungus-cmd-say class', async ({ page }) => {
+    await page.locator('#btn-settings-cog').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('#btn-close-settings').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('say');
+
+    await expect(page.locator('.fungus-cmd-say')).toHaveCount(1);
+  });
+
+  test('different commands get different color classes', async ({ page }) => {
+    await page.locator('#btn-settings-cog').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('#btn-close-settings').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('say');
+    await page.locator('.inspector-add-cmd select').selectOption('wait');
+
+    await expect(page.locator('.fungus-cmd-say')).toHaveCount(1);
+    await expect(page.locator('.fungus-cmd-wait')).toHaveCount(1);
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

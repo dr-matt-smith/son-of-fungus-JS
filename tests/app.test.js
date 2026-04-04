@@ -1838,6 +1838,54 @@ describe('Theme toggle', () => {
   });
 });
 
+// ─── Version 43: Command color coding ───────────────────────────────────────
+
+describe('Command color coding', () => {
+  afterEach(() => {
+    app.deactivateNode();
+    if (app.S.diagramMode !== 'fungus') app.enterFungusMode();
+  });
+
+  it('summary rows have command-type CSS class', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'say', text: 'hi', character: '' });
+    node.commands.push({ type: 'call', targetBlockId: null, mode: 'stop' });
+    app.activateNode(node);
+    app.updateInspector();
+
+    const rows = document.querySelectorAll('.fungus-cmd-summary');
+    expect(rows[0].classList.contains('fungus-cmd-say')).toBe(true);
+    expect(rows[1].classList.contains('fungus-cmd-call')).toBe(true);
+  });
+
+  it('different command types have different classes', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'wait', duration: 1 });
+    node.commands.push({ type: 'sendMessage', message: '' });
+    app.activateNode(node);
+    app.updateInspector();
+
+    const rows = document.querySelectorAll('.fungus-cmd-summary');
+    expect(rows[0].classList.contains('fungus-cmd-wait')).toBe(true);
+    expect(rows[1].classList.contains('fungus-cmd-sendMessage')).toBe(true);
+  });
+
+  it('selected command still gets green class regardless of type', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'say', text: 'hi', character: '' });
+    app.activateNode(node);
+    app.updateInspector();
+
+    document.querySelector('.fungus-cmd-summary').click();
+    const row = document.querySelector('.fungus-cmd-summary');
+    expect(row.classList.contains('fungus-cmd-selected')).toBe(true);
+    expect(row.classList.contains('fungus-cmd-say')).toBe(true);
+  });
+});
+
 describe('Audio manifest', () => {
   it('AUDIO_FILES is exported and contains entries', () => {
     // Import is via the app facade; audio-manifest is used by inspector

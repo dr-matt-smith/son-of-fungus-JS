@@ -301,7 +301,7 @@ function renderNodeInspector(n) {
     // ── Fungus mode: summary list + editor ──────────────────────────────
     n.commands.forEach((cmd, idx) => {
       const row = document.createElement('div');
-      row.className = 'fungus-cmd-summary';
+      row.className = `fungus-cmd-summary fungus-cmd-${cmd.type}`;
       if (idx === selectedCmdIdx) row.classList.add('fungus-cmd-selected');
       if (S.executingCommandIdx === idx && S.executingNode === n) {
         row.classList.add('cmd-executing');

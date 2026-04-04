@@ -543,3 +543,15 @@ Version 42 features - light and dark theme
   - ✅ everything should still be readable, in both themes
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+
+Version 43 features - color code command summary rows in inspector
+==================
+
+- ✅ selected command is always highlighed in green
+  - ✅ when not selected, please color code different commands
+  - ✅ use this screenshot as a guide, and when any new commands are added, give each new command a different colour:
+    - ![](/screenshots/fungus_command_colors.png)
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
