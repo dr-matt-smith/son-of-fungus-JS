@@ -290,3 +290,53 @@ drop down of audio files
 - ✅ please test that the sound actually plays, for each sound in the /public/audio folder
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+Version 28 features - run log style
+==================
+
+
+- ✅ improve the style of the run logs, using the following style please:
+  - ✅ note <id>: <block name>:
+  - ✅ note when a block is entered add astrisks, e.g. "*Enter block*:"
+
+``` old style
+[10:43:31.905] Execution started — entry block: "New Block 1" (id:1)
+[10:43:31.905] Enter block: "New Block 1" (id:1)
+[10:43:31.906] Wait: 2s
+[10:43:33.907] Play sound: /audio/food_sounds/yum.mp3
+[10:43:33.909] Call: "New Block 2" (mode: stop)
+[10:43:33.909] Enter block: "New Block 2" (id:2)
+[10:43:33.910] Say: Block 2: goodbye from Block 2
+[10:43:34.514] Execution complete
+```
+
+``` new style
+[10:43:31.905] Execution started — entry block: "New Block 1" (id:1)
+[10:43:31.905] *Enter block*: "New Block 1" (id:1)
+[10:43:31.906] 1: New Block 1: Wait: 2s
+[10:43:33.907] 1: New Block 1: Play sound: /audio/food_sounds/yum.mp3
+[10:43:33.909] 1: New Block 1: Call: "New Block 2" (mode: stop)
+[10:43:33.909] *Enter block*: "New Block 2" (id:2)
+[10:43:33.910] 2: New Block 2: Say: Block 2: goodbye from Block 2
+[10:43:34.514] Execution complete
+```
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+
+
+Version 29 features - fungus block default style & event annotation
+==================
+
+
+- [] in fungus mode, when a block is first dragged onto the canvas, it should be styled as a 'standard block' - since it isn't triggered by an event, and calls not other blocks
+
+- [] when a fungus style block has an event trigger selected, please annotate this on the diagram in the style shown in this screenshot "<eventName>":
+
+![block event annotation](/screenshots/fungus_block_event_annotation.png)
+
+
+- [] and add Vite and PlayWright tests for the above feature(s)
+

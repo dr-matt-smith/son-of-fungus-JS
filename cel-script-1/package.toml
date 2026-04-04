@@ -1,0 +1,8 @@
+[package]
+id = "son-of-fungus"
+name = "Son of Fungus"
+
+version = "1.0.0"
+
+[contributes]
+

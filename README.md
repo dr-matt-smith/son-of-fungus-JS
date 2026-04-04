@@ -4,6 +4,12 @@
 
 Vite project -
 
+NOTES
+- files in `/public` get added into the build in `/dist`
+  - audio
+  - images 
+  - etc.
+
 ## 0. don't forget to install Node packages
 
 ```bash

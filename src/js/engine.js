@@ -130,7 +130,7 @@ function executeBlock(node) {
   node.el.classList.add('node-executing');
   S.executingNode = node;
   S.executingCommandIdx = 0;
-  logEntry(`Enter block: "${node.label}" (id:${node.id})`);
+  logEntry(`*Enter block*: "${node.label}" (id:${node.id})`);
   updateInspector();
 
   executeNextCommand();
@@ -218,7 +218,7 @@ function substituteVars(text) {
 function execSay(cmd) {
   const text = substituteVars(cmd.text);
   const charName = cmd.character ? `<strong>${cmd.character}:</strong> ` : '';
-  logEntry(`Say: ${cmd.character ? cmd.character + ': ' : ''}${text}`);
+  logEntry(`${currentNode.id}: ${currentNode.label}: Say: ${cmd.character ? cmd.character + ': ' : ''}${text}`);
   appendOutput(`<div class="exec-say">${charName}${text}</div>`);
   waitTimer = setTimeout(() => { waitTimer = null; executeNextCommand(); }, 600);
 }
@@ -226,12 +226,12 @@ function execSay(cmd) {
 function execCall(cmd) {
   const target = S.nodes.find(n => n.id === cmd.targetBlockId);
   if (!target) {
-    logEntry('Call: target block not found');
+    logEntry(`${currentNode.id}: ${currentNode.label}: Call: target block not found`);
     appendOutput('<div class="exec-msg exec-error">Call: target block not found.</div>');
     executeNextCommand();
     return;
   }
-  logEntry(`Call: "${target.label}" (mode: ${cmd.mode})`);
+  logEntry(`${currentNode.id}: ${currentNode.label}: Call: "${target.label}" (mode: ${cmd.mode})`);
   if (cmd.mode === 'continue') {
     callStack.push({ node: currentNode, cmdIdx: currentCmd });
   }
@@ -239,7 +239,7 @@ function execCall(cmd) {
 }
 
 function execMenu(cmd) {
-  logEntry(`Menu: ${cmd.options.map(o => o.text).join(' / ')}`);
+  logEntry(`${currentNode.id}: ${currentNode.label}: Menu: ${cmd.options.map(o => o.text).join(' / ')}`);
   ensureOutputPanel();
   menuOverlay = document.createElement('div');
   menuOverlay.className = 'exec-menu';
@@ -277,18 +277,18 @@ function execSetVariable(cmd) {
     S.variables.push(v);
   }
   v.value = cmd.value;
-  logEntry(`Set variable: ${cmd.variableName} = ${cmd.value}`);
+  logEntry(`${currentNode.id}: ${currentNode.label}: Set variable: ${cmd.variableName} = ${cmd.value}`);
   executeNextCommand();
 }
 
 function execWait(cmd) {
-  logEntry(`Wait: ${cmd.duration}s`);
+  logEntry(`${currentNode.id}: ${currentNode.label}: Wait: ${cmd.duration}s`);
   const ms = (cmd.duration || 1) * 1000;
   waitTimer = setTimeout(() => { waitTimer = null; executeNextCommand(); }, ms);
 }
 
 function execSendMessage(cmd) {
-  logEntry(`Send message: "${cmd.message}"`);
+  logEntry(`${currentNode.id}: ${currentNode.label}: Send message: "${cmd.message}"`);
   const targets = S.nodes.filter(n => n.event?.type === 'messageReceived' && n.event.message === cmd.message);
   if (targets.length > 0) {
     callStack.push({ node: currentNode, cmdIdx: currentCmd });
@@ -299,7 +299,7 @@ function execSendMessage(cmd) {
 }
 
 function execPlayMusic(cmd) {
-  logEntry(`Play music: ${cmd.audioUrl || '(none)'}`);
+  logEntry(`${currentNode.id}: ${currentNode.label}: Play music: ${cmd.audioUrl || '(none)'}`);
   if (!cmd.audioUrl) { executeNextCommand(); return; }
   try {
     if (audioElements[cmd.audioUrl]) audioElements[cmd.audioUrl].pause();
@@ -313,7 +313,7 @@ function execPlayMusic(cmd) {
 }
 
 function execPlaySound(cmd) {
-  logEntry(`Play sound: ${cmd.audioUrl || '(none)'}`);
+  logEntry(`${currentNode.id}: ${currentNode.label}: Play sound: ${cmd.audioUrl || '(none)'}`);
   if (!cmd.audioUrl) { executeNextCommand(); return; }
   try {
     const audio = new Audio(cmd.audioUrl);
@@ -329,7 +329,7 @@ function execPlaySound(cmd) {
 }
 
 function execStopAudio() {
-  logEntry('Stop audio');
+  logEntry(`${currentNode.id}: ${currentNode.label}: Stop audio`);
   for (const [url, audio] of Object.entries(audioElements)) {
     audio.pause();
     audio.currentTime = 0;

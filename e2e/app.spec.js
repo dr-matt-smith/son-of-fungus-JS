@@ -1201,6 +1201,89 @@ test.describe('V27 – Audio file dropdown', () => {
   });
 });
 
+// ─── Version 28: Run Log Style ────────────────────────────────────────────
+
+test.describe('V28 – Run Log Style', () => {
+  test('run log uses *Enter block* format for block entries', async ({ page }) => {
+    // Switch to fungus mode
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    // Create block with Game Started + Say
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-select').first().selectOption('gameStarted');
+    await page.locator('.inspector-add-cmd select').selectOption('say');
+
+    // Deselect and play
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+    await page.locator('#btn-play').click();
+    await page.waitForTimeout(1500);
+
+    // Check run log
+    await page.locator('#btn-run-log').click();
+    const logText = await page.locator('#json-modal-body pre').textContent();
+    expect(logText).toContain('*Enter block*:');
+  });
+
+  test('run log command entries are prefixed with id and block name', async ({ page }) => {
+    // Switch to fungus mode
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    // Create block with Game Started + Say
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-select').first().selectOption('gameStarted');
+    await page.locator('.inspector-add-cmd select').selectOption('say');
+
+    // Deselect and play
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+    await page.locator('#btn-play').click();
+    await page.waitForTimeout(1500);
+
+    // Check run log has id: name: prefix on Say command
+    await page.locator('#btn-run-log').click();
+    const logText = await page.locator('#json-modal-body pre').textContent();
+    // Should match pattern like "1: New Block 1: Say:"
+    expect(logText).toMatch(/\d+: .+: Say:/);
+  });
+
+  test('execution started line is NOT prefixed with id', async ({ page }) => {
+    // Switch to fungus mode
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    // Create block with Game Started (no commands)
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-select').first().selectOption('gameStarted');
+
+    // Deselect and play
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+    await page.locator('#btn-play').click();
+    await page.waitForTimeout(1500);
+
+    // Check run log
+    await page.locator('#btn-run-log').click();
+    const logText = await page.locator('#json-modal-body pre').textContent();
+    // "Execution started" should NOT have a numeric prefix
+    const lines = logText.split('\n');
+    const startLine = lines.find(l => l.includes('Execution started'));
+    expect(startLine).toBeTruthy();
+    expect(startLine).not.toMatch(/\] \d+:/);
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

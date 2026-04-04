@@ -1014,6 +1014,63 @@ describe('Run Log', () => {
   });
 });
 
+// ─── Version 28: Run Log Style ──────────────────────────────────────────────
+
+describe('Run Log Style', () => {
+  function clearGameStartedEvents() {
+    for (const n of app.S.nodes) {
+      if (n.event?.type === 'gameStarted') n.event = null;
+    }
+  }
+
+  afterEach(() => app.stopExecution());
+
+  it('enter block log entry uses *Enter block* format', async () => {
+    clearGameStartedEvents();
+    const node = app.createNode('state', 0, 0);
+    node.event = { type: 'gameStarted' };
+    node.commands = [{ type: 'say', text: 'hello', character: '' }];
+
+    app.startExecution();
+    await new Promise(r => setTimeout(r, 1500));
+
+    const log = app.getRunLog();
+    const enterEntry = log.find(e => e.message.includes('Enter block'));
+    expect(enterEntry.message).toMatch(/^\*Enter block\*:/);
+  });
+
+  it('command log entries are prefixed with id and block name', async () => {
+    clearGameStartedEvents();
+    const node = app.createNode('state', 0, 0);
+    node.event = { type: 'gameStarted' };
+    node.commands = [{ type: 'say', text: 'hello', character: '' }];
+
+    app.startExecution();
+    await new Promise(r => setTimeout(r, 1500));
+
+    const log = app.getRunLog();
+    const sayEntry = log.find(e => e.message.includes('Say:'));
+    expect(sayEntry).toBeTruthy();
+    expect(sayEntry.message).toMatch(new RegExp(`^${node.id}: ${node.label}: Say:`));
+  });
+
+  it('execution started and complete entries are NOT prefixed', async () => {
+    clearGameStartedEvents();
+    const node = app.createNode('state', 0, 0);
+    node.event = { type: 'gameStarted' };
+    node.commands = [];
+
+    app.startExecution();
+    await new Promise(r => setTimeout(r, 1000));
+
+    const log = app.getRunLog();
+    const startEntry = log.find(e => e.message.includes('Execution started'));
+    expect(startEntry.message).toMatch(/^Execution started/);
+    const endEntry = log.find(e => e.message.includes('Execution complete'));
+    expect(endEntry.message).toBe('Execution complete');
+  });
+});
+
 describe('Audio manifest', () => {
   it('AUDIO_FILES is exported and contains entries', () => {
     // Import is via the app facade; audio-manifest is used by inspector
