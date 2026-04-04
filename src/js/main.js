@@ -207,6 +207,7 @@ export function createNodeWithEvents(type, worldX, worldY) {
       resetNodeSize(node);
     });
   }
+
   return node;
 }
 

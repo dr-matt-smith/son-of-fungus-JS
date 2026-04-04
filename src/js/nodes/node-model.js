@@ -5,6 +5,7 @@ import { buildNodeElement, fitLabelFontSize } from './node-element.js';
 import { positionMinimapNode } from '../minimap.js';
 import { updateConnectionsForNode } from '../connections/conn-render.js';
 import { removeResizeHandles, addResizeHandles } from './resize-handles.js';
+import { classifyBlock, updateEventAnnotation } from '../fungus-mode.js';
 
 export function createNode(type, worldX, worldY) {
   const id  = S.nextId++;
@@ -37,6 +38,13 @@ export function createNode(type, worldX, worldY) {
 
   positionMinimapNode(node);
   fitLabelFontSize(node);
+
+  // In fungus mode, apply block style immediately so new blocks look correct
+  if (S.diagramMode === 'fungus' && (type === 'state' || type === 'choice')) {
+    const kind = classifyBlock(node);
+    node.el.classList.add(`fungus-${kind}-block`);
+    updateEventAnnotation(node);
+  }
 
   return node;
 }

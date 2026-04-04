@@ -2,6 +2,7 @@ import { S } from './state.js';
 import { createAutoConnection, deleteConnection } from './connections/conn-model.js';
 import { deactivateNode } from './nodes/node-selection.js';
 import { deselectConn } from './connections/conn-selection.js';
+import { EVENT_TYPES } from './commands.js';
 
 const FUNGUS_CLASSES = ['fungus-event-block', 'fungus-branching-block', 'fungus-standard-block'];
 
@@ -31,6 +32,30 @@ export function classifyBlock(node) {
 }
 
 /**
+ * Update the event annotation label on a node's DOM element.
+ * Shows `<Event Name>` above the block when the node has an event trigger.
+ */
+export function updateEventAnnotation(node) {
+  let label = node.el.querySelector('.fungus-event-label');
+
+  const eventType = node.event?.type;
+  if (!eventType || eventType === 'none' || S.diagramMode !== 'fungus') {
+    if (label) label.remove();
+    return;
+  }
+
+  const eventInfo = EVENT_TYPES[eventType];
+  const text = `<${eventInfo ? eventInfo.label : eventType}>`;
+
+  if (!label) {
+    label = document.createElement('span');
+    label.className = 'fungus-event-label';
+    node.el.appendChild(label);
+  }
+  label.textContent = text;
+}
+
+/**
  * Apply Fungus CSS classes to all state/choice nodes based on classification.
  */
 export function applyFungusStyles() {
@@ -39,6 +64,7 @@ export function applyFungusStyles() {
     const kind = classifyBlock(node);
     for (const cls of FUNGUS_CLASSES) node.el.classList.remove(cls);
     node.el.classList.add(`fungus-${kind}-block`);
+    updateEventAnnotation(node);
   }
 }
 
@@ -48,6 +74,8 @@ export function applyFungusStyles() {
 function clearFungusStyles() {
   for (const node of S.nodes) {
     for (const cls of FUNGUS_CLASSES) node.el.classList.remove(cls);
+    const label = node.el.querySelector('.fungus-event-label');
+    if (label) label.remove();
   }
 }
 

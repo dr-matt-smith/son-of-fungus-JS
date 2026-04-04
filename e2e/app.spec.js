@@ -1284,6 +1284,94 @@ test.describe('V28 – Run Log Style', () => {
   });
 });
 
+// ─── Version 29: Fungus block default style & event annotation ────────────
+
+test.describe('V29 – Fungus block default style', () => {
+  test('new block in fungus mode has fungus-standard-block class', async ({ page }) => {
+    // Switch to fungus mode
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    const node = page.locator('.state-node');
+    await expect(node).toHaveClass(/fungus-standard-block/);
+  });
+
+  test('new block does NOT have event or branching class initially', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    const node = page.locator('.state-node');
+    await expect(node).not.toHaveClass(/fungus-event-block/);
+    await expect(node).not.toHaveClass(/fungus-branching-block/);
+  });
+});
+
+test.describe('V29 – Fungus event annotation', () => {
+  test('block with Game Started event shows annotation on diagram', async ({ page }) => {
+    // Switch to fungus mode
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    // Create block and set Game Started event
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-select').first().selectOption('gameStarted');
+
+    // Check annotation exists on the block
+    const annotation = page.locator('.fungus-event-label');
+    await expect(annotation).toBeVisible();
+    await expect(annotation).toHaveText('<Game Started>');
+  });
+
+  test('block with no event has no annotation', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+
+    // Event defaults to None, so no annotation
+    const annotation = page.locator('.fungus-event-label');
+    await expect(annotation).toHaveCount(0);
+  });
+
+  test('annotation is removed when event is set back to None', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-select').first().selectOption('gameStarted');
+    await expect(page.locator('.fungus-event-label')).toBeVisible();
+
+    // Set back to None
+    await page.locator('.inspector-select').first().selectOption('none');
+    await expect(page.locator('.fungus-event-label')).toHaveCount(0);
+  });
+
+  test('block changes to event style when event is set', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    const node = page.locator('.state-node');
+    await expect(node).toHaveClass(/fungus-standard-block/);
+
+    await node.click();
+    await page.locator('.inspector-select').first().selectOption('gameStarted');
+    await expect(node).toHaveClass(/fungus-event-block/);
+    await expect(node).not.toHaveClass(/fungus-standard-block/);
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

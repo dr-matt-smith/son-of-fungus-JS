@@ -1071,6 +1071,90 @@ describe('Run Log Style', () => {
   });
 });
 
+// ─── Version 29: Fungus block default style & event annotation ──────────────
+
+describe('Fungus block default style', () => {
+  afterEach(() => {
+    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
+  });
+
+  it('new block in fungus mode gets fungus-standard-block class', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    expect(node.el.classList.contains('fungus-standard-block')).toBe(true);
+  });
+
+  it('new block in fungus mode does NOT have event or branching class', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    expect(node.el.classList.contains('fungus-event-block')).toBe(false);
+    expect(node.el.classList.contains('fungus-branching-block')).toBe(false);
+  });
+
+  it('new block in statechart mode does NOT get fungus classes', () => {
+    app.exitFungusMode();
+    const node = app.createNode('state', 0, 0);
+    expect(node.el.classList.contains('fungus-standard-block')).toBe(false);
+  });
+});
+
+describe('Fungus event annotation', () => {
+  afterEach(() => {
+    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
+  });
+
+  it('block with gameStarted event shows <Game Started> annotation', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.event = { type: 'gameStarted' };
+    app.applyFungusStyles();
+    const label = node.el.querySelector('.fungus-event-label');
+    expect(label).toBeTruthy();
+    expect(label.textContent).toBe('<Game Started>');
+  });
+
+  it('block with no event has no annotation', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.event = { type: 'none' };
+    app.applyFungusStyles();
+    const label = node.el.querySelector('.fungus-event-label');
+    expect(label).toBeFalsy();
+  });
+
+  it('annotation is removed when event is set to none', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.event = { type: 'gameStarted' };
+    app.applyFungusStyles();
+    expect(node.el.querySelector('.fungus-event-label')).toBeTruthy();
+
+    node.event = { type: 'none' };
+    app.applyFungusStyles();
+    expect(node.el.querySelector('.fungus-event-label')).toBeFalsy();
+  });
+
+  it('annotation is removed when exiting fungus mode', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.event = { type: 'gameStarted' };
+    app.applyFungusStyles();
+    expect(node.el.querySelector('.fungus-event-label')).toBeTruthy();
+
+    app.exitFungusMode();
+    expect(node.el.querySelector('.fungus-event-label')).toBeFalsy();
+  });
+
+  it('messageReceived event shows <Message Received> annotation', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.event = { type: 'messageReceived', message: 'test' };
+    app.applyFungusStyles();
+    const label = node.el.querySelector('.fungus-event-label');
+    expect(label.textContent).toBe('<Message Received>');
+  });
+});
+
 describe('Audio manifest', () => {
   it('AUDIO_FILES is exported and contains entries', () => {
     // Import is via the app facade; audio-manifest is used by inspector

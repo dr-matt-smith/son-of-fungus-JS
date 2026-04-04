@@ -33,6 +33,21 @@ body[data-mode="fungus"] .state-node .node-label {
   font-size: 15px;
 }
 
+/* ── Event annotation label above block ───────────────────────────────────── */
+
+.fungus-event-label {
+  position: absolute;
+  top: -20px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 11px;
+  color: #d1d5db;
+  white-space: nowrap;
+  pointer-events: none;
+  line-height: 1;
+}
+
 /* ── Fungus block type styles ──────────────────────────────────────────────── */
 
 /* Event Block: blue rounded rectangle */
