@@ -1,7 +1,7 @@
 import { S } from './state.js';
 import { fitLabelFontSize } from './nodes/node-element.js';
 import { EVENT_TYPES, COMMAND_TYPES, createCommand } from './commands.js';
-import { applyFungusStyles, syncAutoConnections } from './fungus-mode.js';
+import { applyFungusStyles, syncAutoConnections, updateDescriptionLabel } from './fungus-mode.js';
 import { getRunLog } from './engine.js';
 import { AUDIO_FILES } from './audio-manifest.js';
 
@@ -137,7 +137,7 @@ function renderNodeInspector(n) {
     descArea.rows = 3;
     descArea.value = n.description || '';
     descArea.placeholder = 'Block description…';
-    descArea.addEventListener('input', () => { n.description = descArea.value; });
+    descArea.addEventListener('input', () => { n.description = descArea.value; updateDescriptionLabel(n); });
     descArea.addEventListener('keydown', (e) => e.stopPropagation());
     nameSection.appendChild(descArea);
 
@@ -194,25 +194,55 @@ function renderNodeInspector(n) {
   // Event section
   const eventSection = document.createElement('div');
   eventSection.className = 'inspector-section';
-  eventSection.innerHTML = `<div class="inspector-section-title">Event Trigger</div>`;
 
-  const eventSelect = document.createElement('select');
-  eventSelect.className = 'inspector-select';
-  for (const [key, ev] of Object.entries(EVENT_TYPES)) {
-    const opt = document.createElement('option');
-    opt.value = key;
-    opt.textContent = ev.label;
-    if (n.event?.type === key) opt.selected = true;
-    eventSelect.appendChild(opt);
+  if (isFungus) {
+    // Inline layout: label + dropdown on same row
+    const eventRow = document.createElement('div');
+    eventRow.className = 'inspector-event-row';
+    const eventLabel = document.createElement('span');
+    eventLabel.className = 'inspector-section-title';
+    eventLabel.textContent = 'Execute on Event';
+    eventRow.appendChild(eventLabel);
+
+    const eventSelect = document.createElement('select');
+    eventSelect.className = 'inspector-select inspector-event-select';
+    for (const [key, ev] of Object.entries(EVENT_TYPES)) {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = ev.label;
+      if (n.event?.type === key) opt.selected = true;
+      eventSelect.appendChild(opt);
+    }
+    eventSelect.addEventListener('change', () => {
+      n.event = { type: eventSelect.value };
+      if (eventSelect.value === 'messageReceived') n.event.message = '';
+      if (eventSelect.value === 'keyPressed') n.event.key = '';
+      onNodeDataChanged();
+      updateInspector();
+    });
+    eventRow.appendChild(eventSelect);
+    eventSection.appendChild(eventRow);
+  } else {
+    eventSection.innerHTML = `<div class="inspector-section-title">Event Trigger</div>`;
+
+    const eventSelect = document.createElement('select');
+    eventSelect.className = 'inspector-select';
+    for (const [key, ev] of Object.entries(EVENT_TYPES)) {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = ev.label;
+      if (n.event?.type === key) opt.selected = true;
+      eventSelect.appendChild(opt);
+    }
+    eventSelect.addEventListener('change', () => {
+      n.event = { type: eventSelect.value };
+      if (eventSelect.value === 'messageReceived') n.event.message = '';
+      if (eventSelect.value === 'keyPressed') n.event.key = '';
+      onNodeDataChanged();
+      updateInspector();
+    });
+    eventSection.appendChild(eventSelect);
   }
-  eventSelect.addEventListener('change', () => {
-    n.event = { type: eventSelect.value };
-    if (eventSelect.value === 'messageReceived') n.event.message = '';
-    if (eventSelect.value === 'keyPressed') n.event.key = '';
-    onNodeDataChanged();
-    updateInspector();
-  });
-  eventSection.appendChild(eventSelect);
 
   // Extra fields for message/key events
   if (n.event?.type === 'messageReceived') {

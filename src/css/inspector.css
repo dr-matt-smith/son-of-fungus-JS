@@ -110,6 +110,25 @@
   letter-spacing: normal;
 }
 
+.inspector-event-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.inspector-event-row .inspector-section-title {
+  margin-bottom: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.inspector-event-select {
+  width: auto;
+  flex: 1;
+  margin-top: 0;
+}
+
 .inspector-select {
   width: 100%;
   padding: 4px 6px;

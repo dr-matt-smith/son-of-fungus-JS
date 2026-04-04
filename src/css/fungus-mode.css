@@ -77,6 +77,24 @@ body[data-mode="fungus"] .state-node .node-label {
   line-height: 1;
 }
 
+/* ── Description label below block ───────────────────────────────────────── */
+
+.fungus-desc-label {
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  transform: translateY(100%);
+  text-align: center;
+  font-size: 10px;
+  color: #9ca3af;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 100%;
+  pointer-events: none;
+  line-height: 1.3;
+}
+
 /* ── Fungus block type styles ──────────────────────────────────────────────── */
 
 /* Event Block: blue rounded rectangle */

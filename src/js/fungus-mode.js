@@ -56,6 +56,26 @@ export function updateEventAnnotation(node) {
 }
 
 /**
+ * Update the description label below a node's DOM element.
+ * Shows the description text when non-empty in fungus mode.
+ */
+export function updateDescriptionLabel(node) {
+  let label = node.el.querySelector('.fungus-desc-label');
+
+  if (!node.description || S.diagramMode !== 'fungus') {
+    if (label) label.remove();
+    return;
+  }
+
+  if (!label) {
+    label = document.createElement('span');
+    label.className = 'fungus-desc-label';
+    node.el.appendChild(label);
+  }
+  label.textContent = node.description;
+}
+
+/**
  * Apply Fungus CSS classes to all state/choice nodes based on classification.
  */
 export function applyFungusStyles() {
@@ -65,6 +85,7 @@ export function applyFungusStyles() {
     for (const cls of FUNGUS_CLASSES) node.el.classList.remove(cls);
     node.el.classList.add(`fungus-${kind}-block`);
     updateEventAnnotation(node);
+    updateDescriptionLabel(node);
   }
 }
 
@@ -74,8 +95,10 @@ export function applyFungusStyles() {
 function clearFungusStyles() {
   for (const node of S.nodes) {
     for (const cls of FUNGUS_CLASSES) node.el.classList.remove(cls);
-    const label = node.el.querySelector('.fungus-event-label');
-    if (label) label.remove();
+    const eventLabel = node.el.querySelector('.fungus-event-label');
+    if (eventLabel) eventLabel.remove();
+    const descLabel = node.el.querySelector('.fungus-desc-label');
+    if (descLabel) descLabel.remove();
   }
 }
 

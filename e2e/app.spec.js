@@ -1570,6 +1570,65 @@ test.describe('V32 – Fungus inspector id label', () => {
   });
 });
 
+// ─── Version 33: Event label & description on stage ──────────────────────
+
+test.describe('V33 – Execute on Event label', () => {
+  test('fungus mode shows "Execute on Event" label with inline dropdown', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+
+    const eventRow = page.locator('.inspector-event-row');
+    await expect(eventRow).toBeVisible();
+    await expect(eventRow.locator('.inspector-section-title')).toHaveText('Execute on Event');
+    await expect(eventRow.locator('.inspector-event-select')).toBeVisible();
+  });
+
+  test('statechart mode shows "Event Trigger" label', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="statechart"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+
+    const title = page.locator('.inspector-section-title').filter({ hasText: 'Event Trigger' });
+    await expect(title).toBeVisible();
+  });
+});
+
+test.describe('V33 – Description on stage', () => {
+  test('description appears below block when typed in inspector', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+
+    const descInput = page.locator('.inspector-desc-input');
+    await descInput.fill('My block description');
+
+    const descLabel = page.locator('.fungus-desc-label');
+    await expect(descLabel).toBeVisible();
+    await expect(descLabel).toHaveText('My block description');
+  });
+
+  test('no description label when description is empty', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+
+    await expect(page.locator('.fungus-desc-label')).toHaveCount(0);
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

@@ -1315,6 +1315,102 @@ describe('Fungus inspector id label', () => {
   });
 });
 
+// ─── Version 33: Event label & description on stage ─────────────────────────
+
+describe('Fungus event section label', () => {
+  afterEach(() => {
+    app.deactivateNode();
+    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
+  });
+
+  it('in fungus mode, event section says "Execute on Event"', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+
+    const titles = Array.from(document.querySelectorAll('.inspector-section-title'));
+    const eventTitle = titles.find(t => t.textContent === 'Execute on Event');
+    expect(eventTitle).toBeTruthy();
+  });
+
+  it('in statechart mode, event section says "Event Trigger"', () => {
+    app.exitFungusMode();
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+
+    const titles = Array.from(document.querySelectorAll('.inspector-section-title'));
+    const eventTitle = titles.find(t => t.textContent === 'Event Trigger');
+    expect(eventTitle).toBeTruthy();
+  });
+
+  it('in fungus mode, event dropdown is inline with label', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+
+    const eventRow = document.querySelector('.inspector-event-row');
+    expect(eventRow).toBeTruthy();
+    expect(eventRow.querySelector('.inspector-event-select')).toBeTruthy();
+  });
+});
+
+describe('Fungus description on stage', () => {
+  afterEach(() => {
+    app.deactivateNode();
+    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
+  });
+
+  it('description label appears on stage when description is set', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.description = 'Test description';
+    app.applyFungusStyles();
+
+    const label = node.el.querySelector('.fungus-desc-label');
+    expect(label).toBeTruthy();
+    expect(label.textContent).toBe('Test description');
+  });
+
+  it('no description label when description is empty', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.description = '';
+    app.applyFungusStyles();
+
+    const label = node.el.querySelector('.fungus-desc-label');
+    expect(label).toBeFalsy();
+  });
+
+  it('description label is removed when exiting fungus mode', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    node.description = 'Test';
+    app.applyFungusStyles();
+    expect(node.el.querySelector('.fungus-desc-label')).toBeTruthy();
+
+    app.exitFungusMode();
+    expect(node.el.querySelector('.fungus-desc-label')).toBeFalsy();
+  });
+
+  it('description updates in real-time via inspector textarea', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+
+    const descInput = document.querySelector('.inspector-desc-input');
+    descInput.value = 'Live update';
+    descInput.dispatchEvent(new Event('input'));
+
+    const label = node.el.querySelector('.fungus-desc-label');
+    expect(label).toBeTruthy();
+    expect(label.textContent).toBe('Live update');
+  });
+});
+
 describe('Audio manifest', () => {
   it('AUDIO_FILES is exported and contains entries', () => {
     // Import is via the app facade; audio-manifest is used by inspector
