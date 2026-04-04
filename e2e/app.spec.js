@@ -1415,6 +1415,132 @@ test.describe('V30 – Play Sound wait checkbox', () => {
   });
 });
 
+// ─── Version 31: Improved fungus block features ──────────────────────────
+
+test.describe('V31 – Auto-select on drop in fungus mode', () => {
+  test('new block is selected after drag-drop in fungus mode', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    const node = page.locator('.state-node');
+    await expect(node).toHaveClass(/node-active/);
+  });
+
+  test('inspector shows properties after drag-drop in fungus mode', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    // Inspector should show the name section
+    await expect(page.locator('.inspector-name-section')).toBeVisible();
+  });
+});
+
+test.describe('V31 – Fungus inspector layout', () => {
+  test('Name and Description appear at top of inspector in fungus mode', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+
+    await expect(page.locator('.inspector-name-input')).toBeVisible();
+    await expect(page.locator('.inspector-desc-input')).toBeVisible();
+  });
+
+  test('Size, Position, Connections are hidden in fungus mode', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+
+    const tableText = await page.locator('#inspector-table').textContent();
+    expect(tableText).not.toContain('Size');
+    expect(tableText).not.toContain('Position');
+    expect(tableText).not.toContain('Connections');
+  });
+
+  test('Size, Position, Connections are shown in statechart mode', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="statechart"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+
+    const tableText = await page.locator('#inspector-table').textContent();
+    expect(tableText).toContain('Size');
+    expect(tableText).toContain('Position');
+    expect(tableText).toContain('Connections');
+  });
+});
+
+test.describe('V31 – Fungus context menu', () => {
+  test('right-click on block shows context menu with Delete and Duplicate', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    const node = page.locator('.state-node');
+    await node.click({ button: 'right' });
+
+    const menu = page.locator('.fungus-ctx-menu');
+    await expect(menu).toBeVisible();
+    await expect(menu.locator('.fungus-ctx-item').nth(0)).toHaveText('Delete');
+    await expect(menu.locator('.fungus-ctx-item').nth(1)).toHaveText('Duplicate');
+  });
+
+  test('context menu Delete removes the block', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await expect(page.locator('.state-node')).toHaveCount(1);
+
+    await page.locator('.state-node').click({ button: 'right' });
+    await page.locator('.fungus-ctx-item').filter({ hasText: 'Delete' }).click();
+
+    await expect(page.locator('.state-node')).toHaveCount(0);
+  });
+
+  test('context menu Duplicate creates a copy of the block', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await expect(page.locator('.state-node')).toHaveCount(1);
+
+    await page.locator('.state-node').click({ button: 'right' });
+    await page.locator('.fungus-ctx-item').filter({ hasText: 'Duplicate' }).click();
+
+    await expect(page.locator('.state-node')).toHaveCount(2);
+  });
+
+  test('delete "x" handle is hidden in fungus mode', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+
+    const deleteHandle = page.locator('.node-delete-handle');
+    // The handle element may exist but should be hidden via CSS
+    if (await deleteHandle.count() > 0) {
+      await expect(deleteHandle).not.toBeVisible();
+    }
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

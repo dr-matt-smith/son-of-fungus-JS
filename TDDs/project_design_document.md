@@ -354,3 +354,41 @@ Version 30 features - fungus wait until finished before continue audio option
 
 
 
+
+Version 31 features - improve some fungus block features
+==================
+
+
+- ✅ in fungus mode, when a new block is dragged onto the stage, once the mouse is released, the new block should be selected and its properties displayed in the Inspector
+
+- ✅ in fungus mode, in its properties in the Inspector, move the editable block 'Name' form input to the top of the Inspector, and add a new 'Description' text area immediately below the 'Name' input
+
+- ✅ in fungus mode, in its properties in the Inspector, hide the following:
+  - ✅ Size
+  - ✅ Position
+  - ✅ Connections
+
+- ✅ in fungus mode, when a block is selected on teh stage, add a Right mouse button menu offering options:
+  - ✅ Delete
+  - ✅ Duplicate
+- ✅ also, remove the red delete "x" widget for blocks in Fungus mode
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+
+
+Version 32 features - improve some fungus inspector features
+==================
+
+
+- [] in fungus mode, for a block's properties in the Inspector:
+  - [] replace the table listing type/state = ID/1, and just write id = 1 as readonly to the right of the row saying "NAME"
+    - e.g. "NAME                      id: 1"
+
+- [] and add Vite and PlayWright tests for the above feature(s)
+
+
+
+
+

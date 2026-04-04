@@ -8,7 +8,8 @@
       "Bash(curl -sL \"https://github.com/snozbot/fungus/wiki/Blocks\")",
       "WebFetch(domain:github.com)",
       "Bash(kill %1)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(node -e ':*)"
     ]
   },
   "enableAllProjectMcpServers": true,

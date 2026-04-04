@@ -90,20 +90,71 @@ export function updateInspector() {
 function renderNodeInspector(n) {
   emptyMsg.style.display = 'none';
   propsContainer.style.display = '';
+  // Clean up previous sections
+  propsContainer.querySelectorAll('.inspector-section').forEach(s => s.remove());
+
+  const isFungus = S.diagramMode === 'fungus';
+
+  // In fungus mode, show Name and Description at the top (before the table)
+  if (isFungus && (n.type === 'state' || n.type === 'choice')) {
+    const nameSection = document.createElement('div');
+    nameSection.className = 'inspector-section inspector-name-section';
+
+    const nameLabel = document.createElement('div');
+    nameLabel.className = 'inspector-section-title';
+    nameLabel.textContent = 'Name';
+    nameSection.appendChild(nameLabel);
+
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.className = 'inspector-input inspector-name-input';
+    nameInput.value = n.label;
+    nameInput.addEventListener('input', () => {
+      const val = nameInput.value.trim();
+      if (val) {
+        n.label = val;
+        const labelEl = n.el.querySelector('.node-label');
+        if (labelEl) labelEl.textContent = val;
+        fitLabelFontSize(n);
+      }
+    });
+    nameInput.addEventListener('keydown', (e) => e.stopPropagation());
+    nameSection.appendChild(nameInput);
+
+    const descLabel = document.createElement('div');
+    descLabel.className = 'inspector-section-title';
+    descLabel.textContent = 'Description';
+    nameSection.appendChild(descLabel);
+
+    const descArea = document.createElement('textarea');
+    descArea.className = 'inspector-input inspector-desc-input';
+    descArea.rows = 3;
+    descArea.value = n.description || '';
+    descArea.placeholder = 'Block description…';
+    descArea.addEventListener('input', () => { n.description = descArea.value; });
+    descArea.addEventListener('keydown', (e) => e.stopPropagation());
+    nameSection.appendChild(descArea);
+
+    propsContainer.insertBefore(nameSection, propsContainer.firstChild);
+  }
 
   const rows = [['Type', n.type], ['ID', n.id]];
-  if (n.type === 'state' || n.type === 'choice') {
+  if (!isFungus && (n.type === 'state' || n.type === 'choice')) {
     rows.push(['Size', `${n.w} × ${n.h}`]);
   }
-  rows.push(['Position', `${Math.round(n.x)}, ${Math.round(n.y)}`]);
+  if (!isFungus) {
+    rows.push(['Position', `${Math.round(n.x)}, ${Math.round(n.y)}`]);
+  }
 
-  const outgoing = S.connections.filter(c => c.fromId === n.id).length;
-  const incoming = S.connections.filter(c => c.toId === n.id).length;
-  rows.push(['Connections', `${outgoing} out / ${incoming} in`]);
+  if (!isFungus) {
+    const outgoing = S.connections.filter(c => c.fromId === n.id).length;
+    const incoming = S.connections.filter(c => c.toId === n.id).length;
+    rows.push(['Connections', `${outgoing} out / ${incoming} in`]);
+  }
   setPropsRows(rows);
 
-  // Editable name field for state/choice nodes
-  if (n.type === 'state' || n.type === 'choice') {
+  // Editable name field for state/choice nodes (statechart mode only — fungus has it above)
+  if (!isFungus && (n.type === 'state' || n.type === 'choice')) {
     const nameRow = document.createElement('tr');
     const nameTd = document.createElement('td');
     nameTd.textContent = 'Name';
@@ -250,7 +301,6 @@ function renderNodeInspector(n) {
   cmdsSection.appendChild(addRow);
 
   // Append sections after the table
-  propsContainer.querySelectorAll('.inspector-section').forEach(s => s.remove());
   propsContainer.appendChild(eventSection);
   propsContainer.appendChild(cmdsSection);
 }

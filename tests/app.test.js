@@ -1188,6 +1188,89 @@ describe('Play Sound wait checkbox', () => {
   });
 });
 
+// ─── Version 31: Improved fungus block features ────────────────────────────
+
+describe('Fungus inspector layout', () => {
+  afterEach(() => {
+    app.deactivateNode();
+    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
+  });
+
+  it('in fungus mode, Name appears as section at top of inspector', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+
+    const nameSection = document.querySelector('.inspector-name-section');
+    expect(nameSection).toBeTruthy();
+    const nameInput = nameSection.querySelector('.inspector-name-input');
+    expect(nameInput).toBeTruthy();
+    expect(nameInput.value).toBe(node.label);
+  });
+
+  it('in fungus mode, Description textarea appears below Name', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+
+    const descInput = document.querySelector('.inspector-desc-input');
+    expect(descInput).toBeTruthy();
+    expect(descInput.tagName).toBe('TEXTAREA');
+  });
+
+  it('in fungus mode, Size/Position/Connections rows are hidden', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+
+    const allCells = Array.from(document.querySelectorAll('#inspector-table td'));
+    const cellTexts = allCells.map(td => td.textContent);
+    expect(cellTexts).not.toContain('Size');
+    expect(cellTexts).not.toContain('Position');
+    expect(cellTexts).not.toContain('Connections');
+  });
+
+  it('in statechart mode, Size/Position/Connections ARE shown', () => {
+    app.exitFungusMode();
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+
+    const allCells = Array.from(document.querySelectorAll('#inspector-table td'));
+    const cellTexts = allCells.map(td => td.textContent);
+    expect(cellTexts).toContain('Size');
+    expect(cellTexts).toContain('Position');
+    expect(cellTexts).toContain('Connections');
+  });
+
+  it('description textarea updates node.description', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+
+    const descInput = document.querySelector('.inspector-desc-input');
+    descInput.value = 'test description';
+    descInput.dispatchEvent(new Event('input'));
+    expect(node.description).toBe('test description');
+  });
+});
+
+describe('Fungus delete handle hidden', () => {
+  afterEach(() => {
+    app.deactivateNode();
+    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
+  });
+
+  it('body has data-mode=fungus which hides .node-delete-handle via CSS', () => {
+    app.enterFungusMode();
+    expect(document.body.dataset.mode).toBe('fungus');
+  });
+});
+
 describe('Audio manifest', () => {
   it('AUDIO_FILES is exported and contains entries', () => {
     // Import is via the app facade; audio-manifest is used by inspector

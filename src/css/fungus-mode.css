@@ -28,6 +28,35 @@ body[data-mode="fungus"] .node-reset-btn {
   display: none;
 }
 
+/* Hide red delete "x" on blocks — use right-click menu instead */
+body[data-mode="fungus"] .node-delete-handle {
+  display: none;
+}
+
+/* ── Context menu ─────────────────────────────────────────────────────────── */
+
+.fungus-ctx-menu {
+  position: fixed;
+  z-index: 10000;
+  background: #1e293b;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  padding: 4px 0;
+  min-width: 120px;
+}
+
+.fungus-ctx-item {
+  padding: 6px 16px;
+  cursor: pointer;
+  color: #e2e8f0;
+  font-size: 13px;
+}
+
+.fungus-ctx-item:hover {
+  background: #334155;
+}
+
 /* Increase default font size for block labels */
 body[data-mode="fungus"] .state-node .node-label {
   font-size: 15px;

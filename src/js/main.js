@@ -190,6 +190,83 @@ function onNodeDblClick(e) {
   startEditing(node);
 }
 
+// ── Context menu for fungus mode ────────────────────────────────────────────
+
+let ctxMenu = null;
+
+function removeCtxMenu() {
+  if (ctxMenu) { ctxMenu.remove(); ctxMenu = null; }
+}
+
+function showNodeContextMenu(node, clientX, clientY) {
+  removeCtxMenu();
+
+  ctxMenu = document.createElement('div');
+  ctxMenu.className = 'fungus-ctx-menu';
+  ctxMenu.style.left = `${clientX}px`;
+  ctxMenu.style.top  = `${clientY}px`;
+
+  const deleteBtn = document.createElement('div');
+  deleteBtn.className = 'fungus-ctx-item';
+  deleteBtn.textContent = 'Delete';
+  deleteBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    removeCtxMenu();
+    deleteNode(node);
+    updateInspector();
+  });
+
+  const dupBtn = document.createElement('div');
+  dupBtn.className = 'fungus-ctx-item';
+  dupBtn.textContent = 'Duplicate';
+  dupBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    removeCtxMenu();
+    duplicateNode(node);
+  });
+
+  ctxMenu.appendChild(deleteBtn);
+  ctxMenu.appendChild(dupBtn);
+  document.body.appendChild(ctxMenu);
+
+  // Close on next click outside the menu
+  const close = (ev) => {
+    if (ctxMenu && ctxMenu.contains(ev.target)) return;
+    removeCtxMenu();
+    document.removeEventListener('mousedown', close);
+  };
+  setTimeout(() => document.addEventListener('mousedown', close), 0);
+}
+
+function duplicateNode(srcNode) {
+  const offset = 30;
+  const newNode = createNodeWithEvents(srcNode.type, srcNode.x + offset, srcNode.y + offset);
+  newNode.label = srcNode.label + ' copy';
+  const labelEl = newNode.el.querySelector('.node-label');
+  if (labelEl) labelEl.textContent = newNode.label;
+  newNode.event = srcNode.event ? { ...srcNode.event } : { type: 'none' };
+  newNode.commands = srcNode.commands.map(cmd => JSON.parse(JSON.stringify(cmd)));
+  newNode.description = srcNode.description || '';
+  if (S.diagramMode === 'fungus') {
+    applyFungusStyles();
+    syncAutoConnections();
+  }
+  activateNode(newNode);
+  updateInspector();
+}
+
+function onNodeContextMenu(e) {
+  if (S.diagramMode !== 'fungus') return;
+  e.preventDefault();
+  e.stopPropagation();
+  const id   = Number(e.currentTarget.dataset.id);
+  const node = S.nodes.find(n => n.id === id);
+  if (!node) return;
+  activateNode(node);
+  updateInspector();
+  showNodeContextMenu(node, e.clientX, e.clientY);
+}
+
 // Wire node events when nodes are created — override createNode to add listeners
 const _origCreateNode = createNode;
 
@@ -199,6 +276,7 @@ export function createNodeWithEvents(type, worldX, worldY) {
   const node = _origCreateNode(type, worldX, worldY);
   node.el.addEventListener('mousedown', onNodeMouseDown);
   node.el.addEventListener('dblclick',  onNodeDblClick);
+  node.el.addEventListener('contextmenu', onNodeContextMenu);
 
   const resetBtn = node.el.querySelector('.node-reset-btn');
   if (resetBtn) {
@@ -357,7 +435,11 @@ document.addEventListener('mouseup', (e) => {
       if (overCanvas) {
         const def = NODE_DEFAULTS[S.creatingNodeType];
         const world = clientToWorld(e.clientX, e.clientY);
-        createNodeWithEvents(S.creatingNodeType, world.x - def.w / 2, world.y - def.h / 2);
+        const newNode = createNodeWithEvents(S.creatingNodeType, world.x - def.w / 2, world.y - def.h / 2);
+        if (S.diagramMode === 'fungus') {
+          activateNode(newNode);
+          updateInspector();
+        }
       }
       S.ghostEl.remove();
       S.ghostEl = null;
