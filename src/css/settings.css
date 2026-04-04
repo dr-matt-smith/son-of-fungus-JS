@@ -247,6 +247,13 @@
   margin: 0 22px 0 4px;
 }
 
+.variable-enum-set-select,
+.variable-enum-val-select {
+  flex: 1;
+  min-width: 0;
+  margin-top: 0;
+}
+
 .variable-string-row {
   margin-top: 2px;
   padding-left: 79px;
@@ -274,6 +281,61 @@
   width: 100%;
   resize: vertical;
   min-height: 36px;
+}
+
+/* ── Enums panel ─────────────────────────────────────────────────────────── */
+
+#enums-panel {
+  padding: 12px;
+}
+
+.enum-card {
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.enum-card-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.enum-name-input {
+  flex: 1;
+  font-weight: 600;
+}
+
+.enum-value-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+
+.enum-col-header {
+  font-size: 9px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+}
+
+.enum-col-key { flex: 1; }
+.enum-col-label { flex: 1; }
+.enum-col-del { width: 24px; flex-shrink: 0; }
+
+.enum-key-input {
+  flex: 1;
+  font-family: monospace;
+  text-transform: uppercase;
+}
+
+.enum-label-input {
+  flex: 1;
 }
 
 /* ── Mode label (top-left below toolbar) ───────────────────────────────────── */

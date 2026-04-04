@@ -688,10 +688,11 @@ describe('Edit block name in inspector panel', () => {
 describe('Inspector/Events tabs and Settings cog', () => {
   it('inspector tabs exist in DOM (Inspector + Events)', () => {
     const tabs = document.querySelectorAll('.inspector-tab');
-    expect(tabs.length).toBe(3);
+    expect(tabs.length).toBe(4);
     expect(tabs[0].dataset.tab).toBe('inspector');
     expect(tabs[1].dataset.tab).toBe('messages');
     expect(tabs[2].dataset.tab).toBe('variables');
+    expect(tabs[3].dataset.tab).toBe('enums');
   });
 
   it('settings cog button exists', () => {
@@ -1717,6 +1718,45 @@ describe('Variables tab', () => {
   it('variables support String type', () => {
     app.S.variables.push({ name: 'playerName', type: 'String', value: 'Alice' });
     expect(app.S.variables[0].value).toBe('Alice');
+  });
+});
+
+// ─── Version 40: Enums ──────────────────────────────────────────────────────
+
+describe('Enums tab', () => {
+  afterEach(() => { app.S.enums = []; });
+
+  it('enums tab exists in DOM', () => {
+    expect(document.querySelector('.inspector-tab[data-tab="enums"]')).toBeTruthy();
+  });
+
+  it('enums panel exists in DOM', () => {
+    expect(document.getElementById('enums-panel')).toBeTruthy();
+  });
+
+  it('can add an enum set to S.enums', () => {
+    app.S.enums.push({ name: 'Colors', values: [{ key: 'RED', label: 'Red' }] });
+    expect(app.S.enums.length).toBe(1);
+    expect(app.S.enums[0].values[0].key).toBe('RED');
+  });
+
+  it('enum values have key and label', () => {
+    app.S.enums.push({ name: 'Sizes', values: [
+      { key: 'SMALL', label: 'Small' },
+      { key: 'LARGE', label: '' },
+    ]});
+    expect(app.S.enums[0].values[1].label).toBe('');
+  });
+});
+
+describe('Enum variable type', () => {
+  afterEach(() => { app.S.variables = []; app.S.enums = []; });
+
+  it('variables support Enum type with enumName', () => {
+    app.S.enums.push({ name: 'Mood', values: [{ key: 'HAPPY', label: 'Happy' }] });
+    app.S.variables.push({ name: 'mood', type: 'Enum', value: 'HAPPY', enumName: 'Mood' });
+    expect(app.S.variables[0].type).toBe('Enum');
+    expect(app.S.variables[0].enumName).toBe('Mood');
   });
 });
 

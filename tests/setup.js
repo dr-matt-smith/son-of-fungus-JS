@@ -49,6 +49,7 @@ export function setupDOM() {
           <button class="inspector-tab active" data-tab="inspector">Inspector</button>
           <button class="inspector-tab" data-tab="messages">Events</button>
           <button class="inspector-tab" data-tab="variables">Variables</button>
+          <button class="inspector-tab" data-tab="enums">Enums</button>
           <button id="btn-settings-cog" class="settings-cog-btn" title="Settings">⚙</button>
         </div>
         <div id="inspector-panel" class="tab-panel">
@@ -96,9 +97,20 @@ export function setupDOM() {
                 <option value="Integer">Integer</option>
                 <option value="Float">Float</option>
                 <option value="String" selected>String</option>
+              <option value="Enum">Enum</option>
               </select>
               <input id="variables-new-name" type="text" class="inspector-input variable-name-input" placeholder="Variable name…">
               <button id="variables-add-btn" class="toolbar-btn">Add</button>
+            </div>
+          </div>
+        </div>
+        <div id="enums-panel" class="tab-panel" style="display:none;">
+          <div class="settings-section">
+            <div class="settings-section-title">Enum Sets</div>
+            <div id="enums-list"></div>
+            <div class="variable-add-row">
+              <input id="enums-new-name" type="text" class="inspector-input" placeholder="Enum set name…">
+              <button id="enums-add-btn" class="toolbar-btn">Add</button>
             </div>
           </div>
         </div>

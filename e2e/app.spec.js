@@ -1901,6 +1901,46 @@ test.describe('V39 – Variables tab', () => {
   });
 });
 
+// ─── Version 40: Enums ───────────────────────────────────────────────────
+
+test.describe('V40 – Enums tab', () => {
+  test('enums tab exists and can be clicked', async ({ page }) => {
+    const tab = page.locator('.inspector-tab[data-tab="enums"]');
+    await expect(tab).toBeVisible();
+    await tab.click();
+    await expect(page.locator('#enums-panel')).toBeVisible();
+  });
+
+  test('can add an enum set', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="enums"]').click();
+    await page.locator('#enums-new-name').fill('Colors');
+    await page.locator('#enums-add-btn').click();
+
+    await expect(page.locator('.enum-card')).toHaveCount(1);
+    await expect(page.locator('.enum-name-input')).toHaveValue('Colors');
+  });
+
+  test('can add enum values with key and label', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="enums"]').click();
+    await page.locator('#enums-new-name').fill('Sizes');
+    await page.locator('#enums-add-btn').click();
+
+    // Add a value
+    await page.locator('.enum-card .cmd-btn').click();
+    await expect(page.locator('.enum-value-row').filter({ has: page.locator('.enum-key-input') })).toHaveCount(1);
+  });
+
+  test('can delete an enum set', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="enums"]').click();
+    await page.locator('#enums-new-name').fill('Temp');
+    await page.locator('#enums-add-btn').click();
+    await expect(page.locator('.enum-card')).toHaveCount(1);
+
+    await page.locator('.enum-card-header .messages-delete-btn').click();
+    await expect(page.locator('.enum-card')).toHaveCount(0);
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

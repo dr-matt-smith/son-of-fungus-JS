@@ -507,4 +507,18 @@ Version 39 features - variables
   
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 
+Version 40 features - enums
+==================
 
+- ✅ extend variables to be of types: Boolean / Integer / Float / String / Enum
+  - ✅ when Enum is selected, the user chooses from one of the Enum sets declared in the Enums tab
+
+- ✅ add a new tab "Enums"
+  - ✅ this allows the user to declare named sets of enumerations (which can be then chosen as a type for a variable, and also the new menu command)
+  - ✅ each enum has a value that has to be in UPPER_SNAKE_CASE
+    - ✅ each enum can also have a "String alternative" value entered (which can be any string value)
+    - ✅ these string values are the default to be displayed for Enum Menu choices
+
+
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)

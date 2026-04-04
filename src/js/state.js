@@ -13,8 +13,9 @@ export const S = {
 
   nodes: [],
   connections: [],
-  variables: [],    // flowchart-level variables: { name, type, value }
+  variables: [],    // flowchart-level variables: { name, type, value, enumName? }
   messages: [],     // user-defined event messages (array of strings)
+  enums: [],        // enum sets: { name, values: [{ key, label }] }
 
   // Currently active / selected
   activeNode: null,

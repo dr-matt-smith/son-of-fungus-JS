@@ -571,11 +571,12 @@ const inspectorPanel  = document.getElementById('inspector-panel');
 const settingsPanel   = document.getElementById('settings-panel');
 const messagesPanel   = document.getElementById('messages-panel');
 const variablesPanel  = document.getElementById('variables-panel');
+const enumsPanel      = document.getElementById('enums-panel');
 const inspectorTabs   = document.getElementById('inspector-tabs');
 const settingsCogBtn  = document.getElementById('btn-settings-cog');
 const closeSettingsBtn = document.getElementById('btn-close-settings');
 
-const contentPanels = [inspectorPanel, settingsPanel, messagesPanel, variablesPanel];
+const contentPanels = [inspectorPanel, settingsPanel, messagesPanel, variablesPanel, enumsPanel];
 
 function showTab(tabName) {
   // Exit settings overlay if active
@@ -587,6 +588,7 @@ function showTab(tabName) {
   if (tabName === 'inspector') inspectorPanel.style.display = '';
   else if (tabName === 'messages') { messagesPanel.style.display = ''; renderMessagesList(); }
   else if (tabName === 'variables') { variablesPanel.style.display = ''; renderVariablesList(); }
+  else if (tabName === 'enums') { enumsPanel.style.display = ''; renderEnumsList(); }
 }
 
 for (const tab of document.querySelectorAll('.inspector-tab')) {
@@ -678,8 +680,8 @@ export { renderMessagesList };
 
 // ── Variables tab ───────────────────────────────────────────────────────────
 
-const VAR_TYPES = ['Boolean', 'Integer', 'Float', 'String'];
-const VAR_DEFAULTS = { Boolean: false, Integer: 0, Float: 0.0, String: '' };
+const VAR_TYPES = ['Boolean', 'Integer', 'Float', 'String', 'Enum'];
+const VAR_DEFAULTS = { Boolean: false, Integer: 0, Float: 0.0, String: '', Enum: '' };
 
 const variablesList    = document.getElementById('variables-list');
 const variablesNewType = document.getElementById('variables-new-type');
@@ -731,6 +733,9 @@ function renderVariablesList() {
         v.value = isNaN(n) ? 0 : n;
       } else if (v.type === 'Boolean') {
         v.value = !!oldValue;
+      } else if (v.type === 'Enum') {
+        v.value = '';
+        v.enumName = S.enums.length > 0 ? S.enums[0].name : '';
       } else {
         v.value = String(oldValue ?? '');
       }
@@ -751,8 +756,47 @@ function renderVariablesList() {
     nameInput.addEventListener('keydown', (e) => e.stopPropagation());
     row.appendChild(nameInput);
 
-    // Value input (third) — all types get inline value
-    row.appendChild(buildValueInput(v));
+    // Value input (third)
+    if (v.type === 'Enum') {
+      // Enum set selector (compact)
+      const enumSelect = document.createElement('select');
+      enumSelect.className = 'inspector-select variable-enum-set-select';
+      const noEnum = document.createElement('option');
+      noEnum.value = '';
+      noEnum.textContent = '— set —';
+      enumSelect.appendChild(noEnum);
+      for (const es of S.enums) {
+        const opt = document.createElement('option');
+        opt.value = es.name;
+        opt.textContent = es.name;
+        if (es.name === v.enumName) opt.selected = true;
+        enumSelect.appendChild(opt);
+      }
+      enumSelect.addEventListener('change', () => { v.enumName = enumSelect.value; v.value = ''; renderVariablesList(); });
+      row.appendChild(enumSelect);
+
+      // Enum value selector (inline)
+      const enumSet = v.enumName ? S.enums.find(e => e.name === v.enumName) : null;
+      const valSelect = document.createElement('select');
+      valSelect.className = 'inspector-select variable-enum-val-select';
+      const none = document.createElement('option');
+      none.value = '';
+      none.textContent = '— value —';
+      valSelect.appendChild(none);
+      if (enumSet) {
+        for (const ev of enumSet.values) {
+          const opt = document.createElement('option');
+          opt.value = ev.key;
+          opt.textContent = ev.label || ev.key;
+          if (ev.key === v.value) opt.selected = true;
+          valSelect.appendChild(opt);
+        }
+      }
+      valSelect.addEventListener('change', () => { v.value = valSelect.value; });
+      row.appendChild(valSelect);
+    } else {
+      row.appendChild(buildValueInput(v));
+    }
 
     // Delete
     const delBtn = document.createElement('button');
@@ -836,7 +880,9 @@ variablesAddBtn.addEventListener('click', () => {
   const name = variablesNewName.value.trim();
   if (name) {
     const type = variablesNewType.value;
-    S.variables.push({ name, type, value: VAR_DEFAULTS[type] });
+    const v = { name, type, value: VAR_DEFAULTS[type] };
+    if (type === 'Enum') v.enumName = S.enums.length > 0 ? S.enums[0].name : '';
+    S.variables.push(v);
     variablesNewName.value = '';
     renderVariablesList();
   }
@@ -848,6 +894,117 @@ variablesNewName.addEventListener('keydown', (e) => {
 });
 
 export { renderVariablesList, VAR_TYPES };
+
+// ── Enums tab ───────────────────────────────────────────────────────────────
+
+const enumsList    = document.getElementById('enums-list');
+const enumsNewName = document.getElementById('enums-new-name');
+const enumsAddBtn  = document.getElementById('enums-add-btn');
+
+function toUpperSnake(s) {
+  return s.replace(/[^A-Za-z0-9_]/g, '_').toUpperCase();
+}
+
+function renderEnumsList() {
+  enumsList.innerHTML = '';
+  for (let i = 0; i < S.enums.length; i++) {
+    const es = S.enums[i];
+    const card = document.createElement('div');
+    card.className = 'enum-card';
+
+    // Header: name + delete
+    const header = document.createElement('div');
+    header.className = 'enum-card-header';
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.className = 'inspector-input enum-name-input';
+    nameInput.value = es.name;
+    nameInput.addEventListener('change', () => {
+      const val = nameInput.value.trim();
+      if (val) es.name = val;
+      else { S.enums.splice(i, 1); renderEnumsList(); }
+    });
+    nameInput.addEventListener('keydown', (e) => e.stopPropagation());
+    header.appendChild(nameInput);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'messages-delete-btn';
+    delBtn.textContent = '×';
+    delBtn.title = 'Delete enum set';
+    delBtn.addEventListener('click', () => { S.enums.splice(i, 1); renderEnumsList(); });
+    header.appendChild(delBtn);
+    card.appendChild(header);
+
+    // Column headers
+    const colHeader = document.createElement('div');
+    colHeader.className = 'enum-value-row enum-col-header';
+    colHeader.innerHTML = '<span class="enum-col-key">ENUM_KEY</span><span class="enum-col-label">String Alternative</span><span class="enum-col-del"></span>';
+    card.appendChild(colHeader);
+
+    // Values
+    for (let j = 0; j < es.values.length; j++) {
+      const ev = es.values[j];
+      const row = document.createElement('div');
+      row.className = 'enum-value-row';
+
+      const keyInput = document.createElement('input');
+      keyInput.type = 'text';
+      keyInput.className = 'inspector-input enum-key-input';
+      keyInput.value = ev.key;
+      keyInput.addEventListener('change', () => {
+        ev.key = toUpperSnake(keyInput.value);
+        keyInput.value = ev.key;
+      });
+      keyInput.addEventListener('keydown', (e) => e.stopPropagation());
+      row.appendChild(keyInput);
+
+      const labelInput = document.createElement('input');
+      labelInput.type = 'text';
+      labelInput.className = 'inspector-input enum-label-input';
+      labelInput.value = ev.label || '';
+      labelInput.placeholder = 'display text…';
+      labelInput.addEventListener('change', () => { ev.label = labelInput.value; });
+      labelInput.addEventListener('keydown', (e) => e.stopPropagation());
+      row.appendChild(labelInput);
+
+      const vDelBtn = document.createElement('button');
+      vDelBtn.className = 'messages-delete-btn';
+      vDelBtn.textContent = '×';
+      vDelBtn.addEventListener('click', () => { es.values.splice(j, 1); renderEnumsList(); });
+      row.appendChild(vDelBtn);
+
+      card.appendChild(row);
+    }
+
+    // Add value button
+    const addValBtn = document.createElement('button');
+    addValBtn.className = 'cmd-btn';
+    addValBtn.textContent = '+ Add Value';
+    addValBtn.addEventListener('click', () => {
+      es.values.push({ key: `VALUE_${es.values.length + 1}`, label: '' });
+      renderEnumsList();
+    });
+    card.appendChild(addValBtn);
+
+    enumsList.appendChild(card);
+  }
+}
+
+enumsAddBtn.addEventListener('click', () => {
+  const name = enumsNewName.value.trim();
+  if (name) {
+    S.enums.push({ name, values: [] });
+    enumsNewName.value = '';
+    renderEnumsList();
+  }
+});
+
+enumsNewName.addEventListener('keydown', (e) => {
+  e.stopPropagation();
+  if (e.key === 'Enter') enumsAddBtn.click();
+});
+
+export { renderEnumsList };
 
 // ── Initialise ───────────────────────────────────────────────────────────────
 
