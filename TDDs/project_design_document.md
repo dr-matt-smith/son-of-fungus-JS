@@ -519,6 +519,18 @@ Version 40 features - enums
     - ✅ each enum can also have a "String alternative" value entered (which can be any string value)
     - ✅ these string values are the default to be displayed for Enum Menu choices
 
+- ✅ and add Vite and PlayWright tests for the above feature(s)
 
+
+Version 41 features - command Set Variable
+==================
+
+- ✅ add a new Fungus command "Set Variable (value)"
+  - ✅ the user chooses the variable to be set from the variables defined in the Variables tab
+  - ✅ the user can enter a new value for the variable (of the appropriate data type)
+
+- ✅ add a new Fungus command "Set Variable (copy another)"
+  - ✅ the user chooses the variable to be set from the variables defined in the Variables tab
+  - ✅ the user then chooses the variable whose value is to be copied into the variable to be set
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)

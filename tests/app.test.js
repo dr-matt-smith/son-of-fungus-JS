@@ -1760,6 +1760,54 @@ describe('Enum variable type', () => {
   });
 });
 
+// ─── Version 41: Set Variable commands ──────────────────────────────────────
+
+describe('Set Variable (value) command', () => {
+  it('setVarValue command stores variableName and value', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'setVarValue', variableName: 'score', value: 42 });
+    expect(node.commands[0].type).toBe('setVarValue');
+    expect(node.commands[0].variableName).toBe('score');
+    expect(node.commands[0].value).toBe(42);
+  });
+
+  it('inspector shows variable dropdown for setVarValue', () => {
+    app.S.variables = [{ name: 'hp', type: 'Integer', value: 100 }];
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'setVarValue', variableName: 'hp', value: 50 });
+    app.activateNode(node);
+    app.updateInspector();
+    // Select the command in fungus mode
+    const summary = document.querySelector('.fungus-cmd-summary');
+    if (summary) summary.click();
+    const selects = document.querySelectorAll('.fungus-cmd-editor select, .inspector-cmd-item select');
+    expect(selects.length).toBeGreaterThan(0);
+    app.deactivateNode();
+    app.S.variables = [];
+  });
+});
+
+describe('Set Variable (copy) command', () => {
+  it('setVarCopy command stores variableName and sourceVariableName', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'setVarCopy', variableName: 'a', sourceVariableName: 'b' });
+    expect(node.commands[0].type).toBe('setVarCopy');
+    expect(node.commands[0].sourceVariableName).toBe('b');
+  });
+
+  it('cmdDetail shows copy arrow for setVarCopy', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'setVarCopy', variableName: 'x', sourceVariableName: 'y' });
+    app.activateNode(node);
+    app.updateInspector();
+    const detail = document.querySelector('.fungus-cmd-detail');
+    expect(detail.textContent).toContain('x');
+    expect(detail.textContent).toContain('y');
+    expect(detail.textContent).toContain('←');
+    app.deactivateNode();
+  });
+});
+
 describe('Audio manifest', () => {
   it('AUDIO_FILES is exported and contains entries', () => {
     // Import is via the app facade; audio-manifest is used by inspector

@@ -195,6 +195,8 @@ function executeCommand(cmd) {
     case 'call':      execCall(cmd); break;
     case 'menu':      execMenu(cmd); break;
     case 'setVariable': execSetVariable(cmd); break;
+    case 'setVarValue': execSetVarValue(cmd); break;
+    case 'setVarCopy':  execSetVarCopy(cmd); break;
     case 'wait':      execWait(cmd); break;
     case 'sendMessage': execSendMessage(cmd); break;
     case 'playMusic': execPlayMusic(cmd); break;
@@ -278,6 +280,29 @@ function execSetVariable(cmd) {
   }
   v.value = cmd.value;
   logEntry(`${currentNode.id}: ${currentNode.label}: Set variable: ${cmd.variableName} = ${cmd.value}`);
+  executeNextCommand();
+}
+
+function execSetVarValue(cmd) {
+  const v = S.variables.find(v => v.name === cmd.variableName);
+  if (v) {
+    v.value = cmd.value;
+    logEntry(`${currentNode.id}: ${currentNode.label}: Set variable: ${cmd.variableName} = ${cmd.value}`);
+  } else {
+    logEntry(`${currentNode.id}: ${currentNode.label}: Set variable: "${cmd.variableName}" not found`);
+  }
+  executeNextCommand();
+}
+
+function execSetVarCopy(cmd) {
+  const target = S.variables.find(v => v.name === cmd.variableName);
+  const source = S.variables.find(v => v.name === cmd.sourceVariableName);
+  if (target && source) {
+    target.value = source.value;
+    logEntry(`${currentNode.id}: ${currentNode.label}: Copy variable: ${cmd.variableName} ← ${cmd.sourceVariableName} (${source.value})`);
+  } else {
+    logEntry(`${currentNode.id}: ${currentNode.label}: Copy variable: variable not found`);
+  }
   executeNextCommand();
 }
 

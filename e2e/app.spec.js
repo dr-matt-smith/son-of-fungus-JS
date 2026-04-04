@@ -1941,6 +1941,82 @@ test.describe('V40 – Enums tab', () => {
   });
 });
 
+// ─── Version 41: Set Variable commands ───────────────────────────────────
+
+test.describe('V41 – Set Variable (value) command', () => {
+  test('setVarValue command can be added to a block', async ({ page }) => {
+    await page.locator('#btn-settings-cog').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('#btn-close-settings').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('setVarValue');
+
+    const verb = page.locator('.fungus-cmd-verb');
+    await expect(verb).toHaveText('Set Variable (value)');
+  });
+
+  test('setVarValue editor shows variable dropdown when variables exist', async ({ page }) => {
+    // Add a variable first
+    await page.locator('.inspector-tab[data-tab="variables"]').click();
+    await page.locator('#variables-new-name').fill('score');
+    await page.locator('#variables-add-btn').click();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    // Switch to fungus, create block, add command
+    await page.locator('#btn-settings-cog').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('#btn-close-settings').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('setVarValue');
+
+    // Editor should show variable select
+    const editor = page.locator('.fungus-cmd-editor');
+    const selects = editor.locator('select');
+    await expect(selects.first()).toBeVisible();
+  });
+});
+
+test.describe('V41 – Set Variable (copy) command', () => {
+  test('setVarCopy command can be added to a block', async ({ page }) => {
+    await page.locator('#btn-settings-cog').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('#btn-close-settings').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('setVarCopy');
+
+    const verb = page.locator('.fungus-cmd-verb');
+    await expect(verb).toHaveText('Set Variable (copy)');
+  });
+
+  test('setVarCopy editor shows two variable dropdowns', async ({ page }) => {
+    // Add variables
+    await page.locator('.inspector-tab[data-tab="variables"]').click();
+    await page.locator('#variables-new-name').fill('a');
+    await page.locator('#variables-add-btn').click();
+    await page.locator('#variables-new-name').fill('b');
+    await page.locator('#variables-add-btn').click();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await page.locator('#btn-settings-cog').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('#btn-close-settings').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('setVarCopy');
+
+    const editor = page.locator('.fungus-cmd-editor');
+    const selects = editor.locator('.cmd-field select');
+    await expect(selects).toHaveCount(2);
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

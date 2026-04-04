@@ -59,6 +59,8 @@ function cmdDetail(cmd) {
     case 'playMusic':   return cmd.audioUrl || '(none)';
     case 'sendMessage': return `"${cmd.message || ''}"`;
     case 'setVariable': return `${cmd.variableName || ''} = ${cmd.value ?? ''}`;
+    case 'setVarValue': return `${cmd.variableName || ''} = ${cmd.value ?? ''}`;
+    case 'setVarCopy':  return `${cmd.variableName || ''} ← ${cmd.sourceVariableName || ''}`;
     case 'stopAudio':   return '';
     default:            return '';
   }
@@ -520,6 +522,36 @@ function renderCommandFields(container, cmd, node) {
       container.appendChild(labeledInput('Variable', cmd.variableName, v => { cmd.variableName = v; }));
       container.appendChild(labeledInput('Value', cmd.value, v => { cmd.value = v; }));
       break;
+    case 'setVarValue': {
+      const varOpts = [['', '— select variable —'], ...S.variables.map(v => [v.name, `${v.name} (${v.type})`])];
+      container.appendChild(labeledSelect('Variable', cmd.variableName || '', varOpts, v => { cmd.variableName = v; updateInspector(); }));
+      // Show appropriate value input based on selected variable's type
+      const selVar = S.variables.find(v => v.name === cmd.variableName);
+      if (selVar) {
+        if (selVar.type === 'Boolean') {
+          container.appendChild(labeledSelect('Value', String(cmd.value ?? false), [['false', 'false'], ['true', 'true']], v => { cmd.value = v === 'true'; }));
+        } else if (selVar.type === 'Enum' && selVar.enumName) {
+          const enumSet = S.enums.find(e => e.name === selVar.enumName);
+          if (enumSet) {
+            const enumOpts = [['', '— select —'], ...enumSet.values.map(ev => [ev.key, ev.label || ev.key])];
+            container.appendChild(labeledSelect('Value', cmd.value || '', enumOpts, v => { cmd.value = v; }));
+          }
+        } else {
+          container.appendChild(labeledInput('Value', cmd.value ?? '', v => {
+            if (selVar.type === 'Integer') cmd.value = parseInt(v, 10) || 0;
+            else if (selVar.type === 'Float') cmd.value = parseFloat(v) || 0;
+            else cmd.value = v;
+          }));
+        }
+      }
+      break;
+    }
+    case 'setVarCopy': {
+      const varOpts2 = [['', '— select variable —'], ...S.variables.map(v => [v.name, `${v.name} (${v.type})`])];
+      container.appendChild(labeledSelect('Set Variable', cmd.variableName || '', varOpts2, v => { cmd.variableName = v; }));
+      container.appendChild(labeledSelect('Copy From', cmd.sourceVariableName || '', varOpts2, v => { cmd.sourceVariableName = v; }));
+      break;
+    }
     case 'playMusic': {
       const audioOptions = [['', '— none —'], ...AUDIO_FILES.map(f => [f, f])];
       container.appendChild(labeledSelect('Audio File', cmd.audioUrl || '', audioOptions, v => { cmd.audioUrl = v; }));
