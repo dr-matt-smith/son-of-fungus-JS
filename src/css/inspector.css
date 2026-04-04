@@ -97,6 +97,19 @@
   margin-bottom: 6px;
 }
 
+.inspector-name-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inspector-id-label {
+  font-size: 10px;
+  color: #9ca3af;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 .inspector-select {
   width: 100%;
   padding: 4px 6px;

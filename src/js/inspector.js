@@ -100,10 +100,16 @@ function renderNodeInspector(n) {
     const nameSection = document.createElement('div');
     nameSection.className = 'inspector-section inspector-name-section';
 
-    const nameLabel = document.createElement('div');
-    nameLabel.className = 'inspector-section-title';
+    const nameHeader = document.createElement('div');
+    nameHeader.className = 'inspector-section-title inspector-name-header';
+    const nameLabel = document.createElement('span');
     nameLabel.textContent = 'Name';
-    nameSection.appendChild(nameLabel);
+    nameHeader.appendChild(nameLabel);
+    const idLabel = document.createElement('span');
+    idLabel.className = 'inspector-id-label';
+    idLabel.textContent = `id: ${n.id}`;
+    nameHeader.appendChild(idLabel);
+    nameSection.appendChild(nameHeader);
 
     const nameInput = document.createElement('input');
     nameInput.type = 'text';
@@ -138,20 +144,20 @@ function renderNodeInspector(n) {
     propsContainer.insertBefore(nameSection, propsContainer.firstChild);
   }
 
-  const rows = [['Type', n.type], ['ID', n.id]];
-  if (!isFungus && (n.type === 'state' || n.type === 'choice')) {
-    rows.push(['Size', `${n.w} × ${n.h}`]);
-  }
-  if (!isFungus) {
+  if (isFungus) {
+    // In fungus mode, hide the props table — id is shown in the name header
+    tbody.innerHTML = '';
+  } else {
+    const rows = [['Type', n.type], ['ID', n.id]];
+    if (n.type === 'state' || n.type === 'choice') {
+      rows.push(['Size', `${n.w} × ${n.h}`]);
+    }
     rows.push(['Position', `${Math.round(n.x)}, ${Math.round(n.y)}`]);
-  }
-
-  if (!isFungus) {
     const outgoing = S.connections.filter(c => c.fromId === n.id).length;
     const incoming = S.connections.filter(c => c.toId === n.id).length;
     rows.push(['Connections', `${outgoing} out / ${incoming} in`]);
+    setPropsRows(rows);
   }
-  setPropsRows(rows);
 
   // Editable name field for state/choice nodes (statechart mode only — fungus has it above)
   if (!isFungus && (n.type === 'state' || n.type === 'choice')) {

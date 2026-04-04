@@ -1541,6 +1541,35 @@ test.describe('V31 – Fungus context menu', () => {
   });
 });
 
+// ─── Version 32: Fungus inspector id label ────────────────────────────────
+
+test.describe('V32 – Fungus inspector id label', () => {
+  test('id label appears next to Name header in fungus mode', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+
+    const idLabel = page.locator('.inspector-id-label');
+    await expect(idLabel).toBeVisible();
+    await expect(idLabel).toHaveText(/id: \d+/);
+  });
+
+  test('props table is empty in fungus mode (no Type/ID rows)', async ({ page }) => {
+    await page.locator('.inspector-tab[data-tab="settings"]').click();
+    await page.locator('input[name="diagram-mode"][value="fungus"]').check();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+
+    const tableText = await page.locator('#inspector-table').textContent();
+    expect(tableText.trim()).toBe('');
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

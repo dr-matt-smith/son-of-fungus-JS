@@ -1271,6 +1271,50 @@ describe('Fungus delete handle hidden', () => {
   });
 });
 
+// ─── Version 32: Fungus inspector id label ──────────────────────────────────
+
+describe('Fungus inspector id label', () => {
+  afterEach(() => {
+    app.deactivateNode();
+    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
+  });
+
+  it('in fungus mode, id label is shown in the name header', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+
+    const idLabel = document.querySelector('.inspector-id-label');
+    expect(idLabel).toBeTruthy();
+    expect(idLabel.textContent).toBe(`id: ${node.id}`);
+  });
+
+  it('in fungus mode, props table has no Type/ID rows', () => {
+    app.enterFungusMode();
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+
+    const allCells = Array.from(document.querySelectorAll('#inspector-table td'));
+    const cellTexts = allCells.map(td => td.textContent);
+    expect(cellTexts).not.toContain('Type');
+    expect(cellTexts).not.toContain('ID');
+  });
+
+  it('in statechart mode, props table still shows Type and ID', () => {
+    app.exitFungusMode();
+    const node = app.createNode('state', 0, 0);
+    app.activateNode(node);
+    app.updateInspector();
+
+    const allCells = Array.from(document.querySelectorAll('#inspector-table td'));
+    const cellTexts = allCells.map(td => td.textContent);
+    expect(cellTexts).toContain('Type');
+    expect(cellTexts).toContain('ID');
+  });
+});
+
 describe('Audio manifest', () => {
   it('AUDIO_FILES is exported and contains entries', () => {
     // Import is via the app facade; audio-manifest is used by inspector
