@@ -804,19 +804,21 @@ Version 59 features - improve command sequence drag experience
 Version 60 features - change menu to non-green color
 ==================
 
-- [] at the moment the default color for a menu command is a green, so this is confusing with eh green for a sedlected command
-  - [] change the default color for menu commands to a light blue/grey color
+- ✅ changed menu command color from green/teal to slate blue-grey (#1e293b dark / #e0e7ff light)
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
-- [] and add Vite and PlayWright tests for the above feature(s)
-
-Version 60 features - change menu to non-green color
+Version 61 features - improve IF-ELSE-IF command pattern
 ==================
 
-- [] at the moment the default color for a menu command is a green, so this is confusing with eh green for a sedlected command
-  - [] change the default color for menu commands to a light blue/grey color
-
+- [] at the moment ELSE-IF and ELSE are added when an IF is selected
+  - [] remove these options
+  - [] add to the new command lise ELSE-IF and ELSE
+  - [] replaace END-IF with END, and make it the user's responsibility to add END
+  - so the new pattern is that when an IF has been added, all commands after this will be part of the IF block, until an END or ELSE-IF or ELSE command is add
 
 - [] and add Vite and PlayWright tests for the above feature(s)
+
 
 
