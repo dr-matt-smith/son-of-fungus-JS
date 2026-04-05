@@ -84,19 +84,28 @@ function cmdDetail(cmd) {
   }
 }
 
-function showCommandSearch(node) {
-  const overlay = document.createElement('div');
-  overlay.className = 'cmd-search-overlay';
-  overlay.innerHTML = `
-    <div class="cmd-search-popup">
-      <input type="text" class="cmd-search-input inspector-input" placeholder="Search commands…" autofocus>
-      <div class="cmd-search-results"></div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
+let cmdSearchContainer = null;
 
-  const input = overlay.querySelector('.cmd-search-input');
-  const results = overlay.querySelector('.cmd-search-results');
+function showCommandSearch(node, parentEl) {
+  // Toggle: if already showing, remove it
+  if (cmdSearchContainer) {
+    cmdSearchContainer.remove();
+    cmdSearchContainer = null;
+    return;
+  }
+
+  cmdSearchContainer = document.createElement('div');
+  cmdSearchContainer.className = 'cmd-search-inline';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'cmd-search-input inspector-input';
+  input.placeholder = 'Search commands…';
+  cmdSearchContainer.appendChild(input);
+
+  const results = document.createElement('div');
+  results.className = 'cmd-search-results';
+  cmdSearchContainer.appendChild(results);
 
   function renderResults(filter) {
     results.innerHTML = '';
@@ -107,9 +116,9 @@ function showCommandSearch(node) {
       item.className = 'cmd-search-item';
       item.innerHTML = `<span class="cmd-search-label">${ct.label}</span><span class="cmd-search-cat">${ct.category}</span>`;
       item.addEventListener('click', () => {
-        overlay.remove();
         node.commands.push(createCommand(key));
         selectedCmdIdx = node.commands.length - 1;
+        cmdSearchContainer = null;
         onNodeDataChanged();
         updateInspector();
       });
@@ -121,9 +130,10 @@ function showCommandSearch(node) {
   input.addEventListener('input', () => renderResults(input.value));
   input.addEventListener('keydown', (e) => {
     e.stopPropagation();
-    if (e.key === 'Escape') overlay.remove();
+    if (e.key === 'Escape') { cmdSearchContainer.remove(); cmdSearchContainer = null; }
   });
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+
+  parentEl.appendChild(cmdSearchContainer);
   setTimeout(() => input.focus(), 0);
 }
 
@@ -185,6 +195,7 @@ export function updateInspector() {
 // ── Node inspector ───────────────────────────────────────────────────────────
 
 function renderNodeInspector(n) {
+  cmdSearchContainer = null; // clear inline search on re-render
   emptyMsg.style.display = 'none';
   propsContainer.style.display = '';
   // Clean up previous sections
@@ -411,7 +422,7 @@ function renderNodeInspector(n) {
     addBtn.className = 'cmd-action-btn cmd-action-add';
     addBtn.textContent = '+';
     addBtn.title = 'Add new command';
-    addBtn.addEventListener('click', () => showCommandSearch(n));
+    addBtn.addEventListener('click', () => showCommandSearch(n, cmdsSection));
     rightGroup.appendChild(addBtn);
 
     if (selectedCmdIdx >= 0 && selectedCmdIdx < n.commands.length) {

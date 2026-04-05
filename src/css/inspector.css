@@ -393,38 +393,23 @@
   border-color: #ef4444;
 }
 
-/* ── Command search popup ────────────────────────────────────────────────── */
+/* ── Command search (inline) ─────────────────────────────────────────────── */
 
-.cmd-search-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 10000;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 120px;
-}
-
-.cmd-search-popup {
-  background: var(--bg-panel);
+.cmd-search-inline {
+  margin-top: 6px;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  width: 280px;
-  max-height: 350px;
-  display: flex;
-  flex-direction: column;
+  border-radius: 6px;
+  background: var(--bg-card);
   overflow: hidden;
 }
 
-.cmd-search-input {
-  margin: 8px;
-  width: calc(100% - 16px);
+.cmd-search-inline .cmd-search-input {
+  margin: 6px;
+  width: calc(100% - 12px);
 }
 
 .cmd-search-results {
-  flex: 1;
+  max-height: 180px;
   overflow-y: auto;
   border-top: 1px solid var(--border-color);
 }
