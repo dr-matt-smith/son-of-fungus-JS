@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Variables, Enums &amp; Events — Son of Fungus Docs</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar">
+    <div class="sidebar-header"><a class="project-name" href="index.html">Son of Fungus</a></div>
+    <div class="sidebar-search">
+      <input type="text" id="docs-search" placeholder="Search docs…">
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="flowcharts.html">Flowcharts</a></li>
+        <li><a href="blocks.html">Blocks</a></li>
+        <li><a class="active" href="variables.html">Variables, Enums &amp; Events</a></li>
+        <li class="nav-section-title">Commands</li>
+        <li><a href="commands/say.html">Say</a></li>
+        <li><a href="commands/menu.html">Menu</a></li>
+        <li><a href="commands/call.html">Call</a></li>
+        <li><a href="commands/if-else.html">If / Else-If / Else / End</a></li>
+        <li><a href="commands/variables-cmd.html">Set Variable / Copy Variable</a></li>
+        <li><a href="commands/audio.html">Play Music / Play Sound / Stop Audio</a></li>
+        <li><a href="commands/stage.html">Stage BG Color / Stage BG Image</a></li>
+        <li><a href="commands/flow.html">Wait / Send Message</a></li>
+        <li class="nav-section-title">Tools</li>
+        <li><a href="load-save.html">Load &amp; Save</a></li>
+        <li><a href="debug.html">Debug Mode</a></li>
+        <li><a href="build.html">Build Runtime</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-area">
+    <main class="content">
+      <h1>Variables, Enums &amp; Events</h1>
+
+      <div data-search-content data-search-title="Data Panel Overview">
+        <p>
+          The <strong>Data Panel</strong> on the left side of the editor organises your
+          project's state into three tabs: <strong>Variables</strong>,
+          <strong>Enums</strong>, and <strong>Events</strong>.
+        </p>
+      </div>
+
+      <figure class="doc-figure">
+        <img class="doc-screenshot doc-screenshot-medium" src="images/data-panel.png" alt="Variables panel showing variable list">
+        <figcaption>The Variables tab in the data panel, listing project variables with their types and values.</figcaption>
+      </figure>
+
+      <h2 id="variables">Variables</h2>
+
+      <div data-search-content data-search-title="Variables">
+        <p>
+          Variables store values that commands can read and write at runtime. Each variable
+          has a <strong>name</strong>, a <strong>type</strong>, and a <strong>default
+          value</strong>.
+        </p>
+
+        <h3>Supported Types</h3>
+        <table>
+          <thead>
+            <tr><th>Type</th><th>Example Default</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>Boolean</code></td><td><code>false</code></td>
+                <td>True / false toggle.</td></tr>
+            <tr><td><code>Integer</code></td><td><code>0</code></td>
+                <td>Whole number.</td></tr>
+            <tr><td><code>Float</code></td><td><code>0.0</code></td>
+                <td>Decimal number.</td></tr>
+            <tr><td><code>String</code></td><td><code>""</code></td>
+                <td>Text value.</td></tr>
+            <tr><td><code>Enum</code></td><td><em>(first key)</em></td>
+                <td>One of the keys defined in an Enum set. You must choose which
+                    Enum set the variable references.</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Example Variables Panel</h3>
+        <div class="doc-data-panel">
+          <div class="doc-data-section-header">Variables</div>
+          <div class="doc-data-content">
+            <div class="doc-var-row">
+              <span class="doc-var-type">Boolean</span>
+              <span class="doc-var-name">hasKey</span>
+              <span class="doc-var-value">false</span>
+            </div>
+            <div class="doc-var-row">
+              <span class="doc-var-type">Integer</span>
+              <span class="doc-var-name">gold</span>
+              <span class="doc-var-value">0</span>
+            </div>
+            <div class="doc-var-row">
+              <span class="doc-var-type">Float</span>
+              <span class="doc-var-name">health</span>
+              <span class="doc-var-value">100.0</span>
+            </div>
+            <div class="doc-var-row">
+              <span class="doc-var-type">String</span>
+              <span class="doc-var-name">playerName</span>
+              <span class="doc-var-value">""</span>
+            </div>
+            <div class="doc-var-row">
+              <span class="doc-var-type">Enum</span>
+              <span class="doc-var-name">direction</span>
+              <span class="doc-var-value">NORTH</span>
+            </div>
+          </div>
+        </div>
+
+        <h3>Adding &amp; Editing Variables</h3>
+        <p>
+          Click the <strong>+</strong> button at the top of the Variables tab to create a
+          new variable. Select a variable in the list to edit its name, type, and default
+          value in the detail area below. Press the <strong>delete</strong> button to remove
+          a variable.
+        </p>
+      </div>
+
+      <h2 id="enums">Enums</h2>
+
+      <div data-search-content data-search-title="Enums">
+        <figure class="doc-figure">
+          <img class="doc-screenshot doc-screenshot-medium" src="images/data-panel-enum.png" alt="Enum definition in the data panel">
+          <figcaption>The Enums tab showing an enum set with keys and optional string alternatives.</figcaption>
+        </figure>
+        <p>
+          Enums let you define named sets of constants. Each enum has a <strong>name</strong>
+          and a list of <strong>keys</strong>.
+        </p>
+
+        <h3>Key Format</h3>
+        <p>
+          Keys follow <code>UPPER_SNAKE_CASE</code> convention (e.g.
+          <code>NORTH</code>, <code>SOUTH_EAST</code>). Each key can also have an optional
+          <strong>string alternative</strong> — a human-readable label used at runtime
+          (e.g. the key <code>SOUTH_EAST</code> might display as
+          <code>"South East"</code>).
+        </p>
+
+        <h3>Usage</h3>
+        <p>
+          Once an Enum set is defined, you can create a variable of type
+          <code>Enum</code> and bind it to that set. Commands like
+          <a href="commands/variables-cmd.html">Set Variable</a> and
+          <a href="commands/if-else.html">If / Else-If</a> can then compare or assign
+          enum values.
+        </p>
+      </div>
+
+      <h2 id="events">Events</h2>
+
+      <div data-search-content data-search-title="Events">
+        <p>
+          The Events tab holds a list of <strong>message names</strong> used for
+          communication between blocks. A message name is a simple string identifier such
+          as <code>door_opened</code> or <code>level_complete</code>.
+        </p>
+        <ul>
+          <li>The <a href="commands/flow.html">Send Message</a> command broadcasts a
+              message name at runtime.</li>
+          <li>Any block whose event trigger is <code>Message Received</code> and whose
+              message name matches will begin executing.</li>
+        </ul>
+        <p>
+          Add new events with the <strong>+</strong> button. Registered events appear in
+          dropdowns throughout the editor so you can select them without typing.
+        </p>
+      </div>
+
+      <div class="admonition">
+        <div class="admonition-title">Tip</div>
+        During <a href="debug.html">Debug Mode</a> you can inspect and edit variable
+        values in real time to test different execution paths.
+      </div>
+    </main>
+  </div>
+  <script src="js/search.js"></script>
+  <script>
+    document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

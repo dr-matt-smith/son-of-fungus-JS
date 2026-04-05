@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Call Command — Son of Fungus Docs</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+  <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar">
+    <div class="sidebar-header"><a class="project-name" href="../index.html">Son of Fungus</a></div>
+    <div class="sidebar-search">
+      <input type="text" id="docs-search" placeholder="Search docs…">
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="sidebar-nav">
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting Started</a></li>
+        <li><a href="../flowcharts.html">Flowcharts</a></li>
+        <li><a href="../blocks.html">Blocks</a></li>
+        <li><a href="../variables.html">Variables, Enums &amp; Events</a></li>
+        <li class="nav-section-title">Commands</li>
+        <li><a href="say.html">Say</a></li>
+        <li><a href="menu.html">Menu</a></li>
+        <li><a class="active" href="call.html">Call</a></li>
+        <li><a href="if-else.html">If / Else-If / Else / End</a></li>
+        <li><a href="variables-cmd.html">Set Variable / Copy Variable</a></li>
+        <li><a href="audio.html">Play Music / Play Sound / Stop Audio</a></li>
+        <li><a href="stage.html">Stage BG Color / Stage BG Image</a></li>
+        <li><a href="flow.html">Wait / Send Message</a></li>
+        <li class="nav-section-title">Tools</li>
+        <li><a href="../load-save.html">Load &amp; Save</a></li>
+        <li><a href="../debug.html">Debug Mode</a></li>
+        <li><a href="../build.html">Build Runtime</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-area">
+    <main class="content">
+      <h1>Call</h1>
+
+      <div data-search-content data-search-title="Call Command">
+        <p>
+          The <strong>Call</strong> command transfers execution to another block. It is the
+          primary way to link blocks together in a linear sequence.
+        </p>
+      </div>
+
+      <h2 id="fields">Fields</h2>
+
+      <div data-search-content data-search-title="Call Fields">
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Target Block</strong></td>
+              <td>Block reference</td>
+              <td>The block to jump to. Select from a dropdown of all blocks in the
+                  project.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="behaviour">Behaviour</h2>
+
+      <div data-search-content data-search-title="Call Behaviour">
+        <p>
+          When a Call command executes, the runtime immediately begins executing the first
+          command in the target block. A connecting line is drawn on the
+          <a href="../flowcharts.html">canvas</a> from the calling block to the target
+          block.
+        </p>
+
+        <p>On the canvas, a Call creates a visible arrow between the two blocks:</p>
+        <div class="doc-flowchart">
+          <div class="doc-block doc-block-event" style="left:20px; top:10px;">
+            <span class="doc-block-id">#1</span>
+            <span class="doc-block-label">Introduction</span>
+          </div>
+          <div class="doc-arrow" style="left:130px; top:42px;">&#8594;</div>
+          <div class="doc-block doc-block-standard" style="left:170px; top:10px;">
+            <span class="doc-block-id">#2</span>
+            <span class="doc-block-label">Chapter 1</span>
+          </div>
+        </div>
+
+        <p>
+          Call is typically placed as the last command in a block to hand off to the next
+          step in the flowchart.
+        </p>
+      </div>
+
+      <h2 id="debug">Debugging Calls</h2>
+
+      <div data-search-content data-search-title="Debugging Call Commands">
+        <p>
+          In <a href="../debug.html">Debug Mode</a>, Call commands support two stepping
+          behaviours:
+        </p>
+        <ul>
+          <li><strong>Step Into</strong> — Enter the target block and step through its
+              commands one by one.</li>
+          <li><strong>Step Over</strong> — Run the entire target block to completion and
+              return to the next command after the Call.</li>
+        </ul>
+      </div>
+
+      <h2 id="example">Example</h2>
+
+      <div data-search-content data-search-title="Call Example">
+        <div class="doc-cmd-list">
+          <div class="doc-cmd-row cmd-say">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Say</span>
+            <span class="doc-cmd-detail">"Welcome to the adventure!"</span>
+          </div>
+          <div class="doc-cmd-row cmd-call">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Call</span>
+            <span class="doc-cmd-detail">&#8594; Chapter 1</span>
+          </div>
+        </div>
+        <p>
+          After the player reads the welcome text, execution moves to
+          <em>Chapter 1</em>.
+        </p>
+      </div>
+    </main>
+  </div>
+  <script src="../js/search.js"></script>
+  <script>
+    document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

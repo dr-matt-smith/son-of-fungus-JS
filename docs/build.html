@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Build Runtime — Son of Fungus Docs</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar">
+    <div class="sidebar-header"><a class="project-name" href="index.html">Son of Fungus</a></div>
+    <div class="sidebar-search">
+      <input type="text" id="docs-search" placeholder="Search docs…">
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="flowcharts.html">Flowcharts</a></li>
+        <li><a href="blocks.html">Blocks</a></li>
+        <li><a href="variables.html">Variables, Enums &amp; Events</a></li>
+        <li class="nav-section-title">Commands</li>
+        <li><a href="commands/say.html">Say</a></li>
+        <li><a href="commands/menu.html">Menu</a></li>
+        <li><a href="commands/call.html">Call</a></li>
+        <li><a href="commands/if-else.html">If / Else-If / Else / End</a></li>
+        <li><a href="commands/variables-cmd.html">Set Variable / Copy Variable</a></li>
+        <li><a href="commands/audio.html">Play Music / Play Sound / Stop Audio</a></li>
+        <li><a href="commands/stage.html">Stage BG Color / Stage BG Image</a></li>
+        <li><a href="commands/flow.html">Wait / Send Message</a></li>
+        <li class="nav-section-title">Tools</li>
+        <li><a href="load-save.html">Load &amp; Save</a></li>
+        <li><a href="debug.html">Debug Mode</a></li>
+        <li><a class="active" href="build.html">Build Runtime</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-area">
+    <main class="content">
+      <h1>Build Runtime</h1>
+
+      <div data-search-content data-search-title="Build Runtime Overview">
+        <p>
+          The <strong>Build</strong> feature packages your project into a standalone,
+          self-contained experience that runs in any web browser — no editor required.
+        </p>
+      </div>
+
+      <div class="admonition">
+        <div class="admonition-title">Note</div>
+        The build output is a ZIP file containing a single <code>index.html</code> plus any
+        referenced audio and image assets. No server-side technology is needed — the result
+        is pure static HTML, CSS, and JavaScript.
+      </div>
+
+      <h2 id="how">How It Works</h2>
+
+      <div data-search-content data-search-title="How Build Works">
+        <p>
+          Click the <strong>Build</strong> button in the top toolbar. Son of Fungus
+          generates a <strong>ZIP file</strong> and triggers a download in your browser.
+          The ZIP contains:
+        </p>
+        <ul>
+          <li><code>index.html</code> — A standalone HTML page with the runtime engine
+              and your project data embedded.</li>
+          <li><code>audio/</code> — Any music or sound-effect files referenced by
+              <a href="commands/audio.html">Play Music</a> or
+              <a href="commands/audio.html">Play Sound</a> commands.</li>
+          <li><code>images/</code> — Any background images referenced by
+              <a href="commands/stage.html">Stage BG Image</a> commands.</li>
+        </ul>
+      </div>
+
+      <h2 id="hosting">Hosting the Build</h2>
+
+      <div data-search-content data-search-title="Hosting the Build">
+        <p>
+          Unzip the archive and open <code>index.html</code> in a browser to play the
+          project locally. To share it online, upload the entire folder to any static
+          hosting provider (GitHub Pages, Netlify, a simple web server, etc.).
+        </p>
+        <p>
+          Because the runtime is pure HTML, CSS, and JavaScript with no server-side
+          requirements, it works anywhere a browser can load a local file or URL.
+        </p>
+      </div>
+
+      <h2 id="assets">Asset Handling</h2>
+
+      <div data-search-content data-search-title="Asset Handling">
+        <p>
+          The build process copies referenced audio and image files into the ZIP
+          automatically. Make sure all assets are loaded into the editor before building.
+          Unreferenced files are not included, keeping the output as small as possible.
+        </p>
+      </div>
+
+      <div class="admonition">
+        <div class="admonition-title">Tip</div>
+        Always <a href="debug.html">debug</a> your project before building to catch any
+        logic errors. The built runtime does not include debugging tools.
+      </div>
+    </main>
+  </div>
+  <script src="js/search.js"></script>
+  <script>
+    document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

@@ -840,3 +840,19 @@ Version 63 features - fix the command sequence drag user experience
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 
+Version 64 features - generate docs pages for each command, and for general flowchart features etc.
+==================
+
+this is a general feature about creating Markdown documentation website
+
+NOTE - I give you permission to visit these web links, and the web links about the Sphinx read the docs theme
+- I used it to create this documentation web site: https://celbridge-org.github.io/celbridge-docs/
+
+- create this documentation website in a new /docs folder
+
+- ✅ Read The Docs-inspired static site in /docs with sidebar navigation, search, mobile support
+- ✅ 8 command pages: Say, Menu, Call, If/Else/End, Variables, Audio, Stage, Flow
+- ✅ 8 general pages: Home, Getting Started, Flowcharts, Blocks, Variables/Enums/Events, Load & Save, Debug, Build
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+

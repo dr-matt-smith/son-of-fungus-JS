@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu Command — Son of Fungus Docs</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+  <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar">
+    <div class="sidebar-header"><a class="project-name" href="../index.html">Son of Fungus</a></div>
+    <div class="sidebar-search">
+      <input type="text" id="docs-search" placeholder="Search docs…">
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="sidebar-nav">
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting Started</a></li>
+        <li><a href="../flowcharts.html">Flowcharts</a></li>
+        <li><a href="../blocks.html">Blocks</a></li>
+        <li><a href="../variables.html">Variables, Enums &amp; Events</a></li>
+        <li class="nav-section-title">Commands</li>
+        <li><a href="say.html">Say</a></li>
+        <li><a class="active" href="menu.html">Menu</a></li>
+        <li><a href="call.html">Call</a></li>
+        <li><a href="if-else.html">If / Else-If / Else / End</a></li>
+        <li><a href="variables-cmd.html">Set Variable / Copy Variable</a></li>
+        <li><a href="audio.html">Play Music / Play Sound / Stop Audio</a></li>
+        <li><a href="stage.html">Stage BG Color / Stage BG Image</a></li>
+        <li><a href="flow.html">Wait / Send Message</a></li>
+        <li class="nav-section-title">Tools</li>
+        <li><a href="../load-save.html">Load &amp; Save</a></li>
+        <li><a href="../debug.html">Debug Mode</a></li>
+        <li><a href="../build.html">Build Runtime</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-area">
+    <main class="content">
+      <h1>Menu</h1>
+
+      <div data-search-content data-search-title="Menu Command">
+        <p>
+          The <strong>Menu</strong> command presents the player with a set of clickable
+          choices. Each choice has a label and a <strong>target block</strong>. When the
+          player picks a choice, execution jumps to the corresponding block.
+        </p>
+      </div>
+
+      <h2 id="fields">Fields</h2>
+
+      <div data-search-content data-search-title="Menu Fields">
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Choices</strong></td>
+              <td>List</td>
+              <td>One or more choice entries, each with a <strong>label</strong> (the text
+                  shown to the player) and a <strong>target block</strong> (the block to
+                  jump to when selected).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="connections">Canvas Connections</h2>
+
+      <div data-search-content data-search-title="Menu Canvas Connections">
+        <p>
+          Each choice creates a visible connection line on the
+          <a href="../flowcharts.html">flowchart canvas</a> from the current block to the
+          target block. This makes Menu commands easy to trace visually — the block will
+          show multiple outgoing arrows, one per choice.
+        </p>
+      </div>
+
+      <h2 id="example">Example</h2>
+
+      <div data-search-content data-search-title="Menu Example">
+        <p>Two consecutive Menu commands group together to present three choices:</p>
+        <div class="doc-cmd-list">
+          <div class="doc-cmd-row cmd-say">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Say</span>
+            <span class="doc-cmd-detail">"You reach a fork in the road."</span>
+          </div>
+          <div class="doc-cmd-row cmd-menu">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Menu</span>
+            <span class="doc-cmd-detail">"Go left" &#8594; Forest Path</span>
+          </div>
+          <div class="doc-cmd-row cmd-menu">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Menu</span>
+            <span class="doc-cmd-detail">"Go right" &#8594; Mountain Trail</span>
+          </div>
+        </div>
+        <p>
+          The player sees buttons for each Menu choice. Clicking "Go left" jumps execution to the
+          <em>Forest Path</em> block, and so on. Consecutive Menu commands are grouped together
+          and presented as a single set of choices at runtime.
+        </p>
+      </div>
+
+      <div class="admonition">
+        <div class="admonition-title">Tip</div>
+        A Menu command is typically the last command in a block, since execution leaves the
+        block once the player makes a choice.
+      </div>
+    </main>
+  </div>
+  <script src="../js/search.js"></script>
+  <script>
+    document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

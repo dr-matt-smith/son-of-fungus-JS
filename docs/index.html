@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home — Son of Fungus Docs</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar">
+    <div class="sidebar-header"><a class="project-name" href="index.html">Son of Fungus</a></div>
+    <div class="sidebar-search">
+      <input type="text" id="docs-search" placeholder="Search docs…">
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="sidebar-nav">
+      <ul>
+        <li><a class="active" href="index.html">Home</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="flowcharts.html">Flowcharts</a></li>
+        <li><a href="blocks.html">Blocks</a></li>
+        <li><a href="variables.html">Variables, Enums &amp; Events</a></li>
+        <li class="nav-section-title">Commands</li>
+        <li><a href="commands/say.html">Say</a></li>
+        <li><a href="commands/menu.html">Menu</a></li>
+        <li><a href="commands/call.html">Call</a></li>
+        <li><a href="commands/if-else.html">If / Else-If / Else / End</a></li>
+        <li><a href="commands/variables-cmd.html">Set Variable / Copy Variable</a></li>
+        <li><a href="commands/audio.html">Play Music / Play Sound / Stop Audio</a></li>
+        <li><a href="commands/stage.html">Stage BG Color / Stage BG Image</a></li>
+        <li><a href="commands/flow.html">Wait / Send Message</a></li>
+        <li class="nav-section-title">Tools</li>
+        <li><a href="load-save.html">Load &amp; Save</a></li>
+        <li><a href="debug.html">Debug Mode</a></li>
+        <li><a href="build.html">Build Runtime</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-area">
+    <main class="content">
+      <h1>Son of Fungus</h1>
+
+      <figure class="doc-figure">
+        <img class="doc-screenshot" src="images/app-overview.png" alt="Son of Fungus application overview">
+        <figcaption>The Son of Fungus editor — flowchart canvas, inspector, and data panel.</figcaption>
+      </figure>
+
+      <div data-search-content data-search-title="Introduction">
+        <p>
+          <strong>Son of Fungus</strong> is a visual scripting and flowchart authoring tool
+          built entirely with standalone JavaScript, HTML, and CSS. It draws heavy inspiration
+          from the popular <em>Fungus</em> package for Unity, but runs directly in any modern
+          web browser with zero dependencies.
+        </p>
+        <p>
+          Whether you are building interactive fiction, branching dialogue, tutorial sequences,
+          or lightweight game logic, Son of Fungus gives you a drag-and-drop canvas where you
+          connect <strong>blocks</strong> of <strong>commands</strong> into expressive flowcharts
+          — no code required.
+        </p>
+      </div>
+
+      <h2>At a Glance</h2>
+
+      <div data-search-content data-search-title="At a Glance Flowchart">
+        <p>A minimal flowchart with two connected blocks looks like this:</p>
+        <div class="doc-flowchart">
+          <div class="doc-block doc-block-event" style="left:40px; top:20px;">
+            <span class="doc-block-id">#1</span>
+            <span class="doc-block-label">Start</span>
+          </div>
+          <div class="doc-arrow" style="left:110px; top:80px;">&#8595;</div>
+          <div class="doc-block doc-block-standard" style="left:40px; top:110px;">
+            <span class="doc-block-id">#2</span>
+            <span class="doc-block-label">Chapter 1</span>
+          </div>
+        </div>
+        <p>
+          The blue block has a <strong>Game Started</strong> event, so execution begins there.
+          A <a href="commands/call.html">Call</a> command connects it to the yellow
+          <em>Chapter 1</em> block.
+        </p>
+      </div>
+
+      <h2>Key Features</h2>
+
+      <div data-search-content data-search-title="Key Features">
+        <ul>
+          <li><strong>Blocks &amp; Commands</strong> — Build behaviour by snapping together
+              reusable command cards (Say, Menu, Call, If/Else, audio, stage, and more).</li>
+          <li><strong>Variables, Enums &amp; Events</strong> — Manage project state with typed
+              variables (Boolean, Integer, Float, String, Enum), custom enums, and named events.</li>
+          <li><strong>Visual Flowchart Canvas</strong> — Drag blocks, zoom, pan, and see
+              auto-drawn connections between blocks at a glance.</li>
+          <li><strong>Debug Mode</strong> — Step through execution one command at a time,
+              inspect and edit variables live, and trace Call chains.</li>
+          <li><strong>Build to Standalone Runtime</strong> — Export your project as a single
+              ZIP containing a self-contained HTML runtime with all audio and image assets.</li>
+          <li><strong>Load &amp; Save</strong> — Projects are plain JSON. Export, import, paste,
+              or choose from built-in examples.</li>
+          <li><strong>Responsive UI</strong> — Works on desktop and adapts to smaller screens
+              with a collapsible sidebar.</li>
+        </ul>
+      </div>
+
+      <h2>Quick Links</h2>
+
+      <div data-search-content data-search-title="Quick Links">
+        <ul>
+          <li><a href="getting-started.html">Getting Started</a> — Create your first flowchart in minutes.</li>
+          <li><a href="flowcharts.html">Flowcharts</a> — Learn about the canvas, zoom, minimap, and themes.</li>
+          <li><a href="blocks.html">Blocks</a> — Understand block types, events, and naming.</li>
+          <li><a href="variables.html">Variables, Enums &amp; Events</a> — Manage your project data.</li>
+          <li><a href="commands/say.html">Commands Reference</a> — Detailed docs for every command.</li>
+          <li><a href="build.html">Build Runtime</a> — Ship a standalone HTML experience.</li>
+        </ul>
+      </div>
+
+      <div class="admonition">
+        <div class="admonition-title">Tip</div>
+        Use the search box in the sidebar to quickly find any topic across the documentation.
+      </div>
+    </main>
+  </div>
+  <script src="js/search.js"></script>
+  <script>
+    document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

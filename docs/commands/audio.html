@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Commands — Son of Fungus Docs</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+  <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar">
+    <div class="sidebar-header"><a class="project-name" href="../index.html">Son of Fungus</a></div>
+    <div class="sidebar-search">
+      <input type="text" id="docs-search" placeholder="Search docs…">
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="sidebar-nav">
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting Started</a></li>
+        <li><a href="../flowcharts.html">Flowcharts</a></li>
+        <li><a href="../blocks.html">Blocks</a></li>
+        <li><a href="../variables.html">Variables, Enums &amp; Events</a></li>
+        <li class="nav-section-title">Commands</li>
+        <li><a href="say.html">Say</a></li>
+        <li><a href="menu.html">Menu</a></li>
+        <li><a href="call.html">Call</a></li>
+        <li><a href="if-else.html">If / Else-If / Else / End</a></li>
+        <li><a href="variables-cmd.html">Set Variable / Copy Variable</a></li>
+        <li><a class="active" href="audio.html">Play Music / Play Sound / Stop Audio</a></li>
+        <li><a href="stage.html">Stage BG Color / Stage BG Image</a></li>
+        <li><a href="flow.html">Wait / Send Message</a></li>
+        <li class="nav-section-title">Tools</li>
+        <li><a href="../load-save.html">Load &amp; Save</a></li>
+        <li><a href="../debug.html">Debug Mode</a></li>
+        <li><a href="../build.html">Build Runtime</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-area">
+    <main class="content">
+      <h1>Play Music / Play Sound / Stop Audio</h1>
+
+      <div data-search-content data-search-title="Audio Commands Overview">
+        <p>
+          Son of Fungus provides three audio-related commands for adding music and sound
+          effects to your project. Audio files must be placed in the <code>/audio</code>
+          folder so the runtime can locate them.
+        </p>
+      </div>
+
+      <h2 id="play-music">Play Music</h2>
+
+      <div data-search-content data-search-title="Play Music Command">
+        <p>
+          <strong>Play Music</strong> starts looping background music. If music is already
+          playing, it is replaced by the new track.
+        </p>
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Audio File</strong></td>
+              <td>The music file to play (e.g. <code>theme.mp3</code>).</td>
+            </tr>
+            <tr>
+              <td><strong>Loop</strong></td>
+              <td>Whether the track loops continuously (default: true).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="play-sound">Play Sound</h2>
+
+      <div data-search-content data-search-title="Play Sound Command">
+        <p>
+          <strong>Play Sound</strong> plays a one-shot sound effect. Unlike music, sounds
+          do not loop and multiple sounds can overlap.
+        </p>
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Audio File</strong></td>
+              <td>The sound file to play (e.g. <code>click.wav</code>).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="stop-audio">Stop Audio</h2>
+
+      <div data-search-content data-search-title="Stop Audio Command">
+        <p>
+          <strong>Stop Audio</strong> stops all currently playing audio — both music and
+          sound effects.
+        </p>
+      </div>
+
+      <h2 id="example">Example</h2>
+
+      <div data-search-content data-search-title="Audio Example">
+        <p>Audio commands in a block's command list:</p>
+        <div class="doc-cmd-list">
+          <div class="doc-cmd-row cmd-audio">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Play Music</span>
+            <span class="doc-cmd-detail">dungeon_ambience.mp3</span>
+          </div>
+          <div class="doc-cmd-row cmd-say">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Say</span>
+            <span class="doc-cmd-detail">"You descend into darkness..."</span>
+          </div>
+          <div class="doc-cmd-row cmd-audio">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Play Sound</span>
+            <span class="doc-cmd-detail">door_creak.wav</span>
+          </div>
+          <div class="doc-cmd-row cmd-audio">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Stop Audio</span>
+            <span class="doc-cmd-detail"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="admonition">
+        <div class="admonition-title">Tip</div>
+        When you <a href="../build.html">build</a> your project, audio files are
+        automatically included in the output ZIP.
+      </div>
+    </main>
+  </div>
+  <script src="../js/search.js"></script>
+  <script>
+    document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

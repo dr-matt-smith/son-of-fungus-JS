@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flowcharts — Son of Fungus Docs</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar">
+    <div class="sidebar-header"><a class="project-name" href="index.html">Son of Fungus</a></div>
+    <div class="sidebar-search">
+      <input type="text" id="docs-search" placeholder="Search docs…">
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a class="active" href="flowcharts.html">Flowcharts</a></li>
+        <li><a href="blocks.html">Blocks</a></li>
+        <li><a href="variables.html">Variables, Enums &amp; Events</a></li>
+        <li class="nav-section-title">Commands</li>
+        <li><a href="commands/say.html">Say</a></li>
+        <li><a href="commands/menu.html">Menu</a></li>
+        <li><a href="commands/call.html">Call</a></li>
+        <li><a href="commands/if-else.html">If / Else-If / Else / End</a></li>
+        <li><a href="commands/variables-cmd.html">Set Variable / Copy Variable</a></li>
+        <li><a href="commands/audio.html">Play Music / Play Sound / Stop Audio</a></li>
+        <li><a href="commands/stage.html">Stage BG Color / Stage BG Image</a></li>
+        <li><a href="commands/flow.html">Wait / Send Message</a></li>
+        <li class="nav-section-title">Tools</li>
+        <li><a href="load-save.html">Load &amp; Save</a></li>
+        <li><a href="debug.html">Debug Mode</a></li>
+        <li><a href="build.html">Build Runtime</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-area">
+    <main class="content">
+      <h1>Flowcharts</h1>
+
+      <div data-search-content data-search-title="Flowchart Canvas">
+        <p>
+          The flowchart canvas is the central workspace in Son of Fungus. It displays all of
+          your <a href="blocks.html">blocks</a> and the connections between them, giving you
+          a bird's-eye view of your project's logic.
+        </p>
+      </div>
+
+      <figure class="doc-figure">
+        <img class="doc-screenshot" src="images/flowchart-blocks.png" alt="Flowchart canvas with blocks and connections">
+        <figcaption>The canvas showing blocks connected by arrows drawn from Call and Menu commands.</figcaption>
+      </figure>
+
+      <h2 id="blocks-on-canvas">Blocks on the Canvas</h2>
+
+      <div data-search-content data-search-title="Blocks on the Canvas">
+        <p>
+          Each block appears as a card on the canvas. You can drag blocks to rearrange them
+          freely. Selecting a block highlights it and opens its details in the Inspector
+          panel on the right.
+        </p>
+        <p>
+          Connections between blocks are drawn automatically based on
+          <a href="commands/call.html">Call</a> and <a href="commands/menu.html">Menu</a>
+          commands. If a Call command targets Block B, a connecting line is drawn from the
+          current block to Block B.
+        </p>
+
+        <p>Here is a three-block flowchart with branching:</p>
+        <div class="doc-flowchart">
+          <div class="doc-block doc-block-event" style="left:100px; top:10px;">
+            <span class="doc-block-id">#1</span>
+            <span class="doc-block-label">Start</span>
+          </div>
+          <div class="doc-arrow" style="left:80px; top:72px;">&#8601;</div>
+          <div class="doc-arrow" style="left:180px; top:72px;">&#8600;</div>
+          <div class="doc-block doc-block-standard" style="left:10px; top:110px;">
+            <span class="doc-block-id">#2</span>
+            <span class="doc-block-label">Forest Path</span>
+          </div>
+          <div class="doc-block doc-block-standard" style="left:190px; top:110px;">
+            <span class="doc-block-id">#3</span>
+            <span class="doc-block-label">Mountain Trail</span>
+          </div>
+        </div>
+        <p>
+          The event block <em>Start</em> contains a Menu command with two choices, creating
+          arrows to both <em>Forest Path</em> and <em>Mountain Trail</em>.
+        </p>
+      </div>
+
+      <h2 id="zoom">Zoom Toolbar</h2>
+
+      <div data-search-content data-search-title="Zoom Toolbar">
+        <figure class="doc-figure">
+          <img class="doc-screenshot doc-screenshot-small" src="images/zoom-toolbar.png" alt="Zoom toolbar with plus, minus, and fit buttons">
+          <figcaption>The zoom toolbar in the bottom-left corner of the canvas.</figcaption>
+        </figure>
+        <p>
+          A small zoom toolbar sits in the <strong>bottom-left corner</strong> of the canvas.
+          It provides:
+        </p>
+        <ul>
+          <li><strong>Zoom In (+)</strong> — Increase the canvas scale.</li>
+          <li><strong>Zoom Out (-)</strong> — Decrease the canvas scale.</li>
+          <li><strong>Fit to View</strong> — Automatically zoom and pan so that all blocks
+              are visible on screen.</li>
+        </ul>
+        <p>
+          You can also zoom with the mouse scroll wheel or trackpad pinch gesture.
+        </p>
+      </div>
+
+      <h2 id="minimap">Minimap</h2>
+
+      <div data-search-content data-search-title="Minimap">
+        <p>
+          The <strong>bottom-right corner</strong> of the canvas contains a minimap that
+          shows a thumbnail overview of all blocks. The highlighted rectangle indicates the
+          currently visible viewport. Drag the rectangle to quickly navigate large flowcharts.
+        </p>
+      </div>
+
+      <h2 id="context-menu">Right-Click Context Menu</h2>
+
+      <div data-search-content data-search-title="Context Menu">
+        <figure class="doc-figure">
+          <img class="doc-screenshot doc-screenshot-small" src="images/context-menu.png" alt="Right-click context menu on a block">
+          <figcaption>Right-click a block to access Delete and Duplicate options.</figcaption>
+        </figure>
+        <p>
+          Right-clicking on a block opens a context menu with the following options:
+        </p>
+        <ul>
+          <li><strong>Delete</strong> — Remove the block and all of its commands. Any
+              connections pointing to this block are also removed.</li>
+          <li><strong>Duplicate</strong> — Create a copy of the block (with a new ID) placed
+              slightly offset from the original.</li>
+        </ul>
+      </div>
+
+      <h2 id="theme">Dark / Light Theme</h2>
+
+      <div data-search-content data-search-title="Dark Light Theme">
+        <p>
+          Click the <strong>cog icon</strong> (Settings) in the top toolbar to open the
+          Settings panel. From there you can switch between <strong>dark</strong> and
+          <strong>light</strong> canvas themes. The theme affects the canvas background and
+          block colours for comfortable editing in any lighting condition.
+        </p>
+      </div>
+
+      <div class="admonition">
+        <div class="admonition-title">Tip</div>
+        If you lose track of your blocks after zooming, use the <strong>Fit to View</strong>
+        button or click a block in the minimap to snap back to it.
+      </div>
+    </main>
+  </div>
+  <script src="js/search.js"></script>
+  <script>
+    document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

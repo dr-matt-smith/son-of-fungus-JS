@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>If / Else-If / Else / End — Son of Fungus Docs</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+  <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar">
+    <div class="sidebar-header"><a class="project-name" href="../index.html">Son of Fungus</a></div>
+    <div class="sidebar-search">
+      <input type="text" id="docs-search" placeholder="Search docs…">
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="sidebar-nav">
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting Started</a></li>
+        <li><a href="../flowcharts.html">Flowcharts</a></li>
+        <li><a href="../blocks.html">Blocks</a></li>
+        <li><a href="../variables.html">Variables, Enums &amp; Events</a></li>
+        <li class="nav-section-title">Commands</li>
+        <li><a href="say.html">Say</a></li>
+        <li><a href="menu.html">Menu</a></li>
+        <li><a href="call.html">Call</a></li>
+        <li><a class="active" href="if-else.html">If / Else-If / Else / End</a></li>
+        <li><a href="variables-cmd.html">Set Variable / Copy Variable</a></li>
+        <li><a href="audio.html">Play Music / Play Sound / Stop Audio</a></li>
+        <li><a href="stage.html">Stage BG Color / Stage BG Image</a></li>
+        <li><a href="flow.html">Wait / Send Message</a></li>
+        <li class="nav-section-title">Tools</li>
+        <li><a href="../load-save.html">Load &amp; Save</a></li>
+        <li><a href="../debug.html">Debug Mode</a></li>
+        <li><a href="../build.html">Build Runtime</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-area">
+    <main class="content">
+      <h1>If / Else-If / Else / End</h1>
+
+      <div data-search-content data-search-title="Conditional Commands Overview">
+        <p>
+          The conditional commands let you branch execution within a single block based on
+          <a href="../variables.html">variable</a> values. They work together as a group:
+          <code>If</code>, optional <code>Else-If</code>, optional <code>Else</code>,
+          and <code>End</code>.
+        </p>
+      </div>
+
+      <h2 id="if">If</h2>
+
+      <div data-search-content data-search-title="If Command">
+        <p>
+          The <strong>If</strong> command evaluates a condition. If the condition is true,
+          the commands that follow (up to the next Else-If, Else, or End) are executed.
+        </p>
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Variable</strong></td>
+              <td>The variable to test.</td>
+            </tr>
+            <tr>
+              <td><strong>Comparison</strong></td>
+              <td>Operator: <code>==</code>, <code>!=</code>, <code>&lt;</code>,
+                  <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>Value</strong></td>
+              <td>The value to compare against (literal or another variable).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="else-if">Else-If</h2>
+
+      <div data-search-content data-search-title="Else-If Command">
+        <p>
+          <strong>Else-If</strong> adds an additional condition check. It is evaluated only
+          if all preceding If / Else-If conditions were false. You can chain as many
+          Else-If commands as you need.
+        </p>
+      </div>
+
+      <h2 id="else">Else</h2>
+
+      <div data-search-content data-search-title="Else Command">
+        <p>
+          The <strong>Else</strong> command has no condition. The commands following it run
+          only when every preceding If and Else-If condition evaluated to false.
+        </p>
+      </div>
+
+      <h2 id="end">End</h2>
+
+      <div data-search-content data-search-title="End Command">
+        <p>
+          <strong>End</strong> marks the end of the conditional group. After End, execution
+          continues with whatever command comes next in the block, regardless of which
+          branch was taken.
+        </p>
+      </div>
+
+      <h2 id="example">Example</h2>
+
+      <div data-search-content data-search-title="If Else Example">
+        <p>Here is how an If / Else / End group appears in the command list. Note
+          how commands inside branches are indented:</p>
+        <div class="doc-cmd-list">
+          <div class="doc-cmd-row cmd-if">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">If</span>
+            <span class="doc-cmd-detail">hasKey == true</span>
+          </div>
+          <div class="doc-cmd-row cmd-say doc-cmd-indent">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Say</span>
+            <span class="doc-cmd-detail">"You unlock the door."</span>
+          </div>
+          <div class="doc-cmd-row cmd-if">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Else</span>
+            <span class="doc-cmd-detail"></span>
+          </div>
+          <div class="doc-cmd-row cmd-say doc-cmd-indent">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Say</span>
+            <span class="doc-cmd-detail">"The door is locked."</span>
+          </div>
+          <div class="doc-cmd-row cmd-end">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">End</span>
+            <span class="doc-cmd-detail"></span>
+          </div>
+        </div>
+        <p>
+          Only one of the two Say commands inside the conditional group runs. The
+          indentation makes it clear which commands belong to which branch. After
+          End, execution continues with the next command in the block.
+        </p>
+      </div>
+
+      <div class="admonition">
+        <div class="admonition-title">Tip</div>
+        Every <code>If</code> must have a matching <code>End</code>. The editor will warn
+        you if an End is missing.
+      </div>
+    </main>
+  </div>
+  <script src="../js/search.js"></script>
+  <script>
+    document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

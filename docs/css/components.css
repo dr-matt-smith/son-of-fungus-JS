@@ -1,0 +1,208 @@
+/* ── Documentation UI component mockups ──────────────────────────────────── */
+
+/* Block diagram mockup */
+.doc-flowchart {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  padding: 20px;
+  background: #e5e7eb;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.doc-block {
+  min-width: 130px;
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.doc-block-event {
+  background: #dbeafe;
+  border: 2px solid #3b82f6;
+  border-radius: 12px;
+  color: #1e3a5f;
+}
+
+.doc-block-standard {
+  background: #fef3c7;
+  border: 2px solid #d97706;
+  color: #1f2937;
+}
+
+.doc-block-selected {
+  outline: 3px solid #22c55e;
+  outline-offset: 2px;
+}
+
+.doc-block-label {
+  font-size: 8px;
+  color: #6b7280;
+  position: absolute;
+  top: -16px;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+.doc-block-id {
+  font-size: 8px;
+  color: #9ca3af;
+  position: absolute;
+  top: 2px;
+  right: 4px;
+}
+
+.doc-arrow {
+  display: flex;
+  align-items: center;
+  color: #6b7280;
+  font-size: 20px;
+}
+
+/* Command list mockup */
+.doc-cmd-list {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 16px 0;
+  font-size: 12px;
+  max-width: 400px;
+}
+
+.doc-cmd-row {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-bottom: 1px solid #e5e7eb;
+  gap: 6px;
+}
+
+.doc-cmd-row:last-child { border-bottom: none; }
+
+.doc-cmd-row.cmd-say { background: #f3e8ff; }
+.doc-cmd-row.cmd-call { background: #e5e7eb; }
+.doc-cmd-row.cmd-menu { background: #e0e7ff; }
+.doc-cmd-row.cmd-wait { background: #fef9c3; }
+.doc-cmd-row.cmd-if { background: #ede9fe; }
+.doc-cmd-row.cmd-end { background: #ede9fe; }
+.doc-cmd-row.cmd-else { background: #ede9fe; }
+.doc-cmd-row.cmd-set { background: #fef3c7; }
+.doc-cmd-row.cmd-audio { background: #dbeafe; }
+.doc-cmd-row.cmd-stage { background: #fce7f3; }
+.doc-cmd-row.cmd-msg { background: #ccfbf1; }
+
+.doc-cmd-row.cmd-selected {
+  background: #bbf7d0;
+  color: #14532d;
+}
+
+.doc-cmd-handle { color: #9ca3af; margin-right: 4px; }
+.doc-cmd-verb { font-weight: 600; min-width: 80px; }
+.doc-cmd-detail { color: #6b7280; }
+.doc-cmd-indent { padding-left: 26px !important; }
+
+/* Action bar mockup */
+.doc-action-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 6px;
+  background: #f9fafb;
+  border: 1px solid #d1d5db;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  font-size: 12px;
+  max-width: 400px;
+  margin-top: -1px;
+}
+
+.doc-action-bar span { display: flex; gap: 4px; }
+.doc-action-bar button {
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 3px;
+  padding: 2px 6px;
+  cursor: default;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* Data panel mockup */
+.doc-data-panel {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 16px 0;
+  max-width: 320px;
+  font-size: 12px;
+}
+
+.doc-data-section-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 10px;
+  background: #f3f4f6;
+  border-bottom: 1px solid #d1d5db;
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+}
+
+.doc-data-content {
+  padding: 8px 10px;
+}
+
+.doc-var-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-bottom: 3px;
+  font-size: 11px;
+}
+
+.doc-var-type {
+  background: #e5e7eb;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  min-width: 50px;
+  text-align: center;
+}
+
+.doc-var-name { font-weight: 600; flex: 1; }
+.doc-var-value { color: #6b7280; }
+
+/* Screenshot image */
+.doc-screenshot {
+  max-width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  margin: 16px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.doc-screenshot-small {
+  max-width: 350px;
+}
+
+.doc-screenshot-medium {
+  max-width: 500px;
+}
+
+.doc-figure {
+  margin: 16px 0;
+}
+
+.doc-figure figcaption {
+  font-size: 12px;
+  color: #6b7280;
+  font-style: italic;
+  margin-top: 6px;
+}

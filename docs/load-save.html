@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Load &amp; Save — Son of Fungus Docs</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar">
+    <div class="sidebar-header"><a class="project-name" href="index.html">Son of Fungus</a></div>
+    <div class="sidebar-search">
+      <input type="text" id="docs-search" placeholder="Search docs…">
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="flowcharts.html">Flowcharts</a></li>
+        <li><a href="blocks.html">Blocks</a></li>
+        <li><a href="variables.html">Variables, Enums &amp; Events</a></li>
+        <li class="nav-section-title">Commands</li>
+        <li><a href="commands/say.html">Say</a></li>
+        <li><a href="commands/menu.html">Menu</a></li>
+        <li><a href="commands/call.html">Call</a></li>
+        <li><a href="commands/if-else.html">If / Else-If / Else / End</a></li>
+        <li><a href="commands/variables-cmd.html">Set Variable / Copy Variable</a></li>
+        <li><a href="commands/audio.html">Play Music / Play Sound / Stop Audio</a></li>
+        <li><a href="commands/stage.html">Stage BG Color / Stage BG Image</a></li>
+        <li><a href="commands/flow.html">Wait / Send Message</a></li>
+        <li class="nav-section-title">Tools</li>
+        <li><a class="active" href="load-save.html">Load &amp; Save</a></li>
+        <li><a href="debug.html">Debug Mode</a></li>
+        <li><a href="build.html">Build Runtime</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-area">
+    <main class="content">
+      <h1>Load &amp; Save</h1>
+
+      <div data-search-content data-search-title="Load and Save Overview">
+        <p>
+          Son of Fungus projects are stored as plain <strong>JSON</strong> files. The editor
+          provides several ways to save your work and load it back later.
+        </p>
+      </div>
+
+      <h2 id="export">Export JSON</h2>
+
+      <div data-search-content data-search-title="Export JSON">
+        <p>
+          Click the <strong>Export JSON</strong> button in the top toolbar to download your
+          entire project as a <code>.json</code> file. The file contains all blocks,
+          commands, variables, enums, events, and canvas layout positions.
+        </p>
+        <p>
+          Keep these exports as backups or share them with collaborators — the JSON format
+          is human-readable and version-control friendly.
+        </p>
+      </div>
+
+      <h2 id="load">Load Project</h2>
+
+      <div data-search-content data-search-title="Load Project">
+        <p>There are three ways to load a project into the editor:</p>
+
+        <div class="admonition">
+          <div class="admonition-title">Load Project Dialog</div>
+          The Load Project dialog presents three sections, each offering a different way to
+          bring data into the editor:
+          <ul style="margin-top:0.5em;">
+            <li><strong>Examples Dropdown</strong> — Choose from a set of built-in example
+                projects that demonstrate different features. Great for learning the tool.</li>
+            <li><strong>Open File</strong> — Use the file picker to select a previously
+                exported <code>.json</code> file from your computer.</li>
+            <li><strong>Paste JSON</strong> — Open the paste dialog and paste raw JSON
+                directly into the text area, then confirm. Useful for quick sharing or
+                when copying project data from a message.</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2 id="confirm">Confirm Dialog</h2>
+
+      <div data-search-content data-search-title="Confirm Dialog">
+        <p>
+          Loading a project replaces everything currently in the editor. To prevent
+          accidental data loss, Son of Fungus shows a <strong>confirmation dialog</strong>
+          before any load operation. Make sure you have exported your current work first if
+          you need to keep it.
+        </p>
+      </div>
+
+      <div class="admonition warning">
+        <div class="admonition-title">Warning</div>
+        Loading a new project cannot be undone. Always export your current project before
+        loading a different one.
+      </div>
+    </main>
+  </div>
+  <script src="js/search.js"></script>
+  <script>
+    document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

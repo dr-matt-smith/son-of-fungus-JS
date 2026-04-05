@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wait / Send Message — Son of Fungus Docs</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+  <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar">
+    <div class="sidebar-header"><a class="project-name" href="../index.html">Son of Fungus</a></div>
+    <div class="sidebar-search">
+      <input type="text" id="docs-search" placeholder="Search docs…">
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="sidebar-nav">
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting Started</a></li>
+        <li><a href="../flowcharts.html">Flowcharts</a></li>
+        <li><a href="../blocks.html">Blocks</a></li>
+        <li><a href="../variables.html">Variables, Enums &amp; Events</a></li>
+        <li class="nav-section-title">Commands</li>
+        <li><a href="say.html">Say</a></li>
+        <li><a href="menu.html">Menu</a></li>
+        <li><a href="call.html">Call</a></li>
+        <li><a href="if-else.html">If / Else-If / Else / End</a></li>
+        <li><a href="variables-cmd.html">Set Variable / Copy Variable</a></li>
+        <li><a href="audio.html">Play Music / Play Sound / Stop Audio</a></li>
+        <li><a href="stage.html">Stage BG Color / Stage BG Image</a></li>
+        <li><a class="active" href="flow.html">Wait / Send Message</a></li>
+        <li class="nav-section-title">Tools</li>
+        <li><a href="../load-save.html">Load &amp; Save</a></li>
+        <li><a href="../debug.html">Debug Mode</a></li>
+        <li><a href="../build.html">Build Runtime</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-area">
+    <main class="content">
+      <h1>Wait / Send Message</h1>
+
+      <div data-search-content data-search-title="Flow Commands Overview">
+        <p>
+          These commands control the flow of execution by introducing pauses or triggering
+          event-driven blocks.
+        </p>
+      </div>
+
+      <h2 id="wait">Wait</h2>
+
+      <div data-search-content data-search-title="Wait Command">
+        <p>
+          <strong>Wait</strong> pauses execution for a specified duration before moving to
+          the next command.
+        </p>
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Duration</strong></td>
+              <td>Time to wait in seconds (e.g. <code>1.5</code>).</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          Wait is useful for pacing — adding a brief pause between scene transitions,
+          after a sound effect, or before revealing the next line of dialogue.
+        </p>
+      </div>
+
+      <h2 id="send-message">Send Message</h2>
+
+      <div data-search-content data-search-title="Send Message Command">
+        <p>
+          <strong>Send Message</strong> broadcasts a named message. Any block with a
+          <code>Message Received</code> event trigger that matches the message name will
+          begin executing.
+        </p>
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Message</strong></td>
+              <td>The message name to broadcast. Select from messages registered in the
+                  <a href="../variables.html#events">Events</a> tab, or type a new
+                  name.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="example">Example</h2>
+
+      <div data-search-content data-search-title="Flow Example">
+        <p>Wait and Send Message commands in a block's command list:</p>
+        <div class="doc-cmd-list">
+          <div class="doc-cmd-row cmd-say">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Say</span>
+            <span class="doc-cmd-detail">"Something stirs in the distance..."</span>
+          </div>
+          <div class="doc-cmd-row cmd-wait">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Wait</span>
+            <span class="doc-cmd-detail">2 seconds</span>
+          </div>
+          <div class="doc-cmd-row cmd-msg">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Send Message</span>
+            <span class="doc-cmd-detail">cutscene_start</span>
+          </div>
+        </div>
+        <p>
+          The block sends the <code>cutscene_start</code> message after a 2-second
+          pause. Any block listening for that message (with a <code>Message Received</code>
+          event trigger) will begin executing when it arrives.
+        </p>
+      </div>
+
+      <div class="admonition">
+        <div class="admonition-title">Tip</div>
+        Register your message names in the <a href="../variables.html#events">Events</a>
+        tab so they appear in dropdowns throughout the editor and reduce the risk of typos.
+      </div>
+    </main>
+  </div>
+  <script src="../js/search.js"></script>
+  <script>
+    document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

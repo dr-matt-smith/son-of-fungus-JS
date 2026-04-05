@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stage Commands — Son of Fungus Docs</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+  <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar">
+    <div class="sidebar-header"><a class="project-name" href="../index.html">Son of Fungus</a></div>
+    <div class="sidebar-search">
+      <input type="text" id="docs-search" placeholder="Search docs…">
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="sidebar-nav">
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting Started</a></li>
+        <li><a href="../flowcharts.html">Flowcharts</a></li>
+        <li><a href="../blocks.html">Blocks</a></li>
+        <li><a href="../variables.html">Variables, Enums &amp; Events</a></li>
+        <li class="nav-section-title">Commands</li>
+        <li><a href="say.html">Say</a></li>
+        <li><a href="menu.html">Menu</a></li>
+        <li><a href="call.html">Call</a></li>
+        <li><a href="if-else.html">If / Else-If / Else / End</a></li>
+        <li><a href="variables-cmd.html">Set Variable / Copy Variable</a></li>
+        <li><a href="audio.html">Play Music / Play Sound / Stop Audio</a></li>
+        <li><a class="active" href="stage.html">Stage BG Color / Stage BG Image</a></li>
+        <li><a href="flow.html">Wait / Send Message</a></li>
+        <li class="nav-section-title">Tools</li>
+        <li><a href="../load-save.html">Load &amp; Save</a></li>
+        <li><a href="../debug.html">Debug Mode</a></li>
+        <li><a href="../build.html">Build Runtime</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-area">
+    <main class="content">
+      <h1>Stage BG Color / Stage BG Image</h1>
+
+      <div data-search-content data-search-title="Stage Commands Overview">
+        <p>
+          Stage commands change the visual appearance of the runtime stage background.
+          Use them to set the mood, indicate scene changes, or provide visual context for
+          your story.
+        </p>
+      </div>
+
+      <h2 id="bg-color">Stage BG Color</h2>
+
+      <div data-search-content data-search-title="Stage BG Color Command">
+        <p>
+          <strong>Stage BG Color</strong> sets the background of the runtime stage to a
+          solid colour.
+        </p>
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Color</strong></td>
+              <td>A CSS colour value, e.g. <code>#1a1a2e</code>, <code>darkblue</code>,
+                  or <code>rgb(26, 26, 46)</code>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="bg-image">Stage BG Image</h2>
+
+      <div data-search-content data-search-title="Stage BG Image Command">
+        <p>
+          <strong>Stage BG Image</strong> sets a background image on the runtime stage.
+          The image is scaled to cover the stage area.
+        </p>
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Image</strong></td>
+              <td>The image file to display (e.g. <code>forest.png</code>). Images are
+                  loaded from the project assets.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="example">Example</h2>
+
+      <div data-search-content data-search-title="Stage Example">
+        <p>Stage commands in a block's command list:</p>
+        <div class="doc-cmd-list">
+          <div class="doc-cmd-row cmd-stage">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Stage BG Color</span>
+            <span class="doc-cmd-detail">#0d0d2b</span>
+          </div>
+          <div class="doc-cmd-row cmd-say">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Say</span>
+            <span class="doc-cmd-detail">"The stars appear overhead."</span>
+          </div>
+          <div class="doc-cmd-row cmd-stage">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Stage BG Image</span>
+            <span class="doc-cmd-detail">starry_sky.png</span>
+          </div>
+          <div class="doc-cmd-row cmd-say">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Say</span>
+            <span class="doc-cmd-detail">"A beautiful night sky fills your view."</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="admonition">
+        <div class="admonition-title">Tip</div>
+        Setting a BG Color before a BG Image provides a fallback colour that shows while
+        the image loads.
+      </div>
+    </main>
+  </div>
+  <script src="../js/search.js"></script>
+  <script>
+    document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

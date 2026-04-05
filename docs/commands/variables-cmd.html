@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Set Variable / Copy Variable — Son of Fungus Docs</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+  <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar">
+    <div class="sidebar-header"><a class="project-name" href="../index.html">Son of Fungus</a></div>
+    <div class="sidebar-search">
+      <input type="text" id="docs-search" placeholder="Search docs…">
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="sidebar-nav">
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting Started</a></li>
+        <li><a href="../flowcharts.html">Flowcharts</a></li>
+        <li><a href="../blocks.html">Blocks</a></li>
+        <li><a href="../variables.html">Variables, Enums &amp; Events</a></li>
+        <li class="nav-section-title">Commands</li>
+        <li><a href="say.html">Say</a></li>
+        <li><a href="menu.html">Menu</a></li>
+        <li><a href="call.html">Call</a></li>
+        <li><a href="if-else.html">If / Else-If / Else / End</a></li>
+        <li><a class="active" href="variables-cmd.html">Set Variable / Copy Variable</a></li>
+        <li><a href="audio.html">Play Music / Play Sound / Stop Audio</a></li>
+        <li><a href="stage.html">Stage BG Color / Stage BG Image</a></li>
+        <li><a href="flow.html">Wait / Send Message</a></li>
+        <li class="nav-section-title">Tools</li>
+        <li><a href="../load-save.html">Load &amp; Save</a></li>
+        <li><a href="../debug.html">Debug Mode</a></li>
+        <li><a href="../build.html">Build Runtime</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-area">
+    <main class="content">
+      <h1>Set Variable / Copy Variable</h1>
+
+      <div data-search-content data-search-title="Variable Commands Overview">
+        <p>
+          These commands modify <a href="../variables.html">variable</a> values at runtime.
+          Use them to track state, count items, toggle flags, and more.
+        </p>
+      </div>
+
+      <h2 id="set-variable">Set Variable</h2>
+
+      <div data-search-content data-search-title="Set Variable Command">
+        <p>
+          <strong>Set Variable</strong> assigns a new value to an existing variable.
+        </p>
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Variable</strong></td>
+              <td>The variable to modify (selected from a dropdown).</td>
+            </tr>
+            <tr>
+              <td><strong>Operation</strong></td>
+              <td>How to apply the value: <code>Set</code> (assign),
+                  <code>Add</code>, <code>Subtract</code>, <code>Multiply</code>,
+                  <code>Divide</code>. Arithmetic operations apply to Integer and
+                  Float types. Boolean variables support <code>Set</code> and
+                  <code>Toggle</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>Value</strong></td>
+              <td>The literal value to use with the operation.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="copy-variable">Copy Variable</h2>
+
+      <div data-search-content data-search-title="Copy Variable Command">
+        <p>
+          <strong>Copy Variable</strong> copies the current value of one variable into
+          another. Both variables should be of the same type.
+        </p>
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Source</strong></td>
+              <td>The variable whose value is read.</td>
+            </tr>
+            <tr>
+              <td><strong>Destination</strong></td>
+              <td>The variable whose value is overwritten.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="example">Example</h2>
+
+      <div data-search-content data-search-title="Variable Commands Example">
+        <p>A command list using Set Variable and Copy Variable:</p>
+        <div class="doc-cmd-list">
+          <div class="doc-cmd-row cmd-set">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Set Variable</span>
+            <span class="doc-cmd-detail">gold Add 5</span>
+          </div>
+          <div class="doc-cmd-row cmd-set">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Set Variable</span>
+            <span class="doc-cmd-detail">hasKey Set true</span>
+          </div>
+          <div class="doc-cmd-row cmd-set">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Copy Variable</span>
+            <span class="doc-cmd-detail">tempScore &#8594; finalScore</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="admonition">
+        <div class="admonition-title">Tip</div>
+        Variable changes are visible in real time during
+        <a href="../debug.html">Debug Mode</a> — modified variables are highlighted after
+        each step.
+      </div>
+    </main>
+  </div>
+  <script src="../js/search.js"></script>
+  <script>
+    document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

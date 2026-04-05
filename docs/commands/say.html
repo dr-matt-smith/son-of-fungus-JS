@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Say Command — Son of Fungus Docs</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+  <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar">
+    <div class="sidebar-header"><a class="project-name" href="../index.html">Son of Fungus</a></div>
+    <div class="sidebar-search">
+      <input type="text" id="docs-search" placeholder="Search docs…">
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="sidebar-nav">
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="../getting-started.html">Getting Started</a></li>
+        <li><a href="../flowcharts.html">Flowcharts</a></li>
+        <li><a href="../blocks.html">Blocks</a></li>
+        <li><a href="../variables.html">Variables, Enums &amp; Events</a></li>
+        <li class="nav-section-title">Commands</li>
+        <li><a class="active" href="say.html">Say</a></li>
+        <li><a href="menu.html">Menu</a></li>
+        <li><a href="call.html">Call</a></li>
+        <li><a href="if-else.html">If / Else-If / Else / End</a></li>
+        <li><a href="variables-cmd.html">Set Variable / Copy Variable</a></li>
+        <li><a href="audio.html">Play Music / Play Sound / Stop Audio</a></li>
+        <li><a href="stage.html">Stage BG Color / Stage BG Image</a></li>
+        <li><a href="flow.html">Wait / Send Message</a></li>
+        <li class="nav-section-title">Tools</li>
+        <li><a href="../load-save.html">Load &amp; Save</a></li>
+        <li><a href="../debug.html">Debug Mode</a></li>
+        <li><a href="../build.html">Build Runtime</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-area">
+    <main class="content">
+      <h1>Say</h1>
+
+      <div data-search-content data-search-title="Say Command">
+        <p>
+          The <strong>Say</strong> command displays a line of text on the runtime stage.
+          It is the most common command for presenting dialogue, narration, or instructions
+          to the player.
+        </p>
+      </div>
+
+      <h2 id="fields">Fields</h2>
+
+      <div data-search-content data-search-title="Say Fields">
+        <table>
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Story Text</strong></td>
+              <td>String</td>
+              <td>The text to display. Supports basic formatting.</td>
+            </tr>
+            <tr>
+              <td><strong>Character</strong></td>
+              <td>String (optional)</td>
+              <td>A character name shown above the text line (e.g. "Alice").</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="behaviour">Behaviour</h2>
+
+      <div data-search-content data-search-title="Say Behaviour">
+        <p>
+          When a Say command executes, the stage displays the text and waits for the player
+          to click or tap to continue. Once the player advances, execution moves to the next
+          command in the block.
+        </p>
+      </div>
+
+      <h2 id="example">Example</h2>
+
+      <div data-search-content data-search-title="Say Example">
+        <p>A simple two-line conversation in the command list:</p>
+        <div class="doc-cmd-list">
+          <div class="doc-cmd-row cmd-say cmd-selected">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Say</span>
+            <span class="doc-cmd-detail">Alice: "Hello! Welcome to the forest."</span>
+          </div>
+          <div class="doc-cmd-row cmd-say">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Say</span>
+            <span class="doc-cmd-detail">Bob: "Thanks, Alice. It's good to be here."</span>
+          </div>
+        </div>
+        <p>
+          The first Say command is selected (highlighted in green), showing its editor
+          fields in the Inspector below the command list. Click any command row to select
+          it and edit its properties.
+        </p>
+      </div>
+
+      <div class="admonition">
+        <div class="admonition-title">Tip</div>
+        Use the <a href="menu.html">Menu</a> command after a Say to let the player choose
+        how the conversation branches.
+      </div>
+    </main>
+  </div>
+  <script src="../js/search.js"></script>
+  <script>
+    document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

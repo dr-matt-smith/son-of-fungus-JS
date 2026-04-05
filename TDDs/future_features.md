@@ -8,8 +8,16 @@ Version XXX features - generate docs pages for each command, and for general flo
 
 this is a general feature about creating Markdown documentation website
 
-- do this work in a new /docs folder
+NOTE - I give you permission to visit these web links, and the web links about the Sphinx read the docs theme
+- I used it to create this documentation web site: https://celbridge-org.github.io/celbridge-docs/
 
+- create this documentation website in a new /docs folder
+
+- [] follow the style of READ THE DOCS - but you can write this yourself, or make use of the Sphinx theme etc. 
+  - [] so generate a nice navigation bar on the left of the page
+  - [] make this documentation site mobile friendly
+  - [] allow dynamic searching of the pages
+-
 - [] for each command, please create a documentation page
   - [] saying a generate introduction to the command
   - [] then giving examples
@@ -36,11 +44,6 @@ this is a general feature about creating Markdown documentation website
   - [] general page about Debug mode
   - any other pages you think would be useful
 
-- [] follow the style of READ THE DOCS
-  - [] so generate a nice navigation bar on the left of the page
-  - [] make this documentation site mobile friendly
-  - [] allow dynamic searching of the pages
-  - 
 
 
 - [] and add Vite and PlayWright tests for the above feature(s)

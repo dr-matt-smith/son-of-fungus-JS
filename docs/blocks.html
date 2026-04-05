@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blocks — Son of Fungus Docs</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar">
+    <div class="sidebar-header"><a class="project-name" href="index.html">Son of Fungus</a></div>
+    <div class="sidebar-search">
+      <input type="text" id="docs-search" placeholder="Search docs…">
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="flowcharts.html">Flowcharts</a></li>
+        <li><a class="active" href="blocks.html">Blocks</a></li>
+        <li><a href="variables.html">Variables, Enums &amp; Events</a></li>
+        <li class="nav-section-title">Commands</li>
+        <li><a href="commands/say.html">Say</a></li>
+        <li><a href="commands/menu.html">Menu</a></li>
+        <li><a href="commands/call.html">Call</a></li>
+        <li><a href="commands/if-else.html">If / Else-If / Else / End</a></li>
+        <li><a href="commands/variables-cmd.html">Set Variable / Copy Variable</a></li>
+        <li><a href="commands/audio.html">Play Music / Play Sound / Stop Audio</a></li>
+        <li><a href="commands/stage.html">Stage BG Color / Stage BG Image</a></li>
+        <li><a href="commands/flow.html">Wait / Send Message</a></li>
+        <li class="nav-section-title">Tools</li>
+        <li><a href="load-save.html">Load &amp; Save</a></li>
+        <li><a href="debug.html">Debug Mode</a></li>
+        <li><a href="build.html">Build Runtime</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-area">
+    <main class="content">
+      <h1>Blocks</h1>
+
+      <div data-search-content data-search-title="About Blocks">
+        <p>
+          A <strong>block</strong> is the fundamental container in Son of Fungus. Each block
+          holds an ordered list of <a href="commands/say.html">commands</a> that execute from
+          top to bottom when the block is reached during playback.
+        </p>
+      </div>
+
+      <figure class="doc-figure">
+        <img class="doc-screenshot" src="images/block-types.png" alt="Different block types on the canvas">
+        <figcaption>Block types displayed on the flowchart canvas — event blocks (blue) and standard blocks (yellow).</figcaption>
+      </figure>
+
+      <h2 id="block-types">Block Types</h2>
+
+      <div data-search-content data-search-title="Block Types">
+        <p>Blocks are visually distinguished by colour and shape:</p>
+
+        <div class="doc-flowchart">
+          <div class="doc-block doc-block-event" style="left:20px; top:10px;">
+            <span class="doc-block-id">#1</span>
+            <span class="doc-block-label">Game Started</span>
+          </div>
+          <div class="doc-block doc-block-standard" style="left:200px; top:10px;">
+            <span class="doc-block-id">#2</span>
+            <span class="doc-block-label">Standard Block</span>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Appearance</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Event Block</strong></td>
+              <td>Blue with rounded corners</td>
+              <td>Has an event trigger (e.g. <code>Game Started</code>). Execution can
+                  begin here automatically.</td>
+            </tr>
+            <tr>
+              <td><strong>Standard Block</strong></td>
+              <td>Yellow</td>
+              <td>No event trigger. Reached only via a
+                  <a href="commands/call.html">Call</a> or
+                  <a href="commands/menu.html">Menu</a> command from another block.</td>
+            </tr>
+            <tr>
+              <td><strong>Branching Block</strong></td>
+              <td>Yellow with multiple outgoing targets</td>
+              <td>Contains commands (Menu, If/Else) that branch to more than one
+                  target block.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="events">Event Triggers</h2>
+
+      <div data-search-content data-search-title="Event Triggers">
+        <p>
+          An event block starts executing when its trigger condition is met. The available
+          event triggers are:
+        </p>
+        <ul>
+          <li><code>Game Started</code> — Fires once when playback begins. Every project
+              should have at least one block with this event.</li>
+          <li><code>Message Received</code> — Fires when a matching message name is sent
+              by a <a href="commands/flow.html">Send Message</a> command or the events
+              system.</li>
+          <li><code>Key Pressed</code> — Fires when the user presses a specific keyboard
+              key during playback.</li>
+        </ul>
+      </div>
+
+      <h2 id="naming">Block Name &amp; Description</h2>
+
+      <div data-search-content data-search-title="Block Name and Description">
+        <p>
+          Every block has a <strong>name</strong> (shown as the block title on the canvas)
+          and an optional <strong>description</strong> that appears below the name on the
+          canvas card. Use descriptive names and short notes so your flowchart remains
+          readable at a glance.
+        </p>
+        <p>
+          You can edit both fields in the <strong>Inspector</strong> when the block is
+          selected.
+        </p>
+        <figure class="doc-figure">
+          <img class="doc-screenshot doc-screenshot-medium" src="images/inspector-block.png" alt="Inspector panel showing block properties">
+          <figcaption>The Inspector panel showing the selected block's name, description, and event settings.</figcaption>
+        </figure>
+      </div>
+
+      <h2 id="block-id">Block ID</h2>
+
+      <div data-search-content data-search-title="Block ID Label">
+        <p>
+          Each block is assigned a unique numeric ID when it is created. The ID is displayed
+          as a small label at the <strong>top-right corner</strong> of the block card on the
+          canvas. This ID is used internally by Call and Menu commands to reference target
+          blocks, and it appears in the exported JSON data.
+        </p>
+      </div>
+
+      <div class="admonition">
+        <div class="admonition-title">Tip</div>
+        Right-click a block on the canvas to <strong>Duplicate</strong> it. The duplicate
+        receives a new ID but copies all commands and settings from the original.
+      </div>
+    </main>
+  </div>
+  <script src="js/search.js"></script>
+  <script>
+    document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

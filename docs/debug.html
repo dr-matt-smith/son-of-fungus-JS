@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug Mode — Son of Fungus Docs</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar">
+    <div class="sidebar-header"><a class="project-name" href="index.html">Son of Fungus</a></div>
+    <div class="sidebar-search">
+      <input type="text" id="docs-search" placeholder="Search docs…">
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="getting-started.html">Getting Started</a></li>
+        <li><a href="flowcharts.html">Flowcharts</a></li>
+        <li><a href="blocks.html">Blocks</a></li>
+        <li><a href="variables.html">Variables, Enums &amp; Events</a></li>
+        <li class="nav-section-title">Commands</li>
+        <li><a href="commands/say.html">Say</a></li>
+        <li><a href="commands/menu.html">Menu</a></li>
+        <li><a href="commands/call.html">Call</a></li>
+        <li><a href="commands/if-else.html">If / Else-If / Else / End</a></li>
+        <li><a href="commands/variables-cmd.html">Set Variable / Copy Variable</a></li>
+        <li><a href="commands/audio.html">Play Music / Play Sound / Stop Audio</a></li>
+        <li><a href="commands/stage.html">Stage BG Color / Stage BG Image</a></li>
+        <li><a href="commands/flow.html">Wait / Send Message</a></li>
+        <li class="nav-section-title">Tools</li>
+        <li><a href="load-save.html">Load &amp; Save</a></li>
+        <li><a class="active" href="debug.html">Debug Mode</a></li>
+        <li><a href="build.html">Build Runtime</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-area">
+    <main class="content">
+      <h1>Debug Mode</h1>
+
+      <div data-search-content data-search-title="Debug Mode Overview">
+        <p>
+          Debug mode lets you execute your flowchart one command at a time, inspect the
+          current state, and trace the path through your blocks. It is the primary tool for
+          finding and fixing logic errors.
+        </p>
+      </div>
+
+      <figure class="doc-figure">
+        <img class="doc-screenshot" src="images/app-dark-mode.png" alt="Application in dark mode showing the debug status bar">
+        <figcaption>The editor in dark mode. The status bar at the top of the canvas displays the current block and command during debug sessions.</figcaption>
+      </figure>
+
+      <h2 id="entering">Entering Debug Mode</h2>
+
+      <div data-search-content data-search-title="Entering Debug Mode">
+        <p>
+          Click the <strong>Debug</strong> button in the top toolbar (next to the Play
+          button). The editor switches to debug view: a <strong>status bar</strong> appears
+          at the top of the canvas showing the current block name, the current command index, and playback
+          controls.
+        </p>
+      </div>
+
+      <h2 id="stepping">Step-by-Step Execution</h2>
+
+      <div data-search-content data-search-title="Step by Step Execution">
+        <p>
+          The debug controls let you advance execution manually:
+        </p>
+        <ul>
+          <li><strong>Step Into</strong> — Execute the current command and advance to the
+              next. If the command is a <a href="commands/call.html">Call</a>, execution
+              moves into the target block so you can step through it line by line.</li>
+          <li><strong>Step Over</strong> — Execute the current command. If it is a Call,
+              the entire target block runs to completion automatically, and you return to
+              the next command after the Call.</li>
+        </ul>
+        <p>
+          The currently executing command is highlighted in the Inspector command list, and
+          the active block is highlighted on the canvas.
+        </p>
+      </div>
+
+      <h2 id="variables">Variable Inspection</h2>
+
+      <div data-search-content data-search-title="Variable Inspection and Editing">
+        <p>
+          While paused, the Variables panel highlights any variable that was modified by the
+          most recent command. You can also <strong>edit variable values</strong> directly
+          in the panel during a debug session — this is useful for testing different branches
+          without replaying from the start.
+        </p>
+      </div>
+
+      <h2 id="exiting">Exiting Debug Mode</h2>
+
+      <div data-search-content data-search-title="Exiting Debug Mode">
+        <p>
+          Click the <strong>Stop</strong> button in the status bar or press
+          <kbd>Escape</kbd> to exit debug mode and return to the normal editor view. All
+          variable values are reset to their defaults when you exit.
+        </p>
+      </div>
+
+      <div class="admonition">
+        <div class="admonition-title">Tip</div>
+        Use <strong>Step Over</strong> to skip through Call chains you have already
+        verified, and <strong>Step Into</strong> when you need to trace into a specific
+        called block.
+      </div>
+    </main>
+  </div>
+  <script src="js/search.js"></script>
+  <script>
+    document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>

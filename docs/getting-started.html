@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started — Son of Fungus Docs</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <button class="mobile-menu-btn" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar">
+    <div class="sidebar-header"><a class="project-name" href="index.html">Son of Fungus</a></div>
+    <div class="sidebar-search">
+      <input type="text" id="docs-search" placeholder="Search docs…">
+    </div>
+    <div id="search-results" class="search-results"></div>
+    <div class="sidebar-nav">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a class="active" href="getting-started.html">Getting Started</a></li>
+        <li><a href="flowcharts.html">Flowcharts</a></li>
+        <li><a href="blocks.html">Blocks</a></li>
+        <li><a href="variables.html">Variables, Enums &amp; Events</a></li>
+        <li class="nav-section-title">Commands</li>
+        <li><a href="commands/say.html">Say</a></li>
+        <li><a href="commands/menu.html">Menu</a></li>
+        <li><a href="commands/call.html">Call</a></li>
+        <li><a href="commands/if-else.html">If / Else-If / Else / End</a></li>
+        <li><a href="commands/variables-cmd.html">Set Variable / Copy Variable</a></li>
+        <li><a href="commands/audio.html">Play Music / Play Sound / Stop Audio</a></li>
+        <li><a href="commands/stage.html">Stage BG Color / Stage BG Image</a></li>
+        <li><a href="commands/flow.html">Wait / Send Message</a></li>
+        <li class="nav-section-title">Tools</li>
+        <li><a href="load-save.html">Load &amp; Save</a></li>
+        <li><a href="debug.html">Debug Mode</a></li>
+        <li><a href="build.html">Build Runtime</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="content-area">
+    <main class="content">
+      <h1>Getting Started</h1>
+
+      <div data-search-content data-search-title="Overview">
+        <p>
+          This guide walks you through creating your first flowchart in Son of Fungus.
+          By the end you will have a working project with blocks, commands, and a playable
+          runtime preview.
+        </p>
+      </div>
+
+      <figure class="doc-figure">
+        <img class="doc-screenshot" src="images/app-with-data.png" alt="Son of Fungus with variables and enums loaded">
+        <figcaption>The editor with a project loaded, showing the data panel, canvas, and inspector.</figcaption>
+      </figure>
+
+      <h2 id="create-block">1. Create a Block</h2>
+
+      <div data-search-content data-search-title="Create a Block">
+        <p>
+          Blocks are the building units of every flowchart. To create one, drag a block from
+          the <strong>toolbar</strong> at the top of the canvas onto the flowchart area. A new
+          block appears with a default name that you can change in the
+          <strong>Inspector</strong> panel on the right.
+        </p>
+      </div>
+
+      <h2 id="set-event">2. Set an Event</h2>
+
+      <div data-search-content data-search-title="Set an Event">
+        <p>
+          Every flowchart needs at least one <strong>event block</strong> to know where
+          execution begins. Select your block and, in the Inspector, set its event trigger to
+          <code>Game Started</code>. The block turns blue with rounded corners to show it is
+          an event block.
+        </p>
+        <p>
+          Other event types include <code>Message Received</code> (reacts to a named event)
+          and <code>Key Pressed</code> (reacts to a keyboard key).
+        </p>
+      </div>
+
+      <h2 id="add-commands">3. Add Commands</h2>
+
+      <div data-search-content data-search-title="Add Commands">
+        <p>
+          With a block selected, click the <strong>+</strong> button in the Inspector to open
+          the command picker. You can search by name or browse the categories. Pick a command
+          — for example <code>Say</code> — and it is appended to the block's command list.
+        </p>
+
+        <p>Here is what a simple command list with Say and Wait commands looks like:</p>
+        <div class="doc-cmd-list">
+          <div class="doc-cmd-row cmd-say">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Say</span>
+            <span class="doc-cmd-detail">"Hello! Welcome to the forest."</span>
+          </div>
+          <div class="doc-cmd-row cmd-wait">
+            <span class="doc-cmd-handle">&#9776;</span>
+            <span class="doc-cmd-verb">Wait</span>
+            <span class="doc-cmd-detail">1.5 seconds</span>
+          </div>
+        </div>
+
+        <p>
+          Each command has its own set of fields (text, target block, variable, etc.) that
+          you fill in through the Inspector.
+        </p>
+
+        <figure class="doc-figure">
+          <img class="doc-screenshot doc-screenshot-medium" src="images/command-search.png" alt="Command search dialog">
+          <figcaption>The command picker lets you search and browse available commands.</figcaption>
+        </figure>
+      </div>
+
+      <h2 id="run">4. Run Your Flowchart</h2>
+
+      <div data-search-content data-search-title="Run the Flowchart">
+        <p>
+          Press the <strong>Play</strong> button in the top toolbar. The runtime stage appears
+          and execution starts from the block whose event is <code>Game Started</code>.
+          Commands run in order; <code>Say</code> displays text, <code>Menu</code> shows
+          choices, and so on.
+        </p>
+      </div>
+
+      <h2 id="debug">5. Debug</h2>
+
+      <div data-search-content data-search-title="Debugging">
+        <p>
+          Click the <strong>Debug</strong> button instead of Play to enter debug mode.
+          A status bar shows the current block and command. Use <em>Step Into</em> and
+          <em>Step Over</em> to advance one command at a time and inspect variable values
+          live. See <a href="debug.html">Debug Mode</a> for full details.
+        </p>
+      </div>
+
+      <h2 id="data-panel">6. The Data Panel</h2>
+
+      <div data-search-content data-search-title="Data Panel">
+        <p>
+          The panel on the left side of the editor has three tabs:
+        </p>
+        <ul>
+          <li><strong>Variables</strong> — Create and manage typed variables
+              (Boolean, Integer, Float, String, Enum).</li>
+          <li><strong>Enums</strong> — Define named sets of constants with optional
+              string alternatives.</li>
+          <li><strong>Events</strong> — Register message names used by
+              <code>Send Message</code> and <code>Message Received</code>.</li>
+        </ul>
+        <p>
+          These are covered in depth on the
+          <a href="variables.html">Variables, Enums &amp; Events</a> page.
+        </p>
+      </div>
+
+      <h2 id="inspector">7. The Inspector</h2>
+
+      <div data-search-content data-search-title="Inspector Panel">
+        <p>
+          The Inspector panel on the right shows details for the currently selected block:
+          its name, description, event trigger, and the ordered list of commands. Click any
+          command row to expand its settings. A cog icon at the top opens the
+          <strong>Settings</strong> tab where you can switch between State Chart and Fungus
+          editing modes, toggle the dark/light theme, and more.
+        </p>
+      </div>
+
+      <div class="admonition">
+        <div class="admonition-title">Tip</div>
+        Save early and often! Use <strong>Export JSON</strong> to download your project
+        file. See <a href="load-save.html">Load &amp; Save</a>.
+      </div>
+    </main>
+  </div>
+  <script src="js/search.js"></script>
+  <script>
+    document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+      document.querySelector('.sidebar').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>
