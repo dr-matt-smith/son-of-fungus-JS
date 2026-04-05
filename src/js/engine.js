@@ -194,6 +194,8 @@ function executeCommand(cmd) {
     case 'say':       execSay(cmd); break;
     case 'call':      execCall(cmd); break;
     case 'menu':      execMenu(cmd); break;
+    case 'ifCondition': execIfCondition(cmd); break;
+    case 'endIf':       executeNextCommand(); break;
     case 'setVarValue': execSetVarValue(cmd); break;
     case 'setVarCopy':  execSetVarCopy(cmd); break;
     case 'wait':      execWait(cmd); break;
@@ -271,10 +273,64 @@ function execMenu(cmd) {
   body.scrollTop = body.scrollHeight;
 }
 
+function coerceToType(val, varType) {
+  if (varType === 'Integer') return parseInt(val, 10) || 0;
+  if (varType === 'Float')   return parseFloat(val) || 0;
+  if (varType === 'Boolean') return val === true || val === 'true';
+  return String(val ?? '');
+}
+
+function execIfCondition(cmd) {
+  const v = S.variables.find(v => v.name === cmd.variableName);
+  const varType = v ? v.type : 'String';
+  const leftVal = v ? coerceToType(v.value, varType) : undefined;
+
+  let rightVal;
+  if (cmd.compareType === 'variable') {
+    const rv = S.variables.find(v => v.name === cmd.compareVarName);
+    rightVal = rv ? coerceToType(rv.value, varType) : undefined;
+  } else {
+    rightVal = coerceToType(cmd.compareValue, varType);
+  }
+
+  let result = false;
+  switch (cmd.operator) {
+    case '==': result = leftVal == rightVal; break;
+    case '!=': result = leftVal != rightVal; break;
+    case '<':  result = leftVal < rightVal; break;
+    case '<=': result = leftVal <= rightVal; break;
+    case '>':  result = leftVal > rightVal; break;
+    case '>=': result = leftVal >= rightVal; break;
+  }
+
+  logEntry(`${currentNode.id}: ${currentNode.label}: If: ${cmd.variableName} ${cmd.operator} ${cmd.compareType === 'variable' ? cmd.compareVarName : cmd.compareValue} → ${result}`);
+
+  if (result) {
+    // Condition true: continue to next command (inside the IF block)
+    executeNextCommand();
+  } else {
+    // Condition false: skip to matching END-IF
+    let depth = 1;
+    for (let i = currentCmd; i < currentNode.commands.length; i++) {
+      if (currentNode.commands[i].type === 'ifCondition') depth++;
+      if (currentNode.commands[i].type === 'endIf') {
+        depth--;
+        if (depth === 0) {
+          currentCmd = i + 1; // skip past END-IF
+          executeNextCommand();
+          return;
+        }
+      }
+    }
+    // No matching END-IF found, just continue
+    executeNextCommand();
+  }
+}
+
 function execSetVarValue(cmd) {
   const v = S.variables.find(v => v.name === cmd.variableName);
   if (v) {
-    v.value = cmd.value;
+    v.value = coerceToType(cmd.value, v.type);
     logEntry(`${currentNode.id}: ${currentNode.label}: Set variable: ${cmd.variableName} = ${cmd.value}`);
   } else {
     logEntry(`${currentNode.id}: ${currentNode.label}: Set variable: "${cmd.variableName}" not found`);

@@ -8,13 +8,6 @@ Version X features - save variables between flowchart runs
 
 - [] and add Vite and PlayWright tests for the above feature(s)
 
-Version X features - move variables to sepearate  tab on let of screen
-==================
-
-- [] rename the "Play All" run button to "Play"
-- [] rename the "Step" run button to "Play (debug mode)"
-
-
 
 Version X features - simple debugger
 ==================
@@ -28,7 +21,7 @@ Version X features - simple debugger
       - [] and show its details in the bottom half of the inspector
   - [] show the Variables tab
     - [] so the user can see that value of variables as well as the commands being executed for the current block in the Inspector
-    - [] if any variables are referenced in the current block command being executed, these variables should be highlighed in the Variables tab
+    - [] if any variables are referenced in the current block command being executed, these variables should be highlighted in the Variables tab
   - [] add a status bar across the top of the screen
     - [] this should display the current action, in the same wording as will be entered into the Run Log
   - [] if a block is executing a command, that block should be highlighed

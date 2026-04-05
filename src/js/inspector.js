@@ -60,6 +60,8 @@ function cmdDetail(cmd) {
     case 'sendMessage': return `"${cmd.message || ''}"`;
     case 'setVarValue': return `${cmd.variableName || ''} = ${cmd.value ?? ''}`;
     case 'setVarCopy':  return `${cmd.variableName || ''} ← ${cmd.sourceVariableName || ''}`;
+    case 'ifCondition': return `${cmd.variableName || '?'} ${cmd.operator} ${cmd.compareType === 'variable' ? cmd.compareVarName || '?' : cmd.compareValue ?? '?'}`;
+    case 'endIf':       return '';
     case 'stopAudio':   return '';
     default:            return '';
   }
@@ -229,10 +231,20 @@ function renderNodeInspector(n) {
   if (selectedCmdIdx >= n.commands.length) selectedCmdIdx = n.commands.length - 1;
 
   {
+    // ── Compute indentation levels ──────────────────────────────────────
+    const indentLevels = [];
+    let depth = 0;
+    for (const cmd of n.commands) {
+      if (cmd.type === 'endIf') depth = Math.max(0, depth - 1);
+      indentLevels.push(depth);
+      if (cmd.type === 'ifCondition') depth++;
+    }
+
     // ── Command summary list + editor ───────────────────────────────────
     n.commands.forEach((cmd, idx) => {
       const row = document.createElement('div');
       row.className = `fungus-cmd-summary fungus-cmd-${cmd.type}`;
+      if (indentLevels[idx] > 0) row.style.paddingLeft = `${6 + indentLevels[idx] * 18}px`;
       if (idx === selectedCmdIdx) row.classList.add('fungus-cmd-selected');
       if (S.executingCommandIdx === idx && S.executingNode === n) {
         row.classList.add('cmd-executing');
@@ -294,12 +306,17 @@ function renderNodeInspector(n) {
     addSelect.className = 'inspector-select';
     addSelect.innerHTML = '<option value="">+ Add command...</option>';
     for (const [key, ct] of Object.entries(COMMAND_TYPES)) {
+      if (key === 'endIf') continue; // auto-inserted with IF
       addSelect.innerHTML += `<option value="${key}">${ct.label} (${ct.category})</option>`;
     }
     addSelect.addEventListener('change', () => {
       if (!addSelect.value) return;
+      if (addSelect.value === 'endIf') return; // END-IF is auto-inserted with IF
       n.commands.push(createCommand(addSelect.value));
-      selectedCmdIdx = n.commands.length - 1;
+      if (addSelect.value === 'ifCondition') {
+        n.commands.push(createCommand('endIf'));
+      }
+      selectedCmdIdx = n.commands.length - (addSelect.value === 'ifCondition' ? 2 : 1);
       onNodeDataChanged();
       updateInspector();
     });
@@ -330,7 +347,33 @@ function renderNodeInspector(n) {
       delBtn.className = 'cmd-btn cmd-btn-del';
       delBtn.textContent = '× Delete';
       delBtn.title = 'Remove command';
-      delBtn.addEventListener('click', () => { n.commands.splice(selectedCmdIdx, 1); selectedCmdIdx = -1; onNodeDataChanged(); updateInspector(); });
+      delBtn.addEventListener('click', () => {
+        const cmd = n.commands[selectedCmdIdx];
+        if (cmd.type === 'ifCondition') {
+          // Find matching END-IF and remove both + contents between
+          let depth = 0;
+          let endIdx = -1;
+          for (let i = selectedCmdIdx; i < n.commands.length; i++) {
+            if (n.commands[i].type === 'ifCondition') depth++;
+            if (n.commands[i].type === 'endIf') { depth--; if (depth === 0) { endIdx = i; break; } }
+          }
+          if (endIdx >= 0) n.commands.splice(selectedCmdIdx, endIdx - selectedCmdIdx + 1);
+          else n.commands.splice(selectedCmdIdx, 1);
+        } else if (cmd.type === 'endIf') {
+          // Find matching IF and remove both + contents between
+          let depth = 0;
+          let ifIdx = -1;
+          for (let i = selectedCmdIdx; i >= 0; i--) {
+            if (n.commands[i].type === 'endIf') depth++;
+            if (n.commands[i].type === 'ifCondition') { depth--; if (depth === 0) { ifIdx = i; break; } }
+          }
+          if (ifIdx >= 0) n.commands.splice(ifIdx, selectedCmdIdx - ifIdx + 1);
+          else n.commands.splice(selectedCmdIdx, 1);
+        } else {
+          n.commands.splice(selectedCmdIdx, 1);
+        }
+        selectedCmdIdx = -1; onNodeDataChanged(); updateInspector();
+      });
       btnRow.appendChild(delBtn);
       editor.appendChild(btnRow);
 
@@ -375,6 +418,22 @@ function renderCommandFields(container, cmd, node) {
       addOpt.textContent = '+ Option';
       addOpt.addEventListener('click', () => { cmd.options.push({ text: `Option ${cmd.options.length + 1}`, targetBlockId: null }); onNodeDataChanged(); updateInspector(); });
       container.appendChild(addOpt);
+      break;
+    case 'ifCondition': {
+      const varOpts = [['', '— select variable —'], ...S.variables.map(v => [v.name, `${v.name} (${v.type})`])];
+      container.appendChild(labeledSelect('Variable', cmd.variableName || '', varOpts, v => { cmd.variableName = v; }));
+      const operators = [['==', '=='], ['!=', '!='], ['<', '<'], ['<=', '<='], ['>', '>'], ['>=', '>=']];
+      container.appendChild(labeledSelect('Operator', cmd.operator || '==', operators, v => { cmd.operator = v; }));
+      const compareTypes = [['literal', 'Literal value'], ['variable', 'Variable']];
+      container.appendChild(labeledSelect('Compare to', cmd.compareType || 'literal', compareTypes, v => { cmd.compareType = v; updateInspector(); }));
+      if (cmd.compareType === 'variable') {
+        container.appendChild(labeledSelect('Compare Variable', cmd.compareVarName || '', varOpts, v => { cmd.compareVarName = v; }));
+      } else {
+        container.appendChild(labeledInput('Value', cmd.compareValue ?? '', v => { cmd.compareValue = v; }));
+      }
+      break;
+    }
+    case 'endIf':
       break;
     case 'setVarValue': {
       const varOpts = [['', '— select variable —'], ...S.variables.map(v => [v.name, `${v.name} (${v.type})`])];

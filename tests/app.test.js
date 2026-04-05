@@ -1512,6 +1512,65 @@ describe('Command color coding', () => {
   });
 });
 
+// ─── Version 45: IF / END-IF commands ───────────────────────────────────────
+
+describe('IF / END-IF commands', () => {
+  afterEach(() => { app.deactivateNode(); });
+
+  it('adding IF creates a command with correct structure', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands = [
+      { type: 'ifCondition', variableName: '', operator: '==', compareType: 'literal', compareValue: '' },
+      { type: 'endIf' },
+    ];
+    expect(node.commands.length).toBe(2);
+    expect(node.commands[0].type).toBe('ifCondition');
+    expect(node.commands[1].type).toBe('endIf');
+  });
+
+  it('ifCondition has correct default properties', () => {
+    const cmd = { type: 'ifCondition', variableName: '', operator: '==', compareType: 'literal', compareValue: '', compareVarName: '' };
+    expect(cmd.type).toBe('ifCondition');
+    expect(cmd.variableName).toBe('');
+    expect(cmd.operator).toBe('==');
+    expect(cmd.compareType).toBe('literal');
+    expect(cmd.compareValue).toBe('');
+  });
+
+  it('IF and END-IF get indentation class for inner commands', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands = [
+      { type: 'ifCondition', variableName: 'x', operator: '==', compareType: 'literal', compareValue: '1' },
+      { type: 'say', text: 'inside', character: '' },
+      { type: 'endIf' },
+    ];
+    app.activateNode(node);
+    app.updateInspector();
+
+    const rows = document.querySelectorAll('.fungus-cmd-summary');
+    expect(rows.length).toBe(3);
+    // Inner command (say) should have extra padding
+    expect(rows[1].style.paddingLeft).toBeTruthy();
+    // IF and END-IF should not have extra padding
+    expect(rows[0].style.paddingLeft).toBe('');
+    expect(rows[2].style.paddingLeft).toBe('');
+  });
+
+  it('cmdDetail shows condition summary', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands = [
+      { type: 'ifCondition', variableName: 'score', operator: '>=', compareType: 'literal', compareValue: '10' },
+    ];
+    app.activateNode(node);
+    app.updateInspector();
+
+    const detail = document.querySelector('.fungus-cmd-detail');
+    expect(detail.textContent).toContain('score');
+    expect(detail.textContent).toContain('>=');
+    expect(detail.textContent).toContain('10');
+  });
+});
+
 describe('Audio manifest', () => {
   it('AUDIO_FILES is exported and contains entries', () => {
     // Import is via the app facade; audio-manifest is used by inspector

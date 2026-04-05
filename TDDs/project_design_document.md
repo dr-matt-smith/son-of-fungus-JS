@@ -565,3 +565,47 @@ Version 44 features - refine the set variables commands
 - ✅ rename the other  "Set Variable" commands
   - ✅ rename the "Set Variable (value) (Variables)" command to "Set Variable (Variables)"
   - ✅ rename the "Set Variable (copy) (Variables)" command to "Copy Variable (Variables)"
+
+Version 45 features - new commands "IF <condition>" and "END-IF"
+==================
+
+- ✅ add a new Fungus command "IF <condition>"
+  - ✅ the user chooses the variable to be set from the variables defined in the Variables tab
+  - ✅ the user can choose a comparison operator (equals / not equals / < / <= / > / >=)
+  - ✅ the user can enter a variable or literal value to
+  - ✅ all commands until "End-If" below an "If" are indented
+    - ✅ and only executed if the IF's condition was true
+- ✅ add a new Fungus command "End-If"
+  - ✅ this ends the indentation of other commands
+  - ✅ and ends the sequence of commands to be only executed when the IF condition was true
+
+- ✅ add a new Fungus command "END-IF"
+  - ✅ when an IF is added, an "END-IF" is automatically added after it
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+
+Version 46I features - new commands "ELSE-IF <condition>" and "ELSE"
+==================
+
+- [] add a new Fungus command "ELSE-IF <condition>"
+  - [] this adds functionality to execute if the previous IF's and ELSE-IFs conditions were not true, and the condition for this ELSE-IF is true
+  - [] ELSE-IF should be indented at the same level as "IF"
+    - commands following ELSE-IF should be indented, until another ELSE-IF, or ELSE, or END-IF
+
+- [] if not done already, build flexibility into the value/varaibkle to be compared with for IF and ELSE-IF conditions
+  - [] use this screenshot as a reference ![](/screenshots/fungus_variable_or_value_for_IF_and_ELSE_IF.png)
+    - i.e. conditions can be (variable1 compare variable2) or (variable1 compare literal-value)
+    - [] perhaps a radio button for variable/value after the comparison operator has been chosen...
+
+- [] add a new Fungus command "ELSE"
+  - [] this adds functionality to execute if the previous IF's and ELSE-IFs conditions were not true,
+  - [] ELSE should be indented at the same level as "IF"
+    - commands following ELSE should be indented, until END-IF
+
+- [] add Boolean logical operators "OR" and "AND" to allow more sophisticated conditions to be written for IF and ELSE-IF commands
+
+- [] and add Vite and PlayWright tests for the above feature(s)
+
+
