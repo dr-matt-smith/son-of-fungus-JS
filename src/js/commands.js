@@ -29,6 +29,8 @@ export const COMMAND_TYPES = {
   playSound:    { label: 'Play Sound',    category: 'Audio',      description: 'Play a one-shot sound effect' },
   stopAudio:    { label: 'Stop Audio',    category: 'Audio',      description: 'Stop currently playing audio' },
   ifCondition:  { label: 'If',            category: 'Flow',       description: 'Conditional execution' },
+  elseIf:       { label: 'Else-If',      category: 'Flow',       description: 'Alternative condition' },
+  elseCmd:      { label: 'Else',          category: 'Flow',       description: 'Execute if no conditions matched' },
   endIf:        { label: 'End-If',        category: 'Flow',       description: 'End of conditional block' },
   wait:         { label: 'Wait',          category: 'Flow',       description: 'Pause execution for a duration' },
   sendMessage:  { label: 'Send Message',  category: 'Flow',       description: 'Broadcast a named message' },
@@ -59,7 +61,11 @@ export function createCommand(type) {
     case 'stopAudio':
       return { ...base };
     case 'ifCondition':
-      return { ...base, variableName: '', operator: '==', compareType: 'literal', compareValue: '', compareVarName: '' };
+      return { ...base, variableName: '', operator: '==', compareType: 'literal', compareValue: '', compareVarName: '', extraConditions: [], logic: '' };
+    case 'elseIf':
+      return { ...base, variableName: '', operator: '==', compareType: 'literal', compareValue: '', compareVarName: '', extraConditions: [], logic: '' };
+    case 'elseCmd':
+      return { ...base };
     case 'endIf':
       return { ...base };
     case 'wait':

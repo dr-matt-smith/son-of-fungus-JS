@@ -1303,6 +1303,83 @@ test.describe('V45 – IF / END-IF', () => {
   });
 });
 
+// ─── Version 46: ELSE-IF, ELSE, AND/OR ───────────────────────────────────
+
+test.describe('V46 – ELSE-IF and ELSE', () => {
+  test('IF editor has Add Else-If and Add Else buttons', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('ifCondition');
+
+    const editor = page.locator('.fungus-cmd-editor');
+    await expect(editor.locator('.cmd-btn').filter({ hasText: '+ Else-If' })).toBeVisible();
+    await expect(editor.locator('.cmd-btn').filter({ hasText: /^\+ Else$/ })).toBeVisible();
+  });
+
+  test('clicking Add Else-If inserts an Else-If command', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('ifCondition');
+
+    await page.locator('.fungus-cmd-editor .cmd-btn').filter({ hasText: '+ Else-If' }).click();
+
+    await expect(page.locator('.fungus-cmd-elseIf')).toHaveCount(1);
+  });
+
+  test('clicking Add Else inserts an Else command', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('ifCondition');
+
+    await page.locator('.fungus-cmd-editor .cmd-btn').filter({ hasText: /^\+ Else$/ }).click();
+
+    await expect(page.locator('.fungus-cmd-elseCmd')).toHaveCount(1);
+  });
+
+  test('IF editor has + AND/OR condition button', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('ifCondition');
+
+    const editor = page.locator('.fungus-cmd-editor');
+    await expect(editor.locator('.cmd-btn').filter({ hasText: '+ AND/OR' })).toBeVisible();
+  });
+});
+
+// ─── Version 47: Variable initialisation in Run Log ──────────────────────
+
+test.describe('V47 – Variable init in Run Log', () => {
+  test('run log shows variable values before execution started', async ({ page }) => {
+    // Add a variable
+    await page.locator('.inspector-tab[data-tab="variables"]').click();
+    await page.locator('#variables-new-name').fill('health');
+    await page.locator('#variables-add-btn').click();
+    await page.locator('.inspector-tab[data-tab="inspector"]').click();
+
+    // Create block with Game Started
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
+
+    // Deselect and play
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+    await page.locator('#btn-play').click();
+    await page.waitForTimeout(1500);
+
+    // Check run log
+    await page.locator('#btn-run-log').click();
+    const logText = await page.locator('#json-modal-body pre').textContent();
+    expect(logText).toContain('initialisation');
+    expect(logText).toContain('health');
+    // Initialisation should come before Execution started
+    const initPos = logText.indexOf('initialisation');
+    const startPos = logText.indexOf('Execution started');
+    expect(initPos).toBeLessThan(startPos);
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

@@ -1571,6 +1571,121 @@ describe('IF / END-IF commands', () => {
   });
 });
 
+// ─── Version 46: ELSE-IF, ELSE, AND/OR ──────────────────────────────────────
+
+describe('ELSE-IF and ELSE commands', () => {
+  afterEach(() => { app.deactivateNode(); });
+
+  it('elseIf and elseCmd command types exist', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands = [
+      { type: 'ifCondition', variableName: 'x', operator: '==', compareType: 'literal', compareValue: '1' },
+      { type: 'elseIf', variableName: 'x', operator: '==', compareType: 'literal', compareValue: '2' },
+      { type: 'elseCmd' },
+      { type: 'endIf' },
+    ];
+    expect(node.commands[1].type).toBe('elseIf');
+    expect(node.commands[2].type).toBe('elseCmd');
+  });
+
+  it('ELSE-IF and ELSE are indented at IF level', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands = [
+      { type: 'ifCondition', variableName: 'x', operator: '==', compareType: 'literal', compareValue: '1' },
+      { type: 'say', text: 'a', character: '' },
+      { type: 'elseIf', variableName: 'x', operator: '==', compareType: 'literal', compareValue: '2' },
+      { type: 'say', text: 'b', character: '' },
+      { type: 'elseCmd' },
+      { type: 'say', text: 'c', character: '' },
+      { type: 'endIf' },
+    ];
+    app.activateNode(node);
+    app.updateInspector();
+
+    const rows = document.querySelectorAll('.fungus-cmd-summary');
+    // IF (0), Say-a (indent), ELSE-IF (0), Say-b (indent), ELSE (0), Say-c (indent), END-IF (0)
+    expect(rows[0].style.paddingLeft).toBe('');  // IF
+    expect(rows[1].style.paddingLeft).toBeTruthy();  // Say (indented)
+    expect(rows[2].style.paddingLeft).toBe('');  // ELSE-IF
+    expect(rows[3].style.paddingLeft).toBeTruthy();  // Say (indented)
+    expect(rows[4].style.paddingLeft).toBe('');  // ELSE
+    expect(rows[6].style.paddingLeft).toBe('');  // END-IF
+  });
+});
+
+describe('AND/OR conditions', () => {
+  it('IF command supports extraConditions with AND/OR', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands = [
+      { type: 'ifCondition', variableName: 'a', operator: '==', compareType: 'literal', compareValue: '1',
+        extraConditions: [{ logic: 'AND', variableName: 'b', operator: '>', compareType: 'literal', compareValue: '5', compareVarName: '' }] },
+      { type: 'endIf' },
+    ];
+    app.activateNode(node);
+    app.updateInspector();
+
+    const detail = document.querySelector('.fungus-cmd-detail');
+    expect(detail.textContent).toContain('AND');
+    app.deactivateNode();
+  });
+});
+
+// ─── Version 47: Variable initialisation in Run Log ─────────────────────────
+
+describe('Variable initialisation in Run Log', () => {
+  afterEach(() => { app.stopExecution(); app.S.variables = []; });
+
+  it('run log shows variable initial values before execution started', async () => {
+    app.S.variables = [
+      { name: 'score', type: 'Integer', value: 0 },
+      { name: 'name', type: 'String', value: 'Alice' },
+    ];
+    // Clear existing gameStarted events
+    for (const n of app.S.nodes) {
+      if (n.event?.type === 'gameStarted') n.event = { type: 'none' };
+    }
+    const node = app.createNode('state', 0, 0);
+    node.event = { type: 'gameStarted' };
+    node.commands = [];
+
+    app.startExecution();
+    await new Promise(r => setTimeout(r, 1000));
+
+    const log = app.getRunLog();
+    // Find the initialisation entries
+    const initEntry = log.find(e => e.message.includes('initialisation'));
+    expect(initEntry).toBeTruthy();
+
+    const scoreEntry = log.find(e => e.message.includes('score') && e.message.includes('Integer'));
+    expect(scoreEntry).toBeTruthy();
+
+    const nameEntry = log.find(e => e.message.includes('name') && e.message.includes('Alice'));
+    expect(nameEntry).toBeTruthy();
+
+    // Initialisation should come before "Execution started"
+    const initIdx = log.indexOf(initEntry);
+    const startIdx = log.findIndex(e => e.message.includes('Execution started'));
+    expect(initIdx).toBeLessThan(startIdx);
+  });
+
+  it('no initialisation section when no variables exist', async () => {
+    app.S.variables = [];
+    for (const n of app.S.nodes) {
+      if (n.event?.type === 'gameStarted') n.event = { type: 'none' };
+    }
+    const node = app.createNode('state', 0, 0);
+    node.event = { type: 'gameStarted' };
+    node.commands = [];
+
+    app.startExecution();
+    await new Promise(r => setTimeout(r, 1000));
+
+    const log = app.getRunLog();
+    const initEntry = log.find(e => e.message.includes('initialisation'));
+    expect(initEntry).toBeFalsy();
+  });
+});
+
 describe('Audio manifest', () => {
   it('AUDIO_FILES is exported and contains entries', () => {
     // Import is via the app facade; audio-manifest is used by inspector

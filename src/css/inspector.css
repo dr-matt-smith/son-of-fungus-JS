@@ -298,6 +298,8 @@
 .fungus-cmd-stopAudio      { background: #1a2a3a; }  /* steel blue */
 .fungus-cmd-wait           { background: #3a3a1a; }  /* olive */
 .fungus-cmd-ifCondition    { background: #2d1a3a; }  /* deep purple */
+.fungus-cmd-elseIf         { background: #2d1a3a; }  /* deep purple */
+.fungus-cmd-elseCmd        { background: #2d1a3a; }  /* deep purple */
 .fungus-cmd-endIf          { background: #2d1a3a; }  /* deep purple */
 .fungus-cmd-sendMessage    { background: #1a3a3a; }  /* cyan */
 
@@ -311,6 +313,8 @@
 [data-theme="light"] .fungus-cmd-stopAudio    { background: #dbeafe; }
 [data-theme="light"] .fungus-cmd-wait         { background: #fef9c3; }
 [data-theme="light"] .fungus-cmd-ifCondition  { background: #ede9fe; }
+[data-theme="light"] .fungus-cmd-elseIf       { background: #ede9fe; }
+[data-theme="light"] .fungus-cmd-elseCmd      { background: #ede9fe; }
 [data-theme="light"] .fungus-cmd-endIf        { background: #ede9fe; }
 [data-theme="light"] .fungus-cmd-sendMessage  { background: #ccfbf1; }
 

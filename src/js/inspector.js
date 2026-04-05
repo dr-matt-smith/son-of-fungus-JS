@@ -60,7 +60,17 @@ function cmdDetail(cmd) {
     case 'sendMessage': return `"${cmd.message || ''}"`;
     case 'setVarValue': return `${cmd.variableName || ''} = ${cmd.value ?? ''}`;
     case 'setVarCopy':  return `${cmd.variableName || ''} ← ${cmd.sourceVariableName || ''}`;
-    case 'ifCondition': return `${cmd.variableName || '?'} ${cmd.operator} ${cmd.compareType === 'variable' ? cmd.compareVarName || '?' : cmd.compareValue ?? '?'}`;
+    case 'ifCondition':
+    case 'elseIf': {
+      let s = `${cmd.variableName || '?'} ${cmd.operator} ${cmd.compareType === 'variable' ? cmd.compareVarName || '?' : cmd.compareValue ?? '?'}`;
+      if (cmd.extraConditions?.length > 0) {
+        for (const ec of cmd.extraConditions) {
+          s += ` ${ec.logic} ${ec.variableName || '?'} ${ec.operator} ${ec.compareType === 'variable' ? ec.compareVarName || '?' : ec.compareValue ?? '?'}`;
+        }
+      }
+      return s;
+    }
+    case 'elseCmd':     return '';
     case 'endIf':       return '';
     case 'stopAudio':   return '';
     default:            return '';
@@ -236,7 +246,12 @@ function renderNodeInspector(n) {
     let depth = 0;
     for (const cmd of n.commands) {
       if (cmd.type === 'endIf') depth = Math.max(0, depth - 1);
-      indentLevels.push(depth);
+      if (cmd.type === 'elseIf' || cmd.type === 'elseCmd') {
+        // Same level as IF (one less than inner commands)
+        indentLevels.push(Math.max(0, depth - 1));
+      } else {
+        indentLevels.push(depth);
+      }
       if (cmd.type === 'ifCondition') depth++;
     }
 
@@ -306,7 +321,7 @@ function renderNodeInspector(n) {
     addSelect.className = 'inspector-select';
     addSelect.innerHTML = '<option value="">+ Add command...</option>';
     for (const [key, ct] of Object.entries(COMMAND_TYPES)) {
-      if (key === 'endIf') continue; // auto-inserted with IF
+      if (key === 'endIf' || key === 'elseIf' || key === 'elseCmd') continue; // structural commands
       addSelect.innerHTML += `<option value="${key}">${ct.label} (${ct.category})</option>`;
     }
     addSelect.addEventListener('change', () => {
@@ -375,6 +390,50 @@ function renderNodeInspector(n) {
         selectedCmdIdx = -1; onNodeDataChanged(); updateInspector();
       });
       btnRow.appendChild(delBtn);
+
+      // Add Else-If / Else buttons for IF and Else-If commands
+      if (cmd.type === 'ifCondition' || cmd.type === 'elseIf') {
+        // Find the matching END-IF to insert before it
+        let depth = 0;
+        let endIdx = -1;
+        for (let i = selectedCmdIdx; i < n.commands.length; i++) {
+          if (n.commands[i].type === 'ifCondition') depth++;
+          if (n.commands[i].type === 'endIf') { depth--; if (depth === 0) { endIdx = i; break; } }
+        }
+        // Only search within the current IF block for existing else/elseIf
+        if (endIdx >= 0) {
+          const addElseIfBtn = document.createElement('button');
+          addElseIfBtn.className = 'cmd-btn';
+          addElseIfBtn.textContent = '+ Else-If';
+          addElseIfBtn.addEventListener('click', () => {
+            n.commands.splice(endIdx, 0, createCommand('elseIf'));
+            selectedCmdIdx = endIdx;
+            onNodeDataChanged(); updateInspector();
+          });
+          btnRow.appendChild(addElseIfBtn);
+
+          // Only show Add Else if there isn't already an Else in this IF block
+          let hasElse = false;
+          let d2 = 1;
+          for (let i = selectedCmdIdx + 1; i < endIdx; i++) {
+            if (n.commands[i].type === 'ifCondition') d2++;
+            if (n.commands[i].type === 'endIf') d2--;
+            if (d2 === 1 && n.commands[i].type === 'elseCmd') { hasElse = true; break; }
+          }
+          if (!hasElse) {
+            const addElseBtn = document.createElement('button');
+            addElseBtn.className = 'cmd-btn';
+            addElseBtn.textContent = '+ Else';
+            addElseBtn.addEventListener('click', () => {
+              n.commands.splice(endIdx, 0, createCommand('elseCmd'));
+              selectedCmdIdx = endIdx;
+              onNodeDataChanged(); updateInspector();
+            });
+            btnRow.appendChild(addElseBtn);
+          }
+        }
+      }
+
       editor.appendChild(btnRow);
 
       cmdsSection.appendChild(editor);
@@ -387,6 +446,57 @@ function renderNodeInspector(n) {
 }
 
 // ── Command field renderers ──────────────────────────────────────────────────
+
+function renderOneCondition(container, cond, label) {
+  const varOpts = [['', '— select variable —'], ...S.variables.map(v => [v.name, `${v.name} (${v.type})`])];
+  const operators = [['==', '=='], ['!=', '!='], ['<', '<'], ['<=', '<='], ['>', '>'], ['>=', '>=']];
+  const compareTypes = [['literal', 'Value'], ['variable', 'Variable']];
+
+  if (label) {
+    const lbl = document.createElement('div');
+    lbl.className = 'inspector-section-title';
+    lbl.textContent = label;
+    container.appendChild(lbl);
+  }
+  container.appendChild(labeledSelect('Variable', cond.variableName || '', varOpts, v => { cond.variableName = v; }));
+  container.appendChild(labeledSelect('Operator', cond.operator || '==', operators, v => { cond.operator = v; }));
+  container.appendChild(labeledSelect('Compare to', cond.compareType || 'literal', compareTypes, v => { cond.compareType = v; updateInspector(); }));
+  if (cond.compareType === 'variable') {
+    container.appendChild(labeledSelect('Compare Variable', cond.compareVarName || '', varOpts, v => { cond.compareVarName = v; }));
+  } else {
+    container.appendChild(labeledInput('Value', cond.compareValue ?? '', v => { cond.compareValue = v; }));
+  }
+}
+
+function renderConditionFields(container, cmd) {
+  // Primary condition
+  renderOneCondition(container, cmd, null);
+
+  // Extra conditions (AND/OR)
+  if (!cmd.extraConditions) cmd.extraConditions = [];
+  for (let i = 0; i < cmd.extraConditions.length; i++) {
+    const ec = cmd.extraConditions[i];
+    const logicOpts = [['AND', 'AND'], ['OR', 'OR']];
+    container.appendChild(labeledSelect('', ec.logic || 'AND', logicOpts, v => { ec.logic = v; }));
+    renderOneCondition(container, ec, null);
+    const delBtn = document.createElement('button');
+    delBtn.className = 'cmd-btn cmd-btn-del';
+    delBtn.textContent = '× Remove condition';
+    delBtn.addEventListener('click', () => { cmd.extraConditions.splice(i, 1); updateInspector(); });
+    container.appendChild(delBtn);
+  }
+
+  // Add AND/OR button
+  const addCondBtn = document.createElement('button');
+  addCondBtn.className = 'cmd-btn';
+  addCondBtn.textContent = '+ AND/OR condition';
+  addCondBtn.addEventListener('click', () => {
+    if (!cmd.extraConditions) cmd.extraConditions = [];
+    cmd.extraConditions.push({ logic: 'AND', variableName: '', operator: '==', compareType: 'literal', compareValue: '', compareVarName: '' });
+    updateInspector();
+  });
+  container.appendChild(addCondBtn);
+}
 
 function renderCommandFields(container, cmd, node) {
   switch (cmd.type) {
@@ -419,20 +529,11 @@ function renderCommandFields(container, cmd, node) {
       addOpt.addEventListener('click', () => { cmd.options.push({ text: `Option ${cmd.options.length + 1}`, targetBlockId: null }); onNodeDataChanged(); updateInspector(); });
       container.appendChild(addOpt);
       break;
-    case 'ifCondition': {
-      const varOpts = [['', '— select variable —'], ...S.variables.map(v => [v.name, `${v.name} (${v.type})`])];
-      container.appendChild(labeledSelect('Variable', cmd.variableName || '', varOpts, v => { cmd.variableName = v; }));
-      const operators = [['==', '=='], ['!=', '!='], ['<', '<'], ['<=', '<='], ['>', '>'], ['>=', '>=']];
-      container.appendChild(labeledSelect('Operator', cmd.operator || '==', operators, v => { cmd.operator = v; }));
-      const compareTypes = [['literal', 'Literal value'], ['variable', 'Variable']];
-      container.appendChild(labeledSelect('Compare to', cmd.compareType || 'literal', compareTypes, v => { cmd.compareType = v; updateInspector(); }));
-      if (cmd.compareType === 'variable') {
-        container.appendChild(labeledSelect('Compare Variable', cmd.compareVarName || '', varOpts, v => { cmd.compareVarName = v; }));
-      } else {
-        container.appendChild(labeledInput('Value', cmd.compareValue ?? '', v => { cmd.compareValue = v; }));
-      }
+    case 'ifCondition':
+    case 'elseIf':
+      renderConditionFields(container, cmd);
       break;
-    }
+    case 'elseCmd':
     case 'endIf':
       break;
     case 'setVarValue': {

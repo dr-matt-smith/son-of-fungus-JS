@@ -586,26 +586,34 @@ Version 45 features - new commands "IF <condition>" and "END-IF"
 
 
 
-Version 46I features - new commands "ELSE-IF <condition>" and "ELSE"
+Version 46 features - new commands "ELSE-IF <condition>" and "ELSE"
 ==================
 
-- [] add a new Fungus command "ELSE-IF <condition>"
-  - [] this adds functionality to execute if the previous IF's and ELSE-IFs conditions were not true, and the condition for this ELSE-IF is true
-  - [] ELSE-IF should be indented at the same level as "IF"
-    - commands following ELSE-IF should be indented, until another ELSE-IF, or ELSE, or END-IF
+- ✅ add a new Fungus command "ELSE-IF <condition>"
+  - ✅ this adds functionality to execute if the previous IF's and ELSE-IFs conditions were not true, and the condition for this ELSE-IF is true
+  - ✅ ELSE-IF should be indented at the same level as "IF"
+    - ✅ commands following ELSE-IF should be indented, until another ELSE-IF, or ELSE, or END-IF
 
-- [] if not done already, build flexibility into the value/varaibkle to be compared with for IF and ELSE-IF conditions
-  - [] use this screenshot as a reference ![](/screenshots/fungus_variable_or_value_for_IF_and_ELSE_IF.png)
-    - i.e. conditions can be (variable1 compare variable2) or (variable1 compare literal-value)
-    - [] perhaps a radio button for variable/value after the comparison operator has been chosen...
+- ✅ if not done already, build flexibility into the value/varaible to be compared with for IF and ELSE-IF conditions
+  - ✅ use this screenshot as a reference ![](/screenshots/fungus_variable_or_value_for_IF_and_ELSE_IF.png)
+    - ✅ i.e. conditions can be (variable1 compare variable2) or (variable1 compare literal-value)
+    - ✅ perhaps a radio button for variable/value after the comparison operator has been chosen...
 
-- [] add a new Fungus command "ELSE"
-  - [] this adds functionality to execute if the previous IF's and ELSE-IFs conditions were not true,
-  - [] ELSE should be indented at the same level as "IF"
-    - commands following ELSE should be indented, until END-IF
+- ✅ add a new Fungus command "ELSE"
+  - ✅ this adds functionality to execute if the previous IF's and ELSE-IFs conditions were not true,
+  - ✅ ELSE should be indented at the same level as "IF"
+    - ✅ commands following ELSE should be indented, until END-IF
 
-- [] add Boolean logical operators "OR" and "AND" to allow more sophisticated conditions to be written for IF and ELSE-IF commands
+- ✅ add Boolean logical operators "OR" and "AND" to allow more sophisticated conditions to be written for IF and ELSE-IF commands
 
-- [] and add Vite and PlayWright tests for the above feature(s)
+- ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
+Version 47 features - add Variable initial values to Run Log
+==================
+
+- ✅ add to the Run Log the initial values of variables - as set in the Variables tab
+  - ✅ show this BEFORE "Execution started"
+    - ✅ named "Variable initialisation"
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)

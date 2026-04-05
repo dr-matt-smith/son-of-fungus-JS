@@ -17,6 +17,7 @@ let currentCmd  = 0;
 let waitTimer   = null;
 let menuOverlay = null;
 let audioElements = {};   // keyed by URL for music control
+let ifBranchTaken = [];   // stack: true if a branch in current IF chain was taken
 let outputEl    = null;   // dialogue output panel
 let runLog      = [];     // timestamped execution log entries
 
@@ -79,8 +80,16 @@ export function startExecution() {
   ensureOutputPanel();
   callStack = [];
   runLog = [];
+  ifBranchTaken = [];
   S.executingNode = null;
   S.executingCommandIdx = -1;
+  // Log initial variable values
+  if (S.variables.length > 0) {
+    logEntry('── Variable initialisation ──');
+    for (const v of S.variables) {
+      logEntry(`  ${v.name} (${v.type}) = ${JSON.stringify(v.value)}`);
+    }
+  }
   logEntry(`Execution started — entry block: "${entryNode.label}" (id:${entryNode.id})`);
   executeBlock(entryNode);
 }
@@ -195,7 +204,9 @@ function executeCommand(cmd) {
     case 'call':      execCall(cmd); break;
     case 'menu':      execMenu(cmd); break;
     case 'ifCondition': execIfCondition(cmd); break;
-    case 'endIf':       executeNextCommand(); break;
+    case 'elseIf':      execElseIf(cmd); break;
+    case 'elseCmd':     execElse(); break;
+    case 'endIf':       ifBranchTaken.pop(); executeNextCommand(); break;
     case 'setVarValue': execSetVarValue(cmd); break;
     case 'setVarCopy':  execSetVarCopy(cmd); break;
     case 'wait':      execWait(cmd); break;
@@ -280,51 +291,125 @@ function coerceToType(val, varType) {
   return String(val ?? '');
 }
 
-function execIfCondition(cmd) {
-  const v = S.variables.find(v => v.name === cmd.variableName);
+function evaluateOneCondition(cond) {
+  const v = S.variables.find(v => v.name === cond.variableName);
   const varType = v ? v.type : 'String';
   const leftVal = v ? coerceToType(v.value, varType) : undefined;
 
   let rightVal;
-  if (cmd.compareType === 'variable') {
-    const rv = S.variables.find(v => v.name === cmd.compareVarName);
+  if (cond.compareType === 'variable') {
+    const rv = S.variables.find(v => v.name === cond.compareVarName);
     rightVal = rv ? coerceToType(rv.value, varType) : undefined;
   } else {
-    rightVal = coerceToType(cmd.compareValue, varType);
+    rightVal = coerceToType(cond.compareValue, varType);
   }
 
-  let result = false;
-  switch (cmd.operator) {
-    case '==': result = leftVal == rightVal; break;
-    case '!=': result = leftVal != rightVal; break;
-    case '<':  result = leftVal < rightVal; break;
-    case '<=': result = leftVal <= rightVal; break;
-    case '>':  result = leftVal > rightVal; break;
-    case '>=': result = leftVal >= rightVal; break;
+  switch (cond.operator) {
+    case '==': return leftVal == rightVal;
+    case '!=': return leftVal != rightVal;
+    case '<':  return leftVal < rightVal;
+    case '<=': return leftVal <= rightVal;
+    case '>':  return leftVal > rightVal;
+    case '>=': return leftVal >= rightVal;
+    default:   return false;
+  }
+}
+
+function evaluateCondition(cmd) {
+  let result = evaluateOneCondition(cmd);
+  if (cmd.extraConditions) {
+    for (const ec of cmd.extraConditions) {
+      const ecResult = evaluateOneCondition(ec);
+      if (ec.logic === 'OR') result = result || ecResult;
+      else result = result && ecResult;
+    }
+  }
+  return result;
+}
+
+function conditionSummary(cmd) {
+  let s = `${cmd.variableName} ${cmd.operator} ${cmd.compareType === 'variable' ? cmd.compareVarName : cmd.compareValue}`;
+  if (cmd.extraConditions) {
+    for (const ec of cmd.extraConditions) {
+      s += ` ${ec.logic} ${ec.variableName} ${ec.operator} ${ec.compareType === 'variable' ? ec.compareVarName : ec.compareValue}`;
+    }
+  }
+  return s;
+}
+
+// Skip forward to the next ELSE-IF, ELSE, or END-IF at current depth
+function skipToNextBranch() {
+  let depth = 1;
+  for (let i = currentCmd; i < currentNode.commands.length; i++) {
+    const c = currentNode.commands[i];
+    if (c.type === 'ifCondition') depth++;
+    if (c.type === 'endIf') {
+      depth--;
+      if (depth === 0) { currentCmd = i + 1; executeNextCommand(); return; }
+    }
+    if (depth === 1 && (c.type === 'elseIf' || c.type === 'elseCmd')) {
+      currentCmd = i; // point to the elseIf/else command itself
+      executeNextCommand(); // executeNextCommand will increment and call executeCommand
+      return;
+    }
+  }
+  executeNextCommand();
+}
+
+// Skip forward to the matching END-IF (past all ELSE-IF/ELSE branches)
+function skipToEndIf() {
+  let depth = 1;
+  for (let i = currentCmd; i < currentNode.commands.length; i++) {
+    const c = currentNode.commands[i];
+    if (c.type === 'ifCondition') depth++;
+    if (c.type === 'endIf') {
+      depth--;
+      if (depth === 0) { currentCmd = i + 1; executeNextCommand(); return; }
+    }
+  }
+  executeNextCommand();
+}
+
+function execIfCondition(cmd) {
+  const result = evaluateCondition(cmd);
+  logEntry(`${currentNode.id}: ${currentNode.label}: If: ${conditionSummary(cmd)} → ${result}`);
+
+  ifBranchTaken.push(result);
+  if (result) {
+    executeNextCommand(); // execute body
+  } else {
+    skipToNextBranch(); // skip to else-if / else / end-if
+  }
+}
+
+function execElseIf(cmd) {
+  // If a previous branch in this IF chain was already taken, skip to END-IF
+  if (ifBranchTaken.length > 0 && ifBranchTaken[ifBranchTaken.length - 1]) {
+    skipToEndIf();
+    return;
   }
 
-  logEntry(`${currentNode.id}: ${currentNode.label}: If: ${cmd.variableName} ${cmd.operator} ${cmd.compareType === 'variable' ? cmd.compareVarName : cmd.compareValue} → ${result}`);
+  const result = evaluateCondition(cmd);
+  logEntry(`${currentNode.id}: ${currentNode.label}: Else-If: ${conditionSummary(cmd)} → ${result}`);
 
   if (result) {
-    // Condition true: continue to next command (inside the IF block)
+    ifBranchTaken[ifBranchTaken.length - 1] = true;
     executeNextCommand();
   } else {
-    // Condition false: skip to matching END-IF
-    let depth = 1;
-    for (let i = currentCmd; i < currentNode.commands.length; i++) {
-      if (currentNode.commands[i].type === 'ifCondition') depth++;
-      if (currentNode.commands[i].type === 'endIf') {
-        depth--;
-        if (depth === 0) {
-          currentCmd = i + 1; // skip past END-IF
-          executeNextCommand();
-          return;
-        }
-      }
-    }
-    // No matching END-IF found, just continue
-    executeNextCommand();
+    skipToNextBranch();
   }
+}
+
+function execElse() {
+  // If a previous branch was already taken, skip to END-IF
+  if (ifBranchTaken.length > 0 && ifBranchTaken[ifBranchTaken.length - 1]) {
+    skipToEndIf();
+    return;
+  }
+
+  logEntry(`${currentNode.id}: ${currentNode.label}: Else`);
+  ifBranchTaken[ifBranchTaken.length - 1] = true;
+  executeNextCommand();
 }
 
 function execSetVarValue(cmd) {
