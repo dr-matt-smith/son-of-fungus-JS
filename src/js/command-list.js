@@ -1,6 +1,7 @@
 import { S } from './state.js';
 import { COMMAND_TYPES, createCommand } from './commands.js';
 import { renderCommandFields } from './command-fields.js';
+import { COMMAND_REGISTRY } from './command-registry.js';
 
 // ── Shared state ────────────────────────────────────────────────────────────
 
@@ -15,42 +16,7 @@ export function setCmdSearchContainer(v) { cmdSearchContainer = v; }
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 function cmdDetail(cmd) {
-  switch (cmd.type) {
-    case 'say': {
-      const t = cmd.text || '';
-      return `"${t.substring(0, 24)}${t.length > 24 ? '…' : ''}"`;
-    }
-    case 'call': {
-      const target = S.nodes.find(n => n.id === cmd.targetBlockId);
-      return `<${target ? target.label : 'None'}> : ${cmd.mode === 'stop' ? 'Stop' : 'Continue'}`;
-    }
-    case 'menu': {
-      const t = S.nodes.find(n => n.id === cmd.targetBlockId);
-      return `"${cmd.text || ''}" → ${t ? t.label : '(none)'}`;
-    }
-    case 'wait':        return `${cmd.duration}s`;
-    case 'playSound':   return cmd.audioUrl || '(none)';
-    case 'playMusic':   return cmd.audioUrl || '(none)';
-    case 'sendMessage': return `"${cmd.message || ''}"`;
-    case 'setVarValue': return `${cmd.variableName || ''} = ${cmd.value ?? ''}`;
-    case 'setVarCopy':  return `${cmd.variableName || ''} ← ${cmd.sourceVariableName || ''}`;
-    case 'ifCondition':
-    case 'elseIf': {
-      let s = `${cmd.variableName || '?'} ${cmd.operator} ${cmd.compareType === 'variable' ? cmd.compareVarName || '?' : cmd.compareValue ?? '?'}`;
-      if (cmd.extraConditions?.length > 0) {
-        for (const ec of cmd.extraConditions) {
-          s += ` ${ec.logic} ${ec.variableName || '?'} ${ec.operator} ${ec.compareType === 'variable' ? ec.compareVarName || '?' : ec.compareValue ?? '?'}`;
-        }
-      }
-      return s;
-    }
-    case 'elseCmd':     return '';
-    case 'endIf':       return '';
-    case 'stageBgColor': return cmd.color || '';
-    case 'stageBgImage': return cmd.imageUrl || '(none)';
-    case 'stopAudio':   return '';
-    default:            return '';
-  }
+  return COMMAND_REGISTRY[cmd.type]?.detail(cmd, S.nodes) || '';
 }
 
 function showCommandSearch(node, parentEl, callbacks) {

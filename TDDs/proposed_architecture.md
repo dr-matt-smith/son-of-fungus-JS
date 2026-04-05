@@ -136,7 +136,7 @@ Bug fixes in `engine.js` must be manually replicated in the embedded runtime str
 
 ---
 
-## 6. Introduce a Command Registration Pattern
+## 6. ✅ COMPLETED — Introduce a Command Registration Pattern
 
 ### Problem
 Adding a new command currently requires changes in **three separate files**:
