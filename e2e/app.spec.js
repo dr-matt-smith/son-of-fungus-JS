@@ -1143,7 +1143,7 @@ test.describe('V41 – Set Variable (value) command', () => {
     await page.locator('.inspector-add-cmd select').selectOption('setVarValue');
 
     const verb = page.locator('.fungus-cmd-verb');
-    await expect(verb).toHaveText('Set Variable (value)');
+    await expect(verb).toHaveText('Set Variable');
   });
 
   test('setVarValue editor shows variable dropdown when variables exist', async ({ page }) => {
@@ -1171,7 +1171,7 @@ test.describe('V41 – Set Variable (copy) command', () => {
     await page.locator('.inspector-add-cmd select').selectOption('setVarCopy');
 
     const verb = page.locator('.fungus-cmd-verb');
-    await expect(verb).toHaveText('Set Variable (copy)');
+    await expect(verb).toHaveText('Copy Variable');
   });
 
   test('setVarCopy editor shows two variable dropdowns', async ({ page }) => {

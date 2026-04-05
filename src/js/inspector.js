@@ -58,7 +58,6 @@ function cmdDetail(cmd) {
     case 'playSound':   return cmd.audioUrl || '(none)';
     case 'playMusic':   return cmd.audioUrl || '(none)';
     case 'sendMessage': return `"${cmd.message || ''}"`;
-    case 'setVariable': return `${cmd.variableName || ''} = ${cmd.value ?? ''}`;
     case 'setVarValue': return `${cmd.variableName || ''} = ${cmd.value ?? ''}`;
     case 'setVarCopy':  return `${cmd.variableName || ''} ← ${cmd.sourceVariableName || ''}`;
     case 'stopAudio':   return '';
@@ -377,10 +376,6 @@ function renderCommandFields(container, cmd, node) {
       addOpt.addEventListener('click', () => { cmd.options.push({ text: `Option ${cmd.options.length + 1}`, targetBlockId: null }); onNodeDataChanged(); updateInspector(); });
       container.appendChild(addOpt);
       break;
-    case 'setVariable':
-      container.appendChild(labeledInput('Variable', cmd.variableName, v => { cmd.variableName = v; }));
-      container.appendChild(labeledInput('Value', cmd.value, v => { cmd.value = v; }));
-      break;
     case 'setVarValue': {
       const varOpts = [['', '— select variable —'], ...S.variables.map(v => [v.name, `${v.name} (${v.type})`])];
       container.appendChild(labeledSelect('Variable', cmd.variableName || '', varOpts, v => { cmd.variableName = v; updateInspector(); }));
@@ -395,12 +390,12 @@ function renderCommandFields(container, cmd, node) {
             const enumOpts = [['', '— select —'], ...enumSet.values.map(ev => [ev.key, ev.label || ev.key])];
             container.appendChild(labeledSelect('Value', cmd.value || '', enumOpts, v => { cmd.value = v; }));
           }
+        } else if (selVar.type === 'Integer') {
+          container.appendChild(labeledIntegerInput('Value', cmd.value ?? 0, v => { cmd.value = v; }));
+        } else if (selVar.type === 'Float') {
+          container.appendChild(labeledFloatInput('Value', cmd.value ?? 0, v => { cmd.value = v; }));
         } else {
-          container.appendChild(labeledInput('Value', cmd.value ?? '', v => {
-            if (selVar.type === 'Integer') cmd.value = parseInt(v, 10) || 0;
-            else if (selVar.type === 'Float') cmd.value = parseFloat(v) || 0;
-            else cmd.value = v;
-          }));
+          container.appendChild(labeledInput('Value', cmd.value ?? '', v => { cmd.value = v; }));
         }
       }
       break;
@@ -452,6 +447,46 @@ function labeledInput(label, value, onChange) {
   row.className = 'cmd-field';
   row.innerHTML = `<span class="cmd-field-label">${label}</span>`;
   row.appendChild(createInput(String(value ?? ''), onChange));
+  return row;
+}
+
+function labeledIntegerInput(label, value, onChange) {
+  const row = document.createElement('div');
+  row.className = 'cmd-field';
+  row.innerHTML = `<span class="cmd-field-label">${label}</span>`;
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.inputMode = 'numeric';
+  input.className = 'inspector-input';
+  input.value = String(value ?? 0);
+  input.addEventListener('change', () => { const v = parseInt(input.value, 10) || 0; input.value = String(v); onChange(v); });
+  input.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'].includes(e.key)) return;
+    if (e.key === '-') return;
+    if (e.key >= '0' && e.key <= '9') return;
+    e.preventDefault();
+  });
+  row.appendChild(input);
+  return row;
+}
+
+function labeledFloatInput(label, value, onChange) {
+  const row = document.createElement('div');
+  row.className = 'cmd-field';
+  row.innerHTML = `<span class="cmd-field-label">${label}</span>`;
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.inputMode = 'decimal';
+  input.className = 'inspector-input';
+  input.value = String(value ?? 0);
+  input.addEventListener('change', () => { const v = parseFloat(input.value) || 0; input.value = String(v); onChange(v); });
+  input.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey || ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'].includes(e.key)) return;
+    if (e.key === '-' || e.key === '.') return;
+    if (e.key >= '0' && e.key <= '9') return;
+    e.preventDefault();
+  });
+  row.appendChild(input);
   return row;
 }
 

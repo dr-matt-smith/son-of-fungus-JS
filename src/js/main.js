@@ -830,14 +830,15 @@ function buildValueInput(v) {
   const input = document.createElement('input');
   input.className = 'inspector-input variable-value-input';
   if (v.type === 'Integer') {
-    input.type = 'number';
-    input.step = '1';
+    input.type = 'text';
+    input.inputMode = 'numeric';
     input.value = String(v.value ?? 0);
     input.addEventListener('change', () => { v.value = parseInt(input.value, 10) || 0; input.value = String(v.value); });
     input.addEventListener('keydown', (e) => {
-      e.stopPropagation();
-      // Block decimal point and 'e'
-      if (e.key === '.' || e.key === 'e' || e.key === 'E') e.preventDefault();
+      if (e.ctrlKey || e.metaKey || ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'].includes(e.key)) return;
+      if (e.key === '-') return;
+      if (e.key >= '0' && e.key <= '9') return;
+      e.preventDefault();
     });
     return input;
   } else if (v.type === 'Float') {

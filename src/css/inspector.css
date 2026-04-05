@@ -291,7 +291,6 @@
 .fungus-cmd-say            { background: #3b1f4a; }  /* purple */
 .fungus-cmd-menu           { background: #1a3a2a; }  /* teal */
 .fungus-cmd-call           { background: #2a2a2a; }  /* gray */
-.fungus-cmd-setVariable    { background: #3a2a1a; }  /* brown */
 .fungus-cmd-setVarValue    { background: #3a2a1a; }  /* brown */
 .fungus-cmd-setVarCopy     { background: #3a2a1a; }  /* brown */
 .fungus-cmd-playMusic      { background: #1a2a3a; }  /* steel blue */
@@ -303,7 +302,6 @@
 [data-theme="light"] .fungus-cmd-say          { background: #f3e8ff; }
 [data-theme="light"] .fungus-cmd-menu         { background: #d1fae5; }
 [data-theme="light"] .fungus-cmd-call         { background: #e5e7eb; }
-[data-theme="light"] .fungus-cmd-setVariable  { background: #fef3c7; }
 [data-theme="light"] .fungus-cmd-setVarValue  { background: #fef3c7; }
 [data-theme="light"] .fungus-cmd-setVarCopy   { background: #fef3c7; }
 [data-theme="light"] .fungus-cmd-playMusic    { background: #dbeafe; }

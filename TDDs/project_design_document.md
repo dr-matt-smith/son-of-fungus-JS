@@ -554,3 +554,14 @@ Version 43 features - color code command summary rows in inspector
     - ![](/screenshots/fungus_command_colors.png)
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
+
+Version 44 features - refine the set variables commands
+==================
+
+- ✅ constrain the system so that variables can only be created in the Vairables tab
+  - ✅ so remove the current variable setting command that allows new varibales to be dynamically set by a command in a block
+
+- ✅ remove the "Set Variable (Variables)" command
+- ✅ rename the other  "Set Variable" commands
+  - ✅ rename the "Set Variable (value) (Variables)" command to "Set Variable (Variables)"
+  - ✅ rename the "Set Variable (copy) (Variables)" command to "Copy Variable (Variables)"

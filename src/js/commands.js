@@ -23,9 +23,8 @@ export const COMMAND_TYPES = {
   say:          { label: 'Say',           category: 'Narrative',  description: 'Display dialogue text' },
   menu:         { label: 'Menu',          category: 'Flow',       description: 'Present a player choice' },
   call:         { label: 'Call',          category: 'Flow',       description: 'Transfer execution to another block' },
-  setVariable:  { label: 'Set Variable',  category: 'Variables',  description: 'Assign a value to a variable' },
-  setVarValue:  { label: 'Set Variable (value)',       category: 'Variables',  description: 'Set a variable to a typed value' },
-  setVarCopy:   { label: 'Set Variable (copy)',        category: 'Variables',  description: 'Copy the value of one variable into another' },
+  setVarValue:  { label: 'Set Variable',       category: 'Variables',  description: 'Set a variable to a typed value' },
+  setVarCopy:   { label: 'Copy Variable',      category: 'Variables',  description: 'Copy the value of one variable into another' },
   playMusic:    { label: 'Play Music',    category: 'Audio',      description: 'Play a looping music track' },
   playSound:    { label: 'Play Sound',    category: 'Audio',      description: 'Play a one-shot sound effect' },
   stopAudio:    { label: 'Stop Audio',    category: 'Audio',      description: 'Stop currently playing audio' },
@@ -47,8 +46,6 @@ export function createCommand(type) {
       ]};
     case 'call':
       return { ...base, targetBlockId: null, mode: 'stop' }; // 'stop' | 'continue'
-    case 'setVariable':
-      return { ...base, variableName: '', value: '' };
     case 'setVarValue':
       return { ...base, variableName: '', value: '' };
     case 'setVarCopy':

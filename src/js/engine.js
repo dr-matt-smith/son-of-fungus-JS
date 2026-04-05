@@ -194,7 +194,6 @@ function executeCommand(cmd) {
     case 'say':       execSay(cmd); break;
     case 'call':      execCall(cmd); break;
     case 'menu':      execMenu(cmd); break;
-    case 'setVariable': execSetVariable(cmd); break;
     case 'setVarValue': execSetVarValue(cmd); break;
     case 'setVarCopy':  execSetVarCopy(cmd); break;
     case 'wait':      execWait(cmd); break;
@@ -270,17 +269,6 @@ function execMenu(cmd) {
   const body = outputEl.querySelector('#exec-output-body');
   body.appendChild(menuOverlay);
   body.scrollTop = body.scrollHeight;
-}
-
-function execSetVariable(cmd) {
-  let v = S.variables.find(v => v.name === cmd.variableName);
-  if (!v) {
-    v = { name: cmd.variableName, type: 'string', value: '' };
-    S.variables.push(v);
-  }
-  v.value = cmd.value;
-  logEntry(`${currentNode.id}: ${currentNode.label}: Set variable: ${cmd.variableName} = ${cmd.value}`);
-  executeNextCommand();
 }
 
 function execSetVarValue(cmd) {
