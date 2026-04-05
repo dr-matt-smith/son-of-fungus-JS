@@ -13,7 +13,9 @@
       "Bash(node -e \"import\\('./tests/app.test.js'\\)\")",
       "Bash(npm install:*)",
       "Bash(node:*)",
-      "Bash(ls -la docs/images/*.png)"
+      "Bash(ls -la docs/images/*.png)",
+      "Bash(wc:*)",
+      "Bash(grep -h \"^import\\\\|^export\" /Users/matt/Documents/github/__stateGen_2026/son-of-fungus-JS/src/js/*.js)"
     ]
   },
   "enableAllProjectMcpServers": true,
