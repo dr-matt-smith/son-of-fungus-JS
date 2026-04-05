@@ -1,6 +1,13 @@
 import { test, expect } from '@playwright/test';
 import { dragNewNode, drag, getNodeBox } from './helpers.js';
 
+// Helper: add a command via the search popup
+async function addCommand(page, cmdType) {
+  await page.locator('.cmd-action-btn.cmd-action-add').click();
+  await page.locator('.cmd-search-input').fill(cmdType);
+  await page.locator('.cmd-search-item').first().click();
+}
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
 });
@@ -435,7 +442,7 @@ test.describe('V25 – Step-by-step execution', () => {
     await page.locator('.inspector-event-select').selectOption('gameStarted');
 
     // Add a Say command
-    await page.locator('.inspector-add-cmd select').selectOption('say');
+    await addCommand(page, 'Say');
 
     // Click empty canvas to deselect
     const canvas = page.locator('#canvas-container');
@@ -502,7 +509,7 @@ test.describe('V27 – Run Log', () => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
     await page.locator('.inspector-event-select').selectOption('gameStarted');
-    await page.locator('.inspector-add-cmd select').selectOption('say');
+    await addCommand(page, 'Say');
 
     // Deselect and play
     const canvas = page.locator('#canvas-container');
@@ -525,7 +532,7 @@ test.describe('V27 – Audio file dropdown', () => {
   test('playSound command shows audio file dropdown', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('playSound');
+    await addCommand(page, 'Play Sound');
 
     // Should have a select for Audio File
     const audioSelect = page.locator('.cmd-field select').first();
@@ -540,7 +547,7 @@ test.describe('V27 – Audio file dropdown', () => {
   test('playMusic command shows audio file dropdown', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('playMusic');
+    await addCommand(page, 'Play Music');
 
     const audioSelect = page.locator('.cmd-field select').first();
     await expect(audioSelect).toBeVisible();
@@ -566,7 +573,7 @@ test.describe('V28 – Run Log Style', () => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
     await page.locator('.inspector-event-select').selectOption('gameStarted');
-    await page.locator('.inspector-add-cmd select').selectOption('say');
+    await addCommand(page, 'Say');
 
     // Deselect and play
     const canvas = page.locator('#canvas-container');
@@ -586,7 +593,7 @@ test.describe('V28 – Run Log Style', () => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
     await page.locator('.inspector-event-select').selectOption('gameStarted');
-    await page.locator('.inspector-add-cmd select').selectOption('say');
+    await addCommand(page, 'Say');
 
     // Deselect and play
     const canvas = page.locator('#canvas-container');
@@ -694,7 +701,7 @@ test.describe('V30 – Play Sound wait checkbox', () => {
   test('playSound command shows wait checkbox in inspector', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('playSound');
+    await addCommand(page, 'Play Sound');
 
     const checkbox = page.locator('.cmd-checkbox-label input[type="checkbox"]');
     await expect(checkbox).toBeVisible();
@@ -704,7 +711,7 @@ test.describe('V30 – Play Sound wait checkbox', () => {
   test('playMusic command does NOT show wait checkbox', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('playMusic');
+    await addCommand(page, 'Play Music');
 
     const checkbox = page.locator('.cmd-checkbox-label input[type="checkbox"]');
     await expect(checkbox).toHaveCount(0);
@@ -713,7 +720,7 @@ test.describe('V30 – Play Sound wait checkbox', () => {
   test('wait checkbox can be toggled', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('playSound');
+    await addCommand(page, 'Play Sound');
 
     const checkbox = page.locator('.cmd-checkbox-label input[type="checkbox"]');
     await expect(checkbox).not.toBeChecked();
@@ -724,7 +731,7 @@ test.describe('V30 – Play Sound wait checkbox', () => {
   test('wait checkbox label text is correct', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('playSound');
+    await addCommand(page, 'Play Sound');
 
     const label = page.locator('.cmd-checkbox-label');
     await expect(label).toContainText('Wait for sound to finish playing');
@@ -938,7 +945,7 @@ test.describe('V35 – Send Message dropdown', () => {
     // Create block with sendMessage command
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('sendMessage');
+    await addCommand(page, 'Send Message');
 
     // Check the message dropdown has the defined message
     const msgSelect = page.locator('.cmd-field select');
@@ -975,7 +982,7 @@ test.describe('V36 – Fungus command summary list', () => {
   test('commands appear as summary rows in fungus mode', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('say');
+    await addCommand(page, 'Say');
 
     const summaries = page.locator('.fungus-cmd-summary');
     await expect(summaries).toHaveCount(1);
@@ -985,7 +992,7 @@ test.describe('V36 – Fungus command summary list', () => {
   test('clicking summary row highlights it green and shows editor', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('say');
+    await addCommand(page, 'Say');
 
     // The newly added command should auto-select
     await expect(page.locator('.fungus-cmd-selected')).toHaveCount(1);
@@ -995,7 +1002,7 @@ test.describe('V36 – Fungus command summary list', () => {
   test('editor shows fields for the selected command', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('say');
+    await addCommand(page, 'Say');
 
     // Editor should show character and text fields
     await expect(page.locator('.fungus-cmd-editor .cmd-field')).toHaveCount(2);
@@ -1008,7 +1015,7 @@ test.describe('V37 – Command summary row layout', () => {
   test('summary rows have verb and detail columns', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('say');
+    await addCommand(page, 'Say');
 
     const verb = page.locator('.fungus-cmd-verb');
     await expect(verb).toHaveText('Say');
@@ -1019,22 +1026,24 @@ test.describe('V37 – Command summary row layout', () => {
   test('summary rows have drag handles', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('say');
-    await page.locator('.inspector-add-cmd select').selectOption('wait');
+    await addCommand(page, 'Say');
+    await addCommand(page, 'Wait');
 
     const handles = page.locator('.fungus-cmd-drag-handle');
     await expect(handles.first()).toBeVisible();
   });
 
-  test('editor has only delete button (no move arrows)', async ({ page }) => {
+  test('command action bar has action buttons', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('say');
 
-    // Command auto-selects, editor should be visible
-    const editorBtns = page.locator('.fungus-cmd-btn-row .cmd-btn');
-    await expect(editorBtns).toHaveCount(1);
-    await expect(editorBtns.first()).toContainText('Delete');
+    // Use action bar + button to add a command via search
+    await page.locator('.cmd-action-btn.cmd-action-add').click();
+    await page.locator('.cmd-search-input').fill('say');
+    await page.locator('.cmd-search-item').first().click();
+
+    const actionBtns = page.locator('.cmd-action-bar .cmd-action-btn');
+    await expect(actionBtns).toHaveCount(5); // up, down, +, dup, delete
   });
 });
 
@@ -1130,7 +1139,7 @@ test.describe('V41 – Set Variable (value) command', () => {
   test('setVarValue command can be added to a block', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('setVarValue');
+    await addCommand(page, 'Set Variable');
 
     const verb = page.locator('.fungus-cmd-verb');
     await expect(verb).toHaveText('Set Variable');
@@ -1145,7 +1154,7 @@ test.describe('V41 – Set Variable (value) command', () => {
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('setVarValue');
+    await addCommand(page, 'Set Variable');
 
     // Editor should show variable select
     const editor = page.locator('.fungus-cmd-editor');
@@ -1158,7 +1167,7 @@ test.describe('V41 – Set Variable (copy) command', () => {
   test('setVarCopy command can be added to a block', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('setVarCopy');
+    await addCommand(page, 'Copy Variable');
 
     const verb = page.locator('.fungus-cmd-verb');
     await expect(verb).toHaveText('Copy Variable');
@@ -1175,7 +1184,7 @@ test.describe('V41 – Set Variable (copy) command', () => {
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('setVarCopy');
+    await addCommand(page, 'Copy Variable');
 
     const editor = page.locator('.fungus-cmd-editor');
     const selects = editor.locator('.cmd-field select');
@@ -1216,7 +1225,7 @@ test.describe('V43 – Command color coding', () => {
   test('say command row has fungus-cmd-say class', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('say');
+    await addCommand(page, 'Say');
 
     await expect(page.locator('.fungus-cmd-say')).toHaveCount(1);
   });
@@ -1224,8 +1233,8 @@ test.describe('V43 – Command color coding', () => {
   test('different commands get different color classes', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('say');
-    await page.locator('.inspector-add-cmd select').selectOption('wait');
+    await addCommand(page, 'Say');
+    await addCommand(page, 'Wait');
 
     await expect(page.locator('.fungus-cmd-say')).toHaveCount(1);
     await expect(page.locator('.fungus-cmd-wait')).toHaveCount(1);
@@ -1238,7 +1247,7 @@ test.describe('V45 – IF / END-IF', () => {
   test('adding IF command auto-inserts END-IF', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('ifCondition');
+    await addCommand(page, 'If');
 
     const summaries = page.locator('.fungus-cmd-summary');
     await expect(summaries).toHaveCount(2);
@@ -1246,12 +1255,15 @@ test.describe('V45 – IF / END-IF', () => {
     await expect(summaries.nth(1).locator('.fungus-cmd-verb')).toHaveText('End-If');
   });
 
-  test('END-IF is not available in the add command dropdown', async ({ page }) => {
+  test('END-IF is not available in the command search', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
 
-    const options = await page.locator('.inspector-add-cmd select option').allTextContents();
-    expect(options.some(o => o.includes('End-If'))).toBe(false);
+    await page.locator('.cmd-action-btn.cmd-action-add').click();
+    await page.locator('.cmd-search-input').fill('End');
+    const items = await page.locator('.cmd-search-item .cmd-search-label').allTextContents();
+    expect(items.some(t => t === 'End-If')).toBe(false);
+    await page.keyboard.press('Escape');
   });
 
   test('commands between IF and END-IF are indented', async ({ page }) => {
@@ -1259,7 +1271,7 @@ test.describe('V45 – IF / END-IF', () => {
     await page.locator('.state-node').click();
 
     // Add IF (auto-inserts END-IF)
-    await page.locator('.inspector-add-cmd select').selectOption('ifCondition');
+    await addCommand(page, 'If');
     // Add a Say command — it will go after END-IF, need to move it
     // Actually let's just check the IF gets selected and we can verify layout
     await expect(page.locator('.fungus-cmd-ifCondition')).toHaveCount(1);
@@ -1275,7 +1287,7 @@ test.describe('V45 – IF / END-IF', () => {
 
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('ifCondition');
+    await addCommand(page, 'If');
 
     // IF should auto-select, editor should be visible
     const editor = page.locator('.fungus-cmd-editor');
@@ -1292,7 +1304,7 @@ test.describe('V46 – ELSE-IF and ELSE', () => {
   test('IF editor has Add Else-If and Add Else buttons', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('ifCondition');
+    await addCommand(page, 'If');
 
     const editor = page.locator('.fungus-cmd-editor');
     await expect(editor.locator('.cmd-btn').filter({ hasText: '+ Else-If' })).toBeVisible();
@@ -1302,7 +1314,7 @@ test.describe('V46 – ELSE-IF and ELSE', () => {
   test('clicking Add Else-If inserts an Else-If command', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('ifCondition');
+    await addCommand(page, 'If');
 
     await page.locator('.fungus-cmd-editor .cmd-btn').filter({ hasText: '+ Else-If' }).click();
 
@@ -1312,7 +1324,7 @@ test.describe('V46 – ELSE-IF and ELSE', () => {
   test('clicking Add Else inserts an Else command', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('ifCondition');
+    await addCommand(page, 'If');
 
     await page.locator('.fungus-cmd-editor .cmd-btn').filter({ hasText: /^\+ Else$/ }).click();
 
@@ -1322,7 +1334,7 @@ test.describe('V46 – ELSE-IF and ELSE', () => {
   test('IF editor has + AND/OR condition button', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('ifCondition');
+    await addCommand(page, 'If');
 
     const editor = page.locator('.fungus-cmd-editor');
     await expect(editor.locator('.cmd-btn').filter({ hasText: '+ AND/OR' })).toBeVisible();
@@ -1433,7 +1445,7 @@ test.describe('V51 – Debug mode', () => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
     await page.locator('.inspector-event-select').selectOption('gameStarted');
-    await page.locator('.inspector-add-cmd select').selectOption('say');
+    await addCommand(page, 'Say');
 
     const canvas = page.locator('#canvas-container');
     const box = await canvas.boundingBox();
@@ -1452,7 +1464,7 @@ test.describe('V51 – Debug mode', () => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
     await page.locator('.inspector-event-select').selectOption('gameStarted');
-    await page.locator('.inspector-add-cmd select').selectOption('say');
+    await addCommand(page, 'Say');
 
     const canvas = page.locator('#canvas-container');
     const box = await canvas.boundingBox();
@@ -1503,7 +1515,7 @@ test.describe('V53 – Debug pauses at every step', () => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
     await page.locator('.inspector-event-select').selectOption('gameStarted');
-    await page.locator('.inspector-add-cmd select').selectOption('say');
+    await addCommand(page, 'Say');
 
     const canvas = page.locator('#canvas-container');
     const box = await canvas.boundingBox();
@@ -1536,7 +1548,7 @@ test.describe('V55 – Run stage', () => {
     await page.locator('.state-node').click();
     await page.locator('.inspector-event-select').selectOption('gameStarted');
     // Add a wait command so execution doesn't finish instantly
-    await page.locator('.inspector-add-cmd select').selectOption('wait');
+    await addCommand(page, 'Wait');
 
     const canvas = page.locator('#canvas-container');
     const box = await canvas.boundingBox();
@@ -1556,7 +1568,7 @@ test.describe('V55 – Run stage', () => {
   test('stageBgColor command can be added', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('stageBgColor');
+    await addCommand(page, 'Stage BG Color');
 
     const verb = page.locator('.fungus-cmd-verb');
     await expect(verb).toHaveText('Stage BG Color');
@@ -1565,7 +1577,7 @@ test.describe('V55 – Run stage', () => {
   test('stageBgImage command shows image dropdown', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-add-cmd select').selectOption('stageBgImage');
+    await addCommand(page, 'Stage BG Image');
 
     // Select the command to show editor
     const editor = page.locator('.fungus-cmd-editor');

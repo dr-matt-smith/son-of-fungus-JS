@@ -792,12 +792,31 @@ Version 58 features - change how Menu command works
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
-Version 29 features - improve command sequence drag experience
+Version 59 features - improve command sequence drag experience
 ==================
 
-- [] at the moment when the user drags a command in the inspector to change where it is in the sequence of commands, the see a placeholder line for where it will be dragged to
-  - [] this is too subtle, and too hard for the user to visualise - change this to the full row, highlighted in green, as as the user drags the command to a new position they SEE the command in that new postion, with the other commands moved up/down to make space for it, so when they release the mouse it stays where they have seen it last in the sequence
-  - [] NOTE - as soon as the user starts to drag a command, even it some other command was previous selcrted, the command they are dragged is the only selected command (so there is one green selected command, which is they one they are dragging)
+- ✅ improved drag reordering — live preview as user drags, command auto-selected
+- ✅ improved new/duplicate/delete UI — action bar with ▲▼ +  ⧉ 🗑 buttons
+- ✅ new command search form — + opens search popup with dynamic filtering
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+Version 60 features - change menu to non-green color
+==================
+
+- [] at the moment the default color for a menu command is a green, so this is confusing with eh green for a sedlected command
+  - [] change the default color for menu commands to a light blue/grey color
+
 
 - [] and add Vite and PlayWright tests for the above feature(s)
+
+Version 60 features - change menu to non-green color
+==================
+
+- [] at the moment the default color for a menu command is a green, so this is confusing with eh green for a sedlected command
+  - [] change the default color for menu commands to a light blue/grey color
+
+
+- [] and add Vite and PlayWright tests for the above feature(s)
+
 

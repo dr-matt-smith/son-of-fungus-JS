@@ -1271,7 +1271,7 @@ describe('Fungus command summary row layout', () => {
     expect(rows[0].draggable).toBe(true);
   });
 
-  it('editor does NOT have move up/down buttons', () => {
+  it('command action bar has up/down/add/delete buttons', () => {
     const node = app.createNode('state', 0, 0);
     node.commands.push({ type: 'say', text: 'a', character: '' });
     node.commands.push({ type: 'wait', duration: 1 });
@@ -1279,11 +1279,10 @@ describe('Fungus command summary row layout', () => {
     app.updateInspector();
 
     document.querySelector('.fungus-cmd-summary').click();
-    const editor = document.querySelector('.fungus-cmd-editor');
-    const btns = editor.querySelectorAll('.fungus-cmd-btn-row .cmd-btn');
-    // Should only have delete button
-    expect(btns.length).toBe(1);
-    expect(btns[0].textContent).toContain('Delete');
+    const actionBar = document.querySelector('.cmd-action-bar');
+    expect(actionBar).toBeTruthy();
+    const btns = actionBar.querySelectorAll('.cmd-action-btn');
+    expect(btns.length).toBeGreaterThanOrEqual(4); // up, down, +, dup, delete
   });
 
   it('call command detail shows target block and mode', () => {

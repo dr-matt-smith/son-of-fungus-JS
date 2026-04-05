@@ -84,6 +84,51 @@ function cmdDetail(cmd) {
   }
 }
 
+function showCommandSearch(node) {
+  const overlay = document.createElement('div');
+  overlay.className = 'cmd-search-overlay';
+  overlay.innerHTML = `
+    <div class="cmd-search-popup">
+      <input type="text" class="cmd-search-input inspector-input" placeholder="Search commands…" autofocus>
+      <div class="cmd-search-results"></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const input = overlay.querySelector('.cmd-search-input');
+  const results = overlay.querySelector('.cmd-search-results');
+
+  function renderResults(filter) {
+    results.innerHTML = '';
+    for (const [key, ct] of Object.entries(COMMAND_TYPES)) {
+      if (key === 'endIf' || key === 'elseIf' || key === 'elseCmd') continue;
+      const text = `${ct.label} (${ct.category})`;
+      if (filter && !text.toLowerCase().includes(filter.toLowerCase())) continue;
+      const item = document.createElement('div');
+      item.className = 'cmd-search-item';
+      item.innerHTML = `<span class="cmd-search-label">${ct.label}</span><span class="cmd-search-cat">${ct.category}</span>`;
+      item.addEventListener('click', () => {
+        overlay.remove();
+        node.commands.push(createCommand(key));
+        if (key === 'ifCondition') node.commands.push(createCommand('endIf'));
+        selectedCmdIdx = node.commands.length - (key === 'ifCondition' ? 2 : 1);
+        onNodeDataChanged();
+        updateInspector();
+      });
+      results.appendChild(item);
+    }
+  }
+
+  renderResults('');
+  input.addEventListener('input', () => renderResults(input.value));
+  input.addEventListener('keydown', (e) => {
+    e.stopPropagation();
+    if (e.key === 'Escape') overlay.remove();
+  });
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+  setTimeout(() => input.focus(), 0);
+}
+
 function updateCmdSummaryRow() {
   if (selectedCmdIdx < 0) return;
   const row = document.querySelectorAll('.fungus-cmd-summary')[selectedCmdIdx];
@@ -292,28 +337,33 @@ function renderNodeInspector(n) {
       dragHandle.title = 'Drag to reorder';
       row.appendChild(dragHandle);
 
-      // HTML5 drag and drop
+      // HTML5 drag and drop — live preview
       row.draggable = true;
       row.dataset.cmdIdx = String(idx);
       row.addEventListener('dragstart', (e) => {
         e.dataTransfer.setData('text/plain', String(idx));
+        e.dataTransfer.effectAllowed = 'move';
+        selectedCmdIdx = idx; // select the dragged command
         row.classList.add('cmd-dragging');
       });
-      row.addEventListener('dragend', () => { row.classList.remove('cmd-dragging'); });
-      row.addEventListener('dragover', (e) => { e.preventDefault(); row.classList.add('cmd-drag-over'); });
-      row.addEventListener('dragleave', () => { row.classList.remove('cmd-drag-over'); });
-      row.addEventListener('drop', (e) => {
+      row.addEventListener('dragend', () => {
+        row.classList.remove('cmd-dragging');
+        onNodeDataChanged();
+        updateInspector();
+      });
+      row.addEventListener('dragover', (e) => {
         e.preventDefault();
-        row.classList.remove('cmd-drag-over');
-        const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+        e.dataTransfer.dropEffect = 'move';
+        const fromIdx = parseInt(e.dataTransfer.getData('text/plain') || row.parentElement.querySelector('.cmd-dragging')?.dataset.cmdIdx, 10);
         const toIdx = idx;
-        if (fromIdx !== toIdx) {
+        if (!isNaN(fromIdx) && fromIdx !== toIdx) {
           const [moved] = n.commands.splice(fromIdx, 1);
           n.commands.splice(toIdx, 0, moved);
-          if (selectedCmdIdx === fromIdx) selectedCmdIdx = toIdx;
-          else if (fromIdx < selectedCmdIdx && toIdx >= selectedCmdIdx) selectedCmdIdx--;
-          else if (fromIdx > selectedCmdIdx && toIdx <= selectedCmdIdx) selectedCmdIdx++;
-          onNodeDataChanged();
+          selectedCmdIdx = toIdx;
+          // Update all row indices
+          const rows = cmdList.querySelectorAll('.fungus-cmd-summary');
+          rows.forEach(r => r.classList.remove('fungus-cmd-selected', 'cmd-dragging'));
+          // Re-render
           updateInspector();
         }
       });
@@ -335,29 +385,86 @@ function renderNodeInspector(n) {
     });
     cmdsSection.appendChild(cmdList);
 
-    // Add command dropdown
-    const addRow = document.createElement('div');
-    addRow.className = 'inspector-add-cmd';
-    const addSelect = document.createElement('select');
-    addSelect.className = 'inspector-select';
-    addSelect.innerHTML = '<option value="">+ Add command...</option>';
-    for (const [key, ct] of Object.entries(COMMAND_TYPES)) {
-      if (key === 'endIf' || key === 'elseIf' || key === 'elseCmd') continue; // structural commands
-      addSelect.innerHTML += `<option value="${key}">${ct.label} (${ct.category})</option>`;
+    // Command action bar
+    const actionBar = document.createElement('div');
+    actionBar.className = 'cmd-action-bar';
+
+    // Left: up/down arrows
+    const leftGroup = document.createElement('span');
+    leftGroup.className = 'cmd-action-group';
+    const upBtn = document.createElement('button');
+    upBtn.className = 'cmd-action-btn';
+    upBtn.textContent = '▲';
+    upBtn.title = 'Select previous command';
+    upBtn.addEventListener('click', () => { if (selectedCmdIdx > 0) { selectedCmdIdx--; updateInspector(); } });
+    leftGroup.appendChild(upBtn);
+    const downBtn = document.createElement('button');
+    downBtn.className = 'cmd-action-btn';
+    downBtn.textContent = '▼';
+    downBtn.title = 'Select next command';
+    downBtn.addEventListener('click', () => { if (selectedCmdIdx < n.commands.length - 1) { selectedCmdIdx++; updateInspector(); } });
+    leftGroup.appendChild(downBtn);
+    actionBar.appendChild(leftGroup);
+
+    // Right: + new, duplicate, delete
+    const rightGroup = document.createElement('span');
+    rightGroup.className = 'cmd-action-group';
+    const addBtn = document.createElement('button');
+    addBtn.className = 'cmd-action-btn cmd-action-add';
+    addBtn.textContent = '+';
+    addBtn.title = 'Add new command';
+    addBtn.addEventListener('click', () => showCommandSearch(n));
+    rightGroup.appendChild(addBtn);
+
+    if (selectedCmdIdx >= 0 && selectedCmdIdx < n.commands.length) {
+      const dupBtn = document.createElement('button');
+      dupBtn.className = 'cmd-action-btn';
+      dupBtn.textContent = '⧉';
+      dupBtn.title = 'Duplicate command';
+      dupBtn.addEventListener('click', () => {
+        const copy = JSON.parse(JSON.stringify(n.commands[selectedCmdIdx]));
+        copy.id = crypto.randomUUID?.() || String(Date.now() + Math.random());
+        n.commands.splice(selectedCmdIdx + 1, 0, copy);
+        selectedCmdIdx++;
+        onNodeDataChanged();
+        updateInspector();
+      });
+      rightGroup.appendChild(dupBtn);
     }
-    addSelect.addEventListener('change', () => {
-      if (!addSelect.value) return;
-      if (addSelect.value === 'endIf') return; // END-IF is auto-inserted with IF
-      n.commands.push(createCommand(addSelect.value));
-      if (addSelect.value === 'ifCondition') {
-        n.commands.push(createCommand('endIf'));
+
+    const delBtn2 = document.createElement('button');
+    delBtn2.className = 'cmd-action-btn cmd-action-del';
+    delBtn2.textContent = '🗑';
+    delBtn2.title = 'Delete selected command';
+    delBtn2.addEventListener('click', () => {
+      if (selectedCmdIdx < 0 || selectedCmdIdx >= n.commands.length) return;
+      const cmd2 = n.commands[selectedCmdIdx];
+      if (cmd2.type === 'ifCondition') {
+        let d = 0, endIdx = -1;
+        for (let i = selectedCmdIdx; i < n.commands.length; i++) {
+          if (n.commands[i].type === 'ifCondition') d++;
+          if (n.commands[i].type === 'endIf') { d--; if (d === 0) { endIdx = i; break; } }
+        }
+        if (endIdx >= 0) n.commands.splice(selectedCmdIdx, endIdx - selectedCmdIdx + 1);
+        else n.commands.splice(selectedCmdIdx, 1);
+      } else if (cmd2.type === 'endIf') {
+        let d = 0, ifIdx = -1;
+        for (let i = selectedCmdIdx; i >= 0; i--) {
+          if (n.commands[i].type === 'endIf') d++;
+          if (n.commands[i].type === 'ifCondition') { d--; if (d === 0) { ifIdx = i; break; } }
+        }
+        if (ifIdx >= 0) n.commands.splice(ifIdx, selectedCmdIdx - ifIdx + 1);
+        else n.commands.splice(selectedCmdIdx, 1);
+      } else {
+        n.commands.splice(selectedCmdIdx, 1);
       }
-      selectedCmdIdx = n.commands.length - (addSelect.value === 'ifCondition' ? 2 : 1);
+      selectedCmdIdx = -1;
       onNodeDataChanged();
       updateInspector();
     });
-    addRow.appendChild(addSelect);
-    cmdsSection.appendChild(addRow);
+    rightGroup.appendChild(delBtn2);
+    actionBar.appendChild(rightGroup);
+    cmdsSection.appendChild(actionBar);
 
     // ── Command editor (for selected command) ───────────────────────────
     if (selectedCmdIdx >= 0 && selectedCmdIdx < n.commands.length) {
@@ -376,43 +483,9 @@ function renderNodeInspector(n) {
       renderCommandFields(fields, cmd, n);
       editor.appendChild(fields);
 
-      // Delete button
+      // Add Else-If / Else buttons for IF and Else-If commands
       const btnRow = document.createElement('div');
       btnRow.className = 'fungus-cmd-btn-row';
-      const delBtn = document.createElement('button');
-      delBtn.className = 'cmd-btn cmd-btn-del';
-      delBtn.textContent = '× Delete';
-      delBtn.title = 'Remove command';
-      delBtn.addEventListener('click', () => {
-        const cmd = n.commands[selectedCmdIdx];
-        if (cmd.type === 'ifCondition') {
-          // Find matching END-IF and remove both + contents between
-          let depth = 0;
-          let endIdx = -1;
-          for (let i = selectedCmdIdx; i < n.commands.length; i++) {
-            if (n.commands[i].type === 'ifCondition') depth++;
-            if (n.commands[i].type === 'endIf') { depth--; if (depth === 0) { endIdx = i; break; } }
-          }
-          if (endIdx >= 0) n.commands.splice(selectedCmdIdx, endIdx - selectedCmdIdx + 1);
-          else n.commands.splice(selectedCmdIdx, 1);
-        } else if (cmd.type === 'endIf') {
-          // Find matching IF and remove both + contents between
-          let depth = 0;
-          let ifIdx = -1;
-          for (let i = selectedCmdIdx; i >= 0; i--) {
-            if (n.commands[i].type === 'endIf') depth++;
-            if (n.commands[i].type === 'ifCondition') { depth--; if (depth === 0) { ifIdx = i; break; } }
-          }
-          if (ifIdx >= 0) n.commands.splice(ifIdx, selectedCmdIdx - ifIdx + 1);
-          else n.commands.splice(selectedCmdIdx, 1);
-        } else {
-          n.commands.splice(selectedCmdIdx, 1);
-        }
-        selectedCmdIdx = -1; onNodeDataChanged(); updateInspector();
-      });
-      btnRow.appendChild(delBtn);
-
-      // Add Else-If / Else buttons for IF and Else-If commands
       if (cmd.type === 'ifCondition' || cmd.type === 'elseIf') {
         // Find the matching END-IF to insert before it
         let depth = 0;

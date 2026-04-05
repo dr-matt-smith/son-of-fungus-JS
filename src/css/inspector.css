@@ -347,6 +347,111 @@
   border-top: 2px solid #3b82f6;
 }
 
+/* ── Command action bar ──────────────────────────────────────────────────── */
+
+.cmd-action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  margin-top: 4px;
+}
+
+.cmd-action-group {
+  display: flex;
+  gap: 4px;
+}
+
+.cmd-action-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 3px 8px;
+  line-height: 1;
+}
+
+.cmd-action-btn:hover {
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+.cmd-action-add {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.cmd-action-del {
+  font-size: 13px;
+}
+
+.cmd-action-del:hover {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+/* ── Command search popup ────────────────────────────────────────────────── */
+
+.cmd-search-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 10000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 120px;
+}
+
+.cmd-search-popup {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  width: 280px;
+  max-height: 350px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cmd-search-input {
+  margin: 8px;
+  width: calc(100% - 16px);
+}
+
+.cmd-search-results {
+  flex: 1;
+  overflow-y: auto;
+  border-top: 1px solid var(--border-color);
+}
+
+.cmd-search-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.cmd-search-item:hover {
+  background: var(--bg-card);
+}
+
+.cmd-search-label {
+  font-weight: 600;
+}
+
+.cmd-search-cat {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
 .fungus-cmd-verb {
   font-weight: 600;
   min-width: 70px;
