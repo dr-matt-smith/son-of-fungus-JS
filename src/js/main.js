@@ -17,6 +17,7 @@ import { renderVariablesList, renderEnumsList, renderMessagesList, showTab } fro
 // ── Inspector ────────────────────────────────────────────────────────────────
 
 S.onSelectionChange = updateInspector;
+S.onInspectorUpdate = updateInspector;
 document.getElementById('btn-export-json').addEventListener('click', showJsonExport);
 document.getElementById('btn-run-log').addEventListener('click', showRunLog);
 const btnBuild = document.getElementById('btn-build');

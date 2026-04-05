@@ -6,7 +6,7 @@
  */
 
 import { S } from './state.js';
-import { updateInspector } from './inspector.js';
+// No direct inspector import — uses S.onInspectorUpdate callback to avoid circular dependency
 
 // Web Audio API for typing sounds
 let audioCtx = null;
@@ -188,7 +188,7 @@ function debugPause(message, continuation) {
   paused = true;
   pendingContinuation = continuation;
   S.executingCommandIdx = -1;
-  updateInspector();
+  if (S.onInspectorUpdate) S.onInspectorUpdate();
   if (S.onStepPause) S.onStepPause();
 }
 
@@ -207,7 +207,7 @@ export function stopExecution() {
   callStack = [];
   // Remove highlight from all nodes
   for (const n of S.nodes) n.el.classList.remove('node-executing');
-  updateInspector();
+  if (S.onInspectorUpdate) S.onInspectorUpdate();
 }
 
 // ── Block execution ──────────────────────────────────────────────────────────
@@ -230,7 +230,7 @@ function executeBlock(node) {
     });
   } else {
     logEntry(`*Enter block*: "${node.label}" (id:${node.id})`);
-    updateInspector();
+    if (S.onInspectorUpdate) S.onInspectorUpdate();
     executeNextCommand();
   }
 }
@@ -255,7 +255,7 @@ function executeNextCommand() {
     }
     paused = true;
     S.executingCommandIdx = currentCmd;
-    updateInspector();
+    if (S.onInspectorUpdate) S.onInspectorUpdate();
     if (S.onStepPause) S.onStepPause();
     return;
   }
@@ -274,7 +274,7 @@ function executeNextCommand() {
       currentNode.el.classList.add('node-executing');
       S.executingNode = currentNode;
       S.executingCommandIdx = currentCmd;
-      updateInspector();
+      if (S.onInspectorUpdate) S.onInspectorUpdate();
       executeNextCommand();
     } else {
       logEntry('Execution complete');
@@ -282,7 +282,7 @@ function executeNextCommand() {
       stepping = false;
       paused = false;
       resuming = false;
-      updateInspector();
+      if (S.onInspectorUpdate) S.onInspectorUpdate();
       if (S.onExecutionEnd) S.onExecutionEnd();
     }
     return;
@@ -290,7 +290,7 @@ function executeNextCommand() {
 
   const cmd = currentNode.commands[currentCmd];
   S.executingCommandIdx = currentCmd;
-  updateInspector();
+  if (S.onInspectorUpdate) S.onInspectorUpdate();
 
   currentCmd++;
   executeCommand(cmd);

@@ -85,7 +85,7 @@ Split into 5–6 focused modules:
 
 ---
 
-## 4. Break the Circular Dependency (engine ↔ inspector)
+## 4. ✅ COMPLETED — Break the Circular Dependency (engine ↔ inspector)
 
 ### Problem
 - `engine.js` imports `updateInspector` from `inspector.js` (to refresh the UI during execution)

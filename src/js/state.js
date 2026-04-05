@@ -56,6 +56,7 @@ export const S = {
 
   // Callbacks (set by main.js)
   onSelectionChange: null,
+  onInspectorUpdate: null,
   onStepPause: null,
   onExecutionEnd: null,
 };
