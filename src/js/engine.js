@@ -317,22 +317,32 @@ function execCall(cmd) {
 }
 
 function execMenu(cmd) {
-  logEntry(`Block ${currentNode.id} "${currentNode.label}": Menu: ${cmd.options.map(o => o.text).join(' / ')}`);
+  // Collect consecutive menu commands (including this one)
+  const choices = [{ text: cmd.text, targetBlockId: cmd.targetBlockId }];
+  let peekIdx = currentCmd;
+  while (peekIdx < currentNode.commands.length && currentNode.commands[peekIdx].type === 'menu') {
+    choices.push({ text: currentNode.commands[peekIdx].text, targetBlockId: currentNode.commands[peekIdx].targetBlockId });
+    peekIdx++;
+  }
+  // Skip past the consecutive menus we consumed (currentCmd already points past the first one)
+  currentCmd = peekIdx;
+
+  logEntry(`Block ${currentNode.id} "${currentNode.label}": Menu: ${choices.map(c => c.text).join(' / ')}`);
   ensureOutputPanel();
   menuOverlay = document.createElement('div');
   menuOverlay.className = 'exec-menu';
   menuOverlay.innerHTML = '<div class="exec-menu-title">Choose:</div>';
 
-  for (const opt of cmd.options) {
+  for (const choice of choices) {
     const btn = document.createElement('button');
     btn.className = 'exec-menu-btn';
-    btn.textContent = opt.text;
+    btn.textContent = choice.text;
     btn.addEventListener('click', () => {
       menuOverlay.remove();
       menuOverlay = null;
-      appendOutput(`<div class="exec-say exec-choice">&gt; ${opt.text}</div>`);
-      if (opt.targetBlockId != null) {
-        const target = S.nodes.find(n => n.id === opt.targetBlockId);
+      appendOutput(`<div class="exec-say exec-choice">&gt; ${choice.text}</div>`);
+      if (choice.targetBlockId != null) {
+        const target = S.nodes.find(n => n.id === choice.targetBlockId);
         if (target) {
           executeBlock(target);
           return;

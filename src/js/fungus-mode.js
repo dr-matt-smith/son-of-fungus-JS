@@ -16,10 +16,8 @@ export function classifyBlock(node) {
     if (cmd.type === 'call' && cmd.targetBlockId != null) {
       targets.add(cmd.targetBlockId);
     }
-    if (cmd.type === 'menu') {
-      for (const opt of cmd.options) {
-        if (opt.targetBlockId != null) targets.add(opt.targetBlockId);
-      }
+    if (cmd.type === 'menu' && cmd.targetBlockId != null) {
+      targets.add(cmd.targetBlockId);
     }
   }
 
@@ -95,17 +93,9 @@ function getDesiredAutoConnections() {
   for (const node of S.nodes) {
     if (node.type !== 'state' && node.type !== 'choice') continue;
     for (const cmd of node.commands) {
-      if (cmd.type === 'call' && cmd.targetBlockId != null) {
+      if ((cmd.type === 'call' || cmd.type === 'menu') && cmd.targetBlockId != null) {
         const key = `${node.id}->${cmd.targetBlockId}`;
         if (!seen.has(key)) { seen.add(key); pairs.push({ fromId: node.id, toId: cmd.targetBlockId }); }
-      }
-      if (cmd.type === 'menu') {
-        for (const opt of cmd.options) {
-          if (opt.targetBlockId != null) {
-            const key = `${node.id}->${opt.targetBlockId}`;
-            if (!seen.has(key)) { seen.add(key); pairs.push({ fromId: node.id, toId: opt.targetBlockId }); }
-          }
-        }
       }
     }
   }

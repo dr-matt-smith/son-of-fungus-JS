@@ -110,13 +110,8 @@ export function deleteNode(node) {
   // Clear call/menu references to this block, delete connections
   for (const n of S.nodes) {
     for (const cmd of n.commands) {
-      if (cmd.type === 'call' && cmd.targetBlockId === node.id) {
+      if ((cmd.type === 'call' || cmd.type === 'menu') && cmd.targetBlockId === node.id) {
         cmd.targetBlockId = null;
-      }
-      if (cmd.type === 'menu') {
-        for (const opt of cmd.options) {
-          if (opt.targetBlockId === node.id) opt.targetBlockId = null;
-        }
       }
     }
   }

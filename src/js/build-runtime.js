@@ -142,11 +142,16 @@ function exec(cmd) {
       break;
     }
     case 'menu': {
+      const choices = [{ text: cmd.text, targetBlockId: cmd.targetBlockId }];
+      while (currentCmd < currentNode.commands.length && currentNode.commands[currentCmd].type === 'menu') {
+        choices.push({ text: currentNode.commands[currentCmd].text, targetBlockId: currentNode.commands[currentCmd].targetBlockId });
+        currentCmd++;
+      }
       const menuDiv = document.createElement('div'); menuDiv.className = 'menu';
-      for (const opt of cmd.options) {
-        const btn = document.createElement('button'); btn.className = 'menu-btn'; btn.textContent = opt.text;
-        btn.addEventListener('click', () => { menuDiv.remove(); appendOutput('<div class="say choice">&gt; ' + opt.text + '</div>');
-          if (opt.targetBlockId != null) { const t = S.nodes.find(n => n.id === opt.targetBlockId); if (t) { execBlock(t); return; } } next(); });
+      for (const ch of choices) {
+        const btn = document.createElement('button'); btn.className = 'menu-btn'; btn.textContent = ch.text;
+        btn.addEventListener('click', () => { menuDiv.remove(); appendOutput('<div class="say choice">&gt; ' + ch.text + '</div>');
+          if (ch.targetBlockId != null) { const t = S.nodes.find(n => n.id === ch.targetBlockId); if (t) { execBlock(t); return; } } next(); });
         menuDiv.appendChild(btn);
       }
       output.appendChild(menuDiv); output.scrollTop = output.scrollHeight;

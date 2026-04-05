@@ -55,7 +55,10 @@ function cmdDetail(cmd) {
       const target = S.nodes.find(n => n.id === cmd.targetBlockId);
       return `<${target ? target.label : 'None'}> : ${cmd.mode === 'stop' ? 'Stop' : 'Continue'}`;
     }
-    case 'menu':        return `${cmd.options.length} options`;
+    case 'menu': {
+      const t = S.nodes.find(n => n.id === cmd.targetBlockId);
+      return `"${cmd.text || ''}" → ${t ? t.label : '(none)'}`;
+    }
     case 'wait':        return `${cmd.duration}s`;
     case 'playSound':   return cmd.audioUrl || '(none)';
     case 'playMusic':   return cmd.audioUrl || '(none)';
@@ -79,6 +82,16 @@ function cmdDetail(cmd) {
     case 'stopAudio':   return '';
     default:            return '';
   }
+}
+
+function updateCmdSummaryRow() {
+  if (selectedCmdIdx < 0) return;
+  const row = document.querySelectorAll('.fungus-cmd-summary')[selectedCmdIdx];
+  if (!row) return;
+  const n = S.activeNode;
+  if (!n || selectedCmdIdx >= n.commands.length) return;
+  const detail = row.querySelector('.fungus-cmd-detail');
+  if (detail) detail.textContent = cmdDetail(n.commands[selectedCmdIdx]);
 }
 
 // ── Fungus mode reactivity ──────────────────────────────────────────────────
@@ -509,33 +522,16 @@ function renderConditionFields(container, cmd) {
 function renderCommandFields(container, cmd, node) {
   switch (cmd.type) {
     case 'say':
-      container.appendChild(labeledInput('Character', cmd.character, v => { cmd.character = v; }));
-      container.appendChild(labeledTextarea('Text', cmd.text, v => { cmd.text = v; }));
+      container.appendChild(labeledInput('Character', cmd.character, v => { cmd.character = v; updateCmdSummaryRow(); }));
+      container.appendChild(labeledTextarea('Text', cmd.text, v => { cmd.text = v; updateCmdSummaryRow(); }));
       break;
     case 'call':
       container.appendChild(labeledBlockSelect('Target Block', cmd.targetBlockId, v => { cmd.targetBlockId = v; onNodeDataChanged(); }, node));
       container.appendChild(labeledSelect('Mode', cmd.mode, [['stop', 'Stop'], ['continue', 'Continue']], v => { cmd.mode = v; }));
       break;
     case 'menu':
-      cmd.options.forEach((opt, i) => {
-        const row = document.createElement('div');
-        row.className = 'cmd-menu-option';
-        row.appendChild(labeledInput(`Option ${i + 1}`, opt.text, v => { opt.text = v; }));
-        row.appendChild(labeledBlockSelect('→ Block', opt.targetBlockId, v => { opt.targetBlockId = v; onNodeDataChanged(); }, node));
-        if (cmd.options.length > 2) {
-          const del = document.createElement('button');
-          del.className = 'cmd-btn cmd-btn-del';
-          del.textContent = '×';
-          del.addEventListener('click', () => { cmd.options.splice(i, 1); onNodeDataChanged(); updateInspector(); });
-          row.appendChild(del);
-        }
-        container.appendChild(row);
-      });
-      const addOpt = document.createElement('button');
-      addOpt.className = 'cmd-btn';
-      addOpt.textContent = '+ Option';
-      addOpt.addEventListener('click', () => { cmd.options.push({ text: `Option ${cmd.options.length + 1}`, targetBlockId: null }); onNodeDataChanged(); updateInspector(); });
-      container.appendChild(addOpt);
+      container.appendChild(labeledInput('Button Text', cmd.text, v => { cmd.text = v; updateCmdSummaryRow(); }));
+      container.appendChild(labeledBlockSelect('→ Block', cmd.targetBlockId, v => { cmd.targetBlockId = v; onNodeDataChanged(); }, node));
       break;
     case 'ifCondition':
     case 'elseIf':
@@ -624,7 +620,7 @@ function createInput(value, onChange) {
   input.type = 'text';
   input.className = 'inspector-input';
   input.value = value;
-  input.addEventListener('change', () => onChange(input.value));
+  input.addEventListener('input', () => onChange(input.value));
   input.addEventListener('keydown', (e) => e.stopPropagation());
   return input;
 }
@@ -685,7 +681,7 @@ function labeledTextarea(label, value, onChange) {
   ta.className = 'inspector-textarea';
   ta.value = value;
   ta.rows = 3;
-  ta.addEventListener('change', () => onChange(ta.value));
+  ta.addEventListener('input', () => onChange(ta.value));
   ta.addEventListener('keydown', (e) => e.stopPropagation());
   row.appendChild(ta);
   return row;

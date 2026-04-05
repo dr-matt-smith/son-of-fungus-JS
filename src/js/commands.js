@@ -46,10 +46,7 @@ export function createCommand(type) {
     case 'say':
       return { ...base, character: '', text: 'Hello!', portrait: '' };
     case 'menu':
-      return { ...base, options: [
-        { text: 'Option 1', targetBlockId: null },
-        { text: 'Option 2', targetBlockId: null },
-      ]};
+      return { ...base, text: 'Choice', targetBlockId: null };
     case 'call':
       return { ...base, targetBlockId: null, mode: 'stop' }; // 'stop' | 'continue'
     case 'setVarValue':

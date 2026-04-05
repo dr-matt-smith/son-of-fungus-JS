@@ -384,10 +384,7 @@ describe('Node deletion', () => {
     const b = app.createNode('state', 300, 0);
     const c = app.createNode('state', 600, 0);
     a.commands = [{ type: 'call', targetBlockId: b.id }];
-    c.commands = [{ type: 'menu', options: [
-      { text: 'Go B', targetBlockId: b.id },
-      { text: 'Other', targetBlockId: null },
-    ]}];
+    c.commands = [{ type: 'menu', text: 'Go B', targetBlockId: b.id }];
     app.syncAutoConnections();
 
     const autosBefore = app.S.connections.filter(c => c.auto && c.toId === b.id);
@@ -397,7 +394,7 @@ describe('Node deletion', () => {
 
     // Call references should be cleared
     expect(a.commands[0].targetBlockId).toBeNull();
-    expect(c.commands[0].options[0].targetBlockId).toBeNull();
+    expect(c.commands[0].targetBlockId).toBeNull();
 
     // Auto-connections to deleted node should be gone
     const autosAfter = app.S.connections.filter(c => c.auto && c.toId === b.id);
@@ -661,10 +658,8 @@ describe('Block classification', () => {
     const b = app.createNode('state', 400, 0);
     node.event = { type: 'none' };
     node.commands = [
-      { type: 'menu', options: [
-        { text: 'A', targetBlockId: a.id },
-        { text: 'B', targetBlockId: b.id },
-      ]},
+      { type: 'menu', text: 'A', targetBlockId: a.id },
+      { type: 'menu', text: 'B', targetBlockId: b.id },
     ];
     expect(app.classifyBlock(node)).toBe('branching');
   });

@@ -779,15 +779,25 @@ Version 57 features - load from examples
 Version 58 features - change how Menu command works
 ==================
 
-- [] refactor SAY comment
-  - [] when user is typing in text for a say command, update that command as they type in the block
-  - (so they don't have to press TAB to have the typed characters saved)
+- ✅ refactor SAY command when being edited in Inspector
+  - ✅ when user is typing in text for a say command, update that command as they type
+  - ✅ (uses input event — no need to press TAB)
 
-- [] refactor the Menu command
-  - [] each Menu command has a call to another block
-  - [] if there is a single menu command, followed by some other type of command, then the user is given a single menu button, which when clicked will result in the call to the linked block
-  - [] if there are 2 or more menu commands next to each other, then all these menu choices are offered in a single menu to the user
-    - [] and depending on the choice the user makes, the corresponding block is called
+- ✅ refactor the Menu command
+  - ✅ each Menu command has a text label and a call to another block
+  - ✅ if there is a single menu command, the user gets a single button
+  - ✅ if there are 2+ consecutive menu commands, all choices are offered in a single menu
+    - ✅ and depending on the choice, the corresponding block is called
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+Version 29 features - improve command sequence drag experience
+==================
+
+- [] at the moment when the user drags a command in the inspector to change where it is in the sequence of commands, the see a placeholder line for where it will be dragged to
+  - [] this is too subtle, and too hard for the user to visualise - change this to the full row, highlighted in green, as as the user drags the command to a new position they SEE the command in that new postion, with the other commands moved up/down to make space for it, so when they release the mouse it stays where they have seen it last in the sequence
+  - [] NOTE - as soon as the user starts to drag a command, even it some other command was previous selcrted, the command they are dragged is the only selected command (so there is one green selected command, which is they one they are dragging)
 
 - [] and add Vite and PlayWright tests for the above feature(s)
 
