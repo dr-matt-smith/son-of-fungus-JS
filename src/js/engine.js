@@ -8,7 +8,7 @@
 import { S } from './state.js';
 import { updateInspector } from './inspector.js';
 
-// Web Audio API for typing sounds (more reliable than HTML Audio for rapid playback)
+// Web Audio API for typing sounds
 let audioCtx = null;
 const audioBufferCache = {};
 

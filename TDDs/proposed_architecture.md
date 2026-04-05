@@ -12,7 +12,7 @@
 
 ---
 
-## 1. Eliminate the Duplicate God File (app.js)
+## 1. ✅ COMPLETED — Eliminate the Duplicate God File (app.js)
 
 ### Problem
 `app.js` (1,627 lines) appears to be an older version of `main.js` (1,364 lines). Both contain overlapping event handlers, canvas interaction code, and node management logic. Only `main.js` is imported by the application.
@@ -25,7 +25,7 @@ Delete `app.js` entirely. It is not referenced by any import and adds confusion.
 
 ---
 
-## 2. Split main.js into Feature Modules
+## 2. ✅ COMPLETED — Split main.js into Feature Modules
 
 ### Problem
 `main.js` (1,364 lines) handles:

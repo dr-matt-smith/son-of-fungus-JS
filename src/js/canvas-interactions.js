@@ -1,0 +1,421 @@
+'use strict';
+
+import { NODE_DEFAULTS, NODE_MIN_SIZE, ZOOM_STEP } from './config.js';
+import { S } from './state.js';
+import { canvasContainer, canvasEl, minimapEl, mmVP, btnHandTool } from './dom-refs.js';
+import { applyTransform, zoomAround, clientToWorld, relativeToContainer, fitAll, updateCursor } from './transform.js';
+import { refreshMinimap, getMinimapScales, updateMinimapViewport } from './minimap.js';
+import { createNode, moveNode, resizeNode } from './nodes/node-model.js';
+import { activateNode, deactivateNode, selectGroup, clearGroup,
+         startSelectionRect, updateSelectionRect, finishSelectionRect, deleteNode } from './nodes/node-selection.js';
+import { startEditing, commitEditing } from './nodes/node-editing.js';
+import { createConnection } from './connections/conn-model.js';
+import { selectConn, deselectConn } from './connections/conn-selection.js';
+import { cancelConnEditing } from './connections/conn-editing.js';
+import { getBorderPoint } from './connections/geometry.js';
+import { renderConnGroup, updateConnection } from './connections/conn-render.js';
+import { recalcPairOffsets } from './connections/conn-model.js';
+import { updateInspector } from './inspector.js';
+import { classifyBlock, applyFungusStyles, syncAutoConnections } from './fungus-mode.js';
+import { positionGhost } from './toolbar.js';
+
+// ── Canvas: scroll-wheel zoom ────────────────────────────────────────────────
+
+canvasContainer.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const rel = relativeToContainer(e.clientX, e.clientY);
+  const delta = e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP;
+  zoomAround(S.zoom + delta, rel.x, rel.y);
+}, { passive: false });
+
+// ── Canvas: mousedown (pan / deselect / selection rect) ──────────────────────
+
+canvasContainer.addEventListener('mousedown', (e) => {
+  if (S.creatingNode) return;
+  if (S.drawingConn)  return;
+
+  const onEmpty = e.button === 0 && !e.target.closest('.conn-group') && !e.target.closest('.diagram-node');
+
+  if (onEmpty) {
+    if (S.selectedConn) deselectConn();
+    if (S.activeNode) deactivateNode();
+    if (S.selectedNodes.length) clearGroup();
+  }
+
+  if (e.button === 1) {
+    e.preventDefault();
+    startPan(e);
+  } else if (e.button === 0 && S.activeTool === 'hand') {
+    startPan(e);
+  } else if (onEmpty && S.activeTool === 'select') {
+    e.preventDefault();
+    const world = clientToWorld(e.clientX, e.clientY);
+    startSelectionRect(world.x, world.y);
+  }
+});
+
+canvasContainer.addEventListener('auxclick', (e) => {
+  if (e.button === 1) e.preventDefault();
+});
+
+function startPan(e) {
+  S.isPanning = true;
+  S.panOrigin = { x: e.clientX, y: e.clientY, panX: S.panX, panY: S.panY };
+  canvasContainer.style.cursor = 'grabbing';
+  e.preventDefault();
+}
+
+// ── Node: mousedown (drag + select) ─────────────────────────────────────────
+
+function onNodeMouseDown(e) {
+  if (e.button !== 0) return;
+  if (S.activeTool === 'hand') return;
+  if (S.creatingNode) return;
+  if (S.drawingConn) return;
+  if (e.target.classList.contains('resize-handle')) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  if (S.editingNode && S.editingNode !== e.currentTarget._node) commitEditing();
+
+  const id   = Number(e.currentTarget.dataset.id);
+  const node = S.nodes.find(n => n.id === id);
+  if (!node) return;
+
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  const world = clientToWorld(e.clientX, e.clientY);
+
+  if (S.selectedNodes.length > 0 && S.selectedNodes.includes(node)) {
+    S.draggingGroup = {
+      offsets: S.selectedNodes.map(n => ({ node: n, ox: world.x - n.x, oy: world.y - n.y })),
+    };
+    S.didDragNode = false;
+    for (const n of S.selectedNodes) n.el.classList.add('dragging');
+    return;
+  }
+
+  if (S.selectedNodes.length > 0) clearGroup();
+
+  activateNode(node);
+
+  S.draggingNode = { node, offsetX: world.x - node.x, offsetY: world.y - node.y };
+  S.didDragNode = false;
+  node.el.classList.add('dragging');
+}
+
+// ── Node: double-click (edit label) ─────────────────────────────────────────
+
+function onNodeDblClick(e) {
+  const id   = Number(e.currentTarget.dataset.id);
+  const node = S.nodes.find(n => n.id === id);
+  if (!node) return;
+  if (node.type !== 'state' && node.type !== 'choice') return;
+  e.preventDefault();
+  activateNode(node);
+  startEditing(node);
+}
+
+// ── Context menu for fungus mode ────────────────────────────────────────────
+
+let ctxMenu = null;
+
+function removeCtxMenu() {
+  if (ctxMenu) { ctxMenu.remove(); ctxMenu = null; }
+}
+
+function showNodeContextMenu(node, clientX, clientY) {
+  removeCtxMenu();
+
+  ctxMenu = document.createElement('div');
+  ctxMenu.className = 'fungus-ctx-menu';
+  ctxMenu.style.left = `${clientX}px`;
+  ctxMenu.style.top  = `${clientY}px`;
+
+  const deleteBtn = document.createElement('div');
+  deleteBtn.className = 'fungus-ctx-item';
+  deleteBtn.textContent = 'Delete';
+  deleteBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    removeCtxMenu();
+    deleteNode(node);
+    updateInspector();
+  });
+
+  const dupBtn = document.createElement('div');
+  dupBtn.className = 'fungus-ctx-item';
+  dupBtn.textContent = 'Duplicate';
+  dupBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    removeCtxMenu();
+    duplicateNode(node);
+  });
+
+  ctxMenu.appendChild(deleteBtn);
+  ctxMenu.appendChild(dupBtn);
+  document.body.appendChild(ctxMenu);
+
+  // Close on next click outside the menu
+  const close = (ev) => {
+    if (ctxMenu && ctxMenu.contains(ev.target)) return;
+    removeCtxMenu();
+    document.removeEventListener('mousedown', close);
+  };
+  setTimeout(() => document.addEventListener('mousedown', close), 0);
+}
+
+function duplicateNode(srcNode) {
+  const offset = 30;
+  const newNode = createNodeWithEvents(srcNode.type, srcNode.x + offset, srcNode.y + offset);
+  newNode.label = srcNode.label + ' copy';
+  const labelEl = newNode.el.querySelector('.node-label');
+  if (labelEl) labelEl.textContent = newNode.label;
+  newNode.event = srcNode.event ? { ...srcNode.event } : { type: 'none' };
+  newNode.commands = srcNode.commands.map(cmd => JSON.parse(JSON.stringify(cmd)));
+  newNode.description = srcNode.description || '';
+  if (true) {
+    applyFungusStyles();
+    syncAutoConnections();
+  }
+  activateNode(newNode);
+  updateInspector();
+}
+
+function onNodeContextMenu(e) {
+  // Context menu only
+  e.preventDefault();
+  e.stopPropagation();
+  const id   = Number(e.currentTarget.dataset.id);
+  const node = S.nodes.find(n => n.id === id);
+  if (!node) return;
+  activateNode(node);
+  updateInspector();
+  showNodeContextMenu(node, e.clientX, e.clientY);
+}
+
+// Wire node events when nodes are created — override createNode to add listeners
+const _origCreateNode = createNode;
+
+// We need to hook into node creation to add event listeners.
+// Since createNode is imported, we re-export a wrapped version via the facade.
+export function createNodeWithEvents(type, worldX, worldY) {
+  const node = _origCreateNode(type, worldX, worldY);
+  node.el.addEventListener('mousedown', onNodeMouseDown);
+  node.el.addEventListener('dblclick',  onNodeDblClick);
+  node.el.addEventListener('contextmenu', onNodeContextMenu);
+
+  return node;
+}
+
+// ── Minimap viewport: drag to scroll ────────────────────────────────────────
+
+mmVP.addEventListener('mousedown', (e) => {
+  if (e.button !== 0) return;
+  e.preventDefault();
+  e.stopPropagation();
+  S.draggingMinimapVP = true;
+  const rect = mmVP.getBoundingClientRect();
+  S.mmVPGrabOffset = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+});
+
+// ── Global: mousemove ────────────────────────────────────────────────────────
+
+document.addEventListener('mousemove', (e) => {
+  if (S.creatingNode && S.ghostEl) {
+    positionGhost(e.clientX, e.clientY);
+  }
+
+  if (S.drawingConn) {
+    const world = clientToWorld(e.clientX, e.clientY);
+    const p1 = getBorderPoint(S.drawingConn.fromNode, world.x, world.y);
+    const mx = (p1.x + world.x) / 2;
+    const my = (p1.y + world.y) / 2;
+    renderConnGroup(S.drawingConn.group, p1, world, mx, my, '', false);
+  }
+
+  if (S.isPanning && S.panOrigin) {
+    S.panX = S.panOrigin.panX + (e.clientX - S.panOrigin.x);
+    S.panY = S.panOrigin.panY + (e.clientY - S.panOrigin.y);
+    applyTransform();
+  }
+
+  if (S.draggingNode) {
+    const world = clientToWorld(e.clientX, e.clientY);
+    const newX = world.x - S.draggingNode.offsetX;
+    const newY = world.y - S.draggingNode.offsetY;
+    if (!S.didDragNode &&
+        (Math.abs(newX - S.draggingNode.node.x) > 2 ||
+         Math.abs(newY - S.draggingNode.node.y) > 2)) {
+      S.didDragNode = true;
+    }
+    moveNode(S.draggingNode.node, newX, newY);
+  }
+
+  if (S.resizingNode) {
+    const { node, handle, startWorldX, startWorldY, startX, startY, startW, startH } = S.resizingNode;
+    const world = clientToWorld(e.clientX, e.clientY);
+    const dx = world.x - startWorldX;
+    const dy = world.y - startWorldY;
+    const min = NODE_MIN_SIZE[node.type] || { w: 20, h: 20 };
+    let newX = startX, newY = startY, newW = startW, newH = startH;
+    if (handle.includes('e')) newW = Math.max(min.w, startW + dx);
+    if (handle.includes('s')) newH = Math.max(min.h, startH + dy);
+    if (handle.includes('w')) { newW = Math.max(min.w, startW - dx); newX = startX + startW - newW; }
+    if (handle.includes('n')) { newH = Math.max(min.h, startH - dy); newY = startY + startH - newH; }
+    resizeNode(node, newX, newY, newW, newH);
+  }
+
+  if (S.selectionRect) {
+    const world = clientToWorld(e.clientX, e.clientY);
+    updateSelectionRect(world.x, world.y);
+  }
+
+  if (S.draggingGroup) {
+    const world = clientToWorld(e.clientX, e.clientY);
+    for (const { node, ox, oy } of S.draggingGroup.offsets) {
+      const newX = world.x - ox;
+      const newY = world.y - oy;
+      if (!S.didDragNode && (Math.abs(newX - node.x) > 2 || Math.abs(newY - node.y) > 2)) {
+        S.didDragNode = true;
+      }
+      moveNode(node, newX, newY);
+    }
+  }
+
+  if (S.reconnDrag) {
+    const world = clientToWorld(e.clientX, e.clientY);
+    const conn = S.reconnDrag.conn;
+    if (S.reconnDrag.end === 'from') {
+      conn.danglingFrom = { x: world.x, y: world.y };
+    } else {
+      conn.danglingTo = { x: world.x, y: world.y };
+    }
+    updateConnection(conn);
+  }
+
+  if (S.draggingMinimapVP) {
+    const { b, sx, sy } = getMinimapScales();
+    const mmRect = minimapEl.getBoundingClientRect();
+    let mx = e.clientX - mmRect.left - S.mmVPGrabOffset.x;
+    let my = e.clientY - mmRect.top  - S.mmVPGrabOffset.y;
+    const vpW = parseFloat(mmVP.style.width)  || 0;
+    const vpH = parseFloat(mmVP.style.height) || 0;
+    mx = Math.max(0, Math.min(mx, 200 - vpW));
+    my = Math.max(0, Math.min(my, 150 - vpH));
+    const worldX = mx / sx + b.x;
+    const worldY = my / sy + b.y;
+    S.panX = -worldX * S.zoom;
+    S.panY = -worldY * S.zoom;
+    applyTransform();
+  }
+});
+
+// ── Global: mouseup ──────────────────────────────────────────────────────────
+
+document.addEventListener('mouseup', (e) => {
+  if (S.reconnDrag) {
+    const world = clientToWorld(e.clientX, e.clientY);
+    const conn = S.reconnDrag.conn;
+    const target = S.nodes.find(n => {
+      if (S.reconnDrag.end === 'from' && conn.toId != null && n.id === conn.toId) return false;
+      if (S.reconnDrag.end === 'to' && conn.fromId != null && n.id === conn.fromId) return false;
+      if (S.reconnDrag.end === 'to' && n.type === 'start') return false;  // cannot connect into a start node
+      return world.x >= n.x && world.x <= n.x + n.w && world.y >= n.y && world.y <= n.y + n.h;
+    });
+    if (target) {
+      if (S.reconnDrag.end === 'from') { conn.fromId = target.id; conn.danglingFrom = null; }
+      else { conn.toId = target.id; conn.danglingTo = null; }
+      recalcPairOffsets();
+    }
+    S.reconnDrag = null;
+    updateCursor();
+    updateConnection(conn);
+  }
+
+  if (S.drawingConn) {
+    const world = clientToWorld(e.clientX, e.clientY);
+    const target = S.nodes.find(n => {
+      if (n.id === S.drawingConn.fromNode.id) return false;
+      if (n.type === 'start') return false;  // cannot connect into a start node
+      return world.x >= n.x && world.x <= n.x + n.w && world.y >= n.y && world.y <= n.y + n.h;
+    });
+    S.drawingConn.group.remove();
+    if (target) createConnection(S.drawingConn.fromNode, target);
+    S.drawingConn = null;
+    updateCursor();
+  }
+
+  if (S.creatingNode) {
+    if (S.ghostEl) {
+      const rect = canvasContainer.getBoundingClientRect();
+      const overCanvas = e.clientX >= rect.left && e.clientX <= rect.right &&
+                         e.clientY >= rect.top  && e.clientY <= rect.bottom;
+      if (overCanvas) {
+        const def = NODE_DEFAULTS[S.creatingNodeType];
+        const world = clientToWorld(e.clientX, e.clientY);
+        const newNode = createNodeWithEvents(S.creatingNodeType, world.x - def.w / 2, world.y - def.h / 2);
+        if (true) {
+          activateNode(newNode);
+          updateInspector();
+        }
+      }
+      S.ghostEl.remove();
+      S.ghostEl = null;
+    }
+    S.creatingNode = false;
+    S.creatingNodeType = null;
+  }
+
+  if (S.isPanning) { S.isPanning = false; S.panOrigin = null; updateCursor(); }
+  if (S.draggingNode) { S.draggingNode.node.el.classList.remove('dragging'); S.draggingNode = null; }
+  if (S.resizingNode) { S.resizingNode = null; }
+  if (S.selectionRect) { const world = clientToWorld(e.clientX, e.clientY); finishSelectionRect(world.x, world.y); }
+  if (S.draggingGroup) {
+    for (const { node } of S.draggingGroup.offsets) node.el.classList.remove('dragging');
+    S.draggingGroup = null;
+  }
+  if (S.draggingMinimapVP) { S.draggingMinimapVP = false; }
+});
+
+// ── Keyboard shortcuts ───────────────────────────────────────────────────────
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  const { clientWidth: cw, clientHeight: ch } = canvasContainer;
+  switch (e.key) {
+    case '=': case '+': zoomAround(S.zoom + ZOOM_STEP, cw / 2, ch / 2); break;
+    case '-': zoomAround(S.zoom - ZOOM_STEP, cw / 2, ch / 2); break;
+    case 'f': case 'F': fitAll(); break;
+    case 'h': case 'H': btnHandTool.click(); break;
+    case 'Escape':
+      if (S.editingConn) { cancelConnEditing(); break; }
+      if (S.drawingConn) { S.drawingConn.group.remove(); S.drawingConn = null; updateCursor(); break; }
+      if (S.creatingNode && S.ghostEl) { S.ghostEl.remove(); S.ghostEl = null; S.creatingNode = false; S.creatingNodeType = null; break; }
+      if (S.selectedNodes.length) { clearGroup(); break; }
+      if (S.selectedConn) { deselectConn(); break; }
+      if (S.activeNode) { deactivateNode(); break; }
+      break;
+  }
+});
+
+// ── Window resize ────────────────────────────────────────────────────────────
+
+window.addEventListener('resize', updateMinimapViewport);
+
+// ── Minimap minimize / restore ───────────────────────────────────────────────
+
+const minimizeBtn = document.getElementById('minimap-minimize');
+const restoreBtn  = document.getElementById('minimap-restore');
+
+minimizeBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  minimapEl.style.display = 'none';
+  restoreBtn.style.display = 'block';
+});
+
+restoreBtn.addEventListener('click', () => {
+  restoreBtn.style.display = 'none';
+  minimapEl.style.display = '';
+  refreshMinimap();
+});
