@@ -599,7 +599,7 @@ test.describe('V28 – Run Log Style', () => {
     await page.locator('#btn-run-log').click();
     const logText = await page.locator('#json-modal-body pre').textContent();
     // Should match pattern like "1: New Block 1: Say:"
-    expect(logText).toMatch(/\d+: .+: Say:/);
+    expect(logText).toMatch(/Block \d+ ".+": Say:/);
   });
 
   test('execution started line is NOT prefixed with id', async ({ page }) => {
@@ -1016,14 +1016,14 @@ test.describe('V37 – Command summary row layout', () => {
     await expect(detail).toBeVisible();
   });
 
-  test('summary rows have move arrows', async ({ page }) => {
+  test('summary rows have drag handles', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
     await page.locator('.inspector-add-cmd select').selectOption('say');
     await page.locator('.inspector-add-cmd select').selectOption('wait');
 
-    const arrows = page.locator('.fungus-cmd-arrow');
-    await expect(arrows.first()).toBeVisible();
+    const handles = page.locator('.fungus-cmd-drag-handle');
+    await expect(handles.first()).toBeVisible();
   });
 
   test('editor has only delete button (no move arrows)', async ({ page }) => {
@@ -1453,6 +1453,65 @@ test.describe('V51 – Debug mode', () => {
     await expect(page.locator('#data-enums')).toBeHidden();
     await expect(page.locator('#data-events')).toBeHidden();
     await expect(page.locator('#data-variables')).toBeVisible();
+
+    await page.locator('#btn-stop').click();
+  });
+});
+
+// ─── Version 53: Enhanced debug stepping ────────────────────────────────
+
+test.describe('V53 – Debug pauses at every step', () => {
+  test('debug pauses on variable initialisation', async ({ page }) => {
+    // Add a variable
+    await page.locator('#variables-new-name').fill('score');
+    await page.locator('#variables-add-btn').click();
+
+    // Create block with Game Started
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
+
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+
+    // Start debug
+    await page.locator('#btn-play-step').click();
+    await page.waitForTimeout(500);
+
+    // Should be paused on variable init
+    const statusText = await page.locator('#debug-status-text').textContent();
+    expect(statusText).toContain('DEBUG run:');
+    expect(statusText).toContain('initialisation');
+
+    await page.locator('#btn-stop').click();
+  });
+
+  test('debug pauses on block entry', async ({ page }) => {
+    // Create block with Game Started + Say (no variables)
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
+    await page.locator('.inspector-add-cmd select').selectOption('say');
+
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+
+    // Start debug
+    await page.locator('#btn-play-step').click();
+    await page.waitForTimeout(500);
+
+    // First pause should be on "Execution started"
+    let statusText = await page.locator('#debug-status-text').textContent();
+    expect(statusText).toContain('Execution started');
+
+    // Step to block entry
+    await page.locator('#btn-step-continue').click();
+    await page.waitForTimeout(300);
+
+    statusText = await page.locator('#debug-status-text').textContent();
+    expect(statusText).toContain('Enter block');
 
     await page.locator('#btn-stop').click();
   });

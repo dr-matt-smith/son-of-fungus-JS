@@ -687,3 +687,46 @@ Version 51 features - simple debugger
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
+
+Version 52 features - enhance run / debug
+==================
+
+
+- ✅ in the Run Log (and Debug status lines) prefix the block ID with the word "Block", and also put the block name in quotes:
+  - ✅ "[16:18:04.622] 1: start: Say: Hello from Start" BECOMES "[16:18:04.622] Block 1 "start": Say: Hello from Start" and so on
+
+- ✅ before play/debug user should NOT see "Step Into" or "Step Over" buttons
+- ✅ when Playing (not debugging) user should NOT see "Step Into" or "Step Over" buttons
+
+- ✅ prefix the status bar across the top of the screen during a debug run with the words "DEBUG run: "
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+Version 53 features - enhance run / debug
+==================
+
+- ✅ Run Log should indicate when user CHANGES a variable during a debug run
+
+- ✅ each line from a Run Log should be a step when Debugging a flowchart
+  - ✅ variable initialisation lines are debug steps
+  - ✅ block entry is a debug step
+  - ✅ "Execution started" is a debug step
+  - ✅ every run log line appears in the debug status bar
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+Version 54 features - Fungus style
+==================
+
+- ✅ in the flowchart
+  - ✅ when a block is selected it should be highlighted with a green outline
+  - ✅ standard blocks should have a yellow background
+  - ✅ branching blocks should have a yellow background
+
+- ✅ in the inspector for a selected block
+  - ✅ remove the UP/DOWN command sequence arrows
+  - ✅ add a drag widget instead, allowing user to drag a command up/down in the sequence
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)

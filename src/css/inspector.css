@@ -322,34 +322,25 @@
 .fungus-cmd-summary.fungus-cmd-selected { background: #14532d; }
 [data-theme="light"] .fungus-cmd-summary.fungus-cmd-selected { background: #bbf7d0; color: #14532d; }
 
-.fungus-cmd-arrows {
-  display: flex;
-  flex-direction: row;
-  gap: 2px;
+.fungus-cmd-drag-handle {
+  cursor: grab;
+  color: var(--text-muted);
+  font-size: 14px;
   margin-right: 6px;
-  min-width: 20px;
+  user-select: none;
+  flex-shrink: 0;
 }
 
-.fungus-cmd-arrow {
-  background: none;
-  border: 1px solid #4b5563;
-  border-radius: 3px;
-  color: #d1d5db;
-  font-size: 12px;
-  cursor: pointer;
-  padding: 1px 3px;
-  line-height: 1;
+.fungus-cmd-drag-handle:hover {
+  color: var(--text-primary);
 }
 
-.fungus-cmd-arrow:hover {
-  color: #f3f4f6;
-  background: #374151;
-  border-color: #6b7280;
+.fungus-cmd-summary.cmd-dragging {
+  opacity: 0.4;
 }
 
-.fungus-cmd-arrow-spacer {
-  display: inline-block;
-  width: 20px;
+.fungus-cmd-summary.cmd-drag-over {
+  border-top: 2px solid #3b82f6;
 }
 
 .fungus-cmd-verb {

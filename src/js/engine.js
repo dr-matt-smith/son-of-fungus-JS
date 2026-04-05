@@ -26,7 +26,7 @@ export function isStepping() { return stepping; }
 export function isPaused() { return paused; }
 export function getRunLog() { return runLog; }
 
-function logEntry(message) {
+export function logEntry(message) {
   const now = new Date();
   const ts = now.toLocaleTimeString('en-GB', { hour12: false }) + '.' + String(now.getMilliseconds()).padStart(3, '0');
   runLog.push({ ts, message });
@@ -83,15 +83,35 @@ export function startExecution() {
   ifBranchTaken = [];
   S.executingNode = null;
   S.executingCommandIdx = -1;
-  // Log initial variable values
-  if (S.variables.length > 0) {
-    logEntry('── Variable initialisation ──');
-    for (const v of S.variables) {
-      logEntry(`  ${v.name} (${v.type}) = ${JSON.stringify(v.value)}`);
+  // Log initial variable values, with debug pauses
+  if (stepping && S.variables.length > 0) {
+    // Chain pauses through variable init
+    let idx = 0;
+    const pauseInit = () => {
+      if (idx === 0) {
+        debugPause('── Variable initialisation ──', () => { idx++; pauseInit(); });
+      } else if (idx <= S.variables.length) {
+        const v = S.variables[idx - 1];
+        debugPause(`  ${v.name} (${v.type}) = ${JSON.stringify(v.value)}`, () => { idx++; pauseInit(); });
+      } else {
+        debugPause(`Execution started — entry block: "${entryNode.label}" (id:${entryNode.id})`, () => { executeBlock(entryNode); });
+      }
+    };
+    pauseInit();
+  } else if (stepping) {
+    // No variables but stepping — pause on "Execution started"
+    debugPause(`Execution started — entry block: "${entryNode.label}" (id:${entryNode.id})`, () => { executeBlock(entryNode); });
+  } else {
+    // Normal play, no stepping
+    if (S.variables.length > 0) {
+      logEntry('── Variable initialisation ──');
+      for (const v of S.variables) {
+        logEntry(`  ${v.name} (${v.type}) = ${JSON.stringify(v.value)}`);
+      }
     }
+    logEntry(`Execution started — entry block: "${entryNode.label}" (id:${entryNode.id})`);
+    executeBlock(entryNode);
   }
-  logEntry(`Execution started — entry block: "${entryNode.label}" (id:${entryNode.id})`);
-  executeBlock(entryNode);
 }
 
 export function startStepExecution() {
@@ -102,12 +122,34 @@ export function startStepExecution() {
 }
 
 let resuming = false;  // true when stepping past a pause
+let pendingContinuation = null; // function to call after debug pause resumes
 
 export function stepNext() {
   if (!running || !stepping || !paused) return;
   paused = false;
   resuming = true;
-  executeNextCommand();
+  if (pendingContinuation) {
+    const fn = pendingContinuation;
+    pendingContinuation = null;
+    fn();
+  } else {
+    executeNextCommand();
+  }
+}
+
+// Pause for debug at a non-command point (init, block entry, etc.)
+function debugPause(message, continuation) {
+  if (!stepping || S.stepOverTarget) {
+    // Not stepping or stepping over — just continue
+    continuation();
+    return;
+  }
+  logEntry(message);
+  paused = true;
+  pendingContinuation = continuation;
+  S.executingCommandIdx = -1;
+  updateInspector();
+  if (S.onStepPause) S.onStepPause();
 }
 
 export function stopExecution() {
@@ -115,6 +157,7 @@ export function stopExecution() {
   stepping = false;
   paused = false;
   resuming = false;
+  pendingContinuation = null;
   if (waitTimer) { clearTimeout(waitTimer); waitTimer = null; }
   if (menuOverlay) { menuOverlay.remove(); menuOverlay = null; }
   if (outputEl) { outputEl.remove(); outputEl = null; }
@@ -139,17 +182,23 @@ function executeBlock(node) {
   node.el.classList.add('node-executing');
   S.executingNode = node;
   S.executingCommandIdx = 0;
-  logEntry(`*Enter block*: "${node.label}" (id:${node.id})`);
-  updateInspector();
 
-  executeNextCommand();
+  if (stepping && !S.stepOverTarget) {
+    debugPause(`*Enter block*: "${node.label}" (id:${node.id})`, () => {
+      executeNextCommand();
+    });
+  } else {
+    logEntry(`*Enter block*: "${node.label}" (id:${node.id})`);
+    updateInspector();
+    executeNextCommand();
+  }
 }
 
 function executeNextCommand() {
   if (!running) return;
 
   // In step mode, pause before each command (except when resuming from a pause)
-  if (stepping && currentCmd > 0 && !resuming) {
+  if (stepping && !resuming) {
     // If stepping over, skip pausing until we return to target
     if (S.stepOverTarget) {
       if (currentNode.id === S.stepOverTarget.nodeId && currentCmd >= S.stepOverTarget.cmdIdx) {
@@ -245,7 +294,7 @@ function substituteVars(text) {
 function execSay(cmd) {
   const text = substituteVars(cmd.text);
   const charName = cmd.character ? `<strong>${cmd.character}:</strong> ` : '';
-  logEntry(`${currentNode.id}: ${currentNode.label}: Say: ${cmd.character ? cmd.character + ': ' : ''}${text}`);
+  logEntry(`Block ${currentNode.id} "${currentNode.label}": Say: ${cmd.character ? cmd.character + ': ' : ''}${text}`);
   appendOutput(`<div class="exec-say">${charName}${text}</div>`);
   waitTimer = setTimeout(() => { waitTimer = null; executeNextCommand(); }, 600);
 }
@@ -253,12 +302,12 @@ function execSay(cmd) {
 function execCall(cmd) {
   const target = S.nodes.find(n => n.id === cmd.targetBlockId);
   if (!target) {
-    logEntry(`${currentNode.id}: ${currentNode.label}: Call: target block not found`);
+    logEntry(`Block ${currentNode.id} "${currentNode.label}": Call: target block not found`);
     appendOutput('<div class="exec-msg exec-error">Call: target block not found.</div>');
     executeNextCommand();
     return;
   }
-  logEntry(`${currentNode.id}: ${currentNode.label}: Call: "${target.label}" (mode: ${cmd.mode})`);
+  logEntry(`Block ${currentNode.id} "${currentNode.label}": Call: "${target.label}" (mode: ${cmd.mode})`);
   if (cmd.mode === 'continue') {
     callStack.push({ node: currentNode, cmdIdx: currentCmd });
   }
@@ -266,7 +315,7 @@ function execCall(cmd) {
 }
 
 function execMenu(cmd) {
-  logEntry(`${currentNode.id}: ${currentNode.label}: Menu: ${cmd.options.map(o => o.text).join(' / ')}`);
+  logEntry(`Block ${currentNode.id} "${currentNode.label}": Menu: ${cmd.options.map(o => o.text).join(' / ')}`);
   ensureOutputPanel();
   menuOverlay = document.createElement('div');
   menuOverlay.className = 'exec-menu';
@@ -385,7 +434,7 @@ function skipToEndIf() {
 
 function execIfCondition(cmd) {
   const result = evaluateCondition(cmd);
-  logEntry(`${currentNode.id}: ${currentNode.label}: If: ${conditionSummary(cmd)} → ${result}`);
+  logEntry(`Block ${currentNode.id} "${currentNode.label}": If: ${conditionSummary(cmd)} → ${result}`);
 
   ifBranchTaken.push(result);
   if (result) {
@@ -403,7 +452,7 @@ function execElseIf(cmd) {
   }
 
   const result = evaluateCondition(cmd);
-  logEntry(`${currentNode.id}: ${currentNode.label}: Else-If: ${conditionSummary(cmd)} → ${result}`);
+  logEntry(`Block ${currentNode.id} "${currentNode.label}": Else-If: ${conditionSummary(cmd)} → ${result}`);
 
   if (result) {
     ifBranchTaken[ifBranchTaken.length - 1] = true;
@@ -420,7 +469,7 @@ function execElse() {
     return;
   }
 
-  logEntry(`${currentNode.id}: ${currentNode.label}: Else`);
+  logEntry(`Block ${currentNode.id} "${currentNode.label}": Else`);
   ifBranchTaken[ifBranchTaken.length - 1] = true;
   executeNextCommand();
 }
@@ -429,9 +478,9 @@ function execSetVarValue(cmd) {
   const v = S.variables.find(v => v.name === cmd.variableName);
   if (v) {
     v.value = coerceToType(cmd.value, v.type);
-    logEntry(`${currentNode.id}: ${currentNode.label}: Set variable: ${cmd.variableName} = ${cmd.value}`);
+    logEntry(`Block ${currentNode.id} "${currentNode.label}": Set variable: ${cmd.variableName} = ${cmd.value}`);
   } else {
-    logEntry(`${currentNode.id}: ${currentNode.label}: Set variable: "${cmd.variableName}" not found`);
+    logEntry(`Block ${currentNode.id} "${currentNode.label}": Set variable: "${cmd.variableName}" not found`);
   }
   executeNextCommand();
 }
@@ -441,21 +490,21 @@ function execSetVarCopy(cmd) {
   const source = S.variables.find(v => v.name === cmd.sourceVariableName);
   if (target && source) {
     target.value = source.value;
-    logEntry(`${currentNode.id}: ${currentNode.label}: Copy variable: ${cmd.variableName} ← ${cmd.sourceVariableName} (${source.value})`);
+    logEntry(`Block ${currentNode.id} "${currentNode.label}": Copy variable: ${cmd.variableName} ← ${cmd.sourceVariableName} (${source.value})`);
   } else {
-    logEntry(`${currentNode.id}: ${currentNode.label}: Copy variable: variable not found`);
+    logEntry(`Block ${currentNode.id} "${currentNode.label}": Copy variable: variable not found`);
   }
   executeNextCommand();
 }
 
 function execWait(cmd) {
-  logEntry(`${currentNode.id}: ${currentNode.label}: Wait: ${cmd.duration}s`);
+  logEntry(`Block ${currentNode.id} "${currentNode.label}": Wait: ${cmd.duration}s`);
   const ms = (cmd.duration || 1) * 1000;
   waitTimer = setTimeout(() => { waitTimer = null; executeNextCommand(); }, ms);
 }
 
 function execSendMessage(cmd) {
-  logEntry(`${currentNode.id}: ${currentNode.label}: Send message: "${cmd.message}"`);
+  logEntry(`Block ${currentNode.id} "${currentNode.label}": Send message: "${cmd.message}"`);
   const targets = S.nodes.filter(n => n.event?.type === 'messageReceived' && n.event.message === cmd.message);
   if (targets.length > 0) {
     callStack.push({ node: currentNode, cmdIdx: currentCmd });
@@ -466,7 +515,7 @@ function execSendMessage(cmd) {
 }
 
 function execPlayMusic(cmd) {
-  logEntry(`${currentNode.id}: ${currentNode.label}: Play music: ${cmd.audioUrl || '(none)'}`);
+  logEntry(`Block ${currentNode.id} "${currentNode.label}": Play music: ${cmd.audioUrl || '(none)'}`);
   if (!cmd.audioUrl) { executeNextCommand(); return; }
   try {
     if (audioElements[cmd.audioUrl]) audioElements[cmd.audioUrl].pause();
@@ -480,7 +529,7 @@ function execPlayMusic(cmd) {
 }
 
 function execPlaySound(cmd) {
-  logEntry(`${currentNode.id}: ${currentNode.label}: Play sound: ${cmd.audioUrl || '(none)'}`);
+  logEntry(`Block ${currentNode.id} "${currentNode.label}": Play sound: ${cmd.audioUrl || '(none)'}`);
   if (!cmd.audioUrl) { executeNextCommand(); return; }
   try {
     const audio = new Audio(cmd.audioUrl);
@@ -496,7 +545,7 @@ function execPlaySound(cmd) {
 }
 
 function execStopAudio() {
-  logEntry(`${currentNode.id}: ${currentNode.label}: Stop audio`);
+  logEntry(`Block ${currentNode.id} "${currentNode.label}": Stop audio`);
   for (const [url, audio] of Object.entries(audioElements)) {
     audio.pause();
     audio.currentTime = 0;

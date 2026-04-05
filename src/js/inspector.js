@@ -268,37 +268,38 @@ function renderNodeInspector(n) {
         row.classList.add('cmd-executing');
       }
 
-      // Move arrows — always 2 columns: [down] [up]
-      const arrows = document.createElement('span');
-      arrows.className = 'fungus-cmd-arrows';
+      // Drag handle for reordering
+      const dragHandle = document.createElement('span');
+      dragHandle.className = 'fungus-cmd-drag-handle';
+      dragHandle.textContent = '⠿';
+      dragHandle.title = 'Drag to reorder';
+      row.appendChild(dragHandle);
 
-      if (idx < n.commands.length - 1) {
-        const dn = document.createElement('button');
-        dn.className = 'fungus-cmd-arrow';
-        dn.textContent = '↓';
-        dn.title = 'Move down';
-        dn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx + 1, 0, n.commands.splice(idx, 1)[0]); if (selectedCmdIdx === idx) selectedCmdIdx++; onNodeDataChanged(); updateInspector(); });
-        arrows.appendChild(dn);
-      } else {
-        const spacer = document.createElement('span');
-        spacer.className = 'fungus-cmd-arrow-spacer';
-        arrows.appendChild(spacer);
-      }
-
-      if (idx > 0) {
-        const up = document.createElement('button');
-        up.className = 'fungus-cmd-arrow';
-        up.textContent = '↑';
-        up.title = 'Move up';
-        up.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx - 1, 0, n.commands.splice(idx, 1)[0]); if (selectedCmdIdx === idx) selectedCmdIdx--; onNodeDataChanged(); updateInspector(); });
-        arrows.appendChild(up);
-      } else {
-        const spacer = document.createElement('span');
-        spacer.className = 'fungus-cmd-arrow-spacer';
-        arrows.appendChild(spacer);
-      }
-
-      row.appendChild(arrows);
+      // HTML5 drag and drop
+      row.draggable = true;
+      row.dataset.cmdIdx = String(idx);
+      row.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', String(idx));
+        row.classList.add('cmd-dragging');
+      });
+      row.addEventListener('dragend', () => { row.classList.remove('cmd-dragging'); });
+      row.addEventListener('dragover', (e) => { e.preventDefault(); row.classList.add('cmd-drag-over'); });
+      row.addEventListener('dragleave', () => { row.classList.remove('cmd-drag-over'); });
+      row.addEventListener('drop', (e) => {
+        e.preventDefault();
+        row.classList.remove('cmd-drag-over');
+        const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+        const toIdx = idx;
+        if (fromIdx !== toIdx) {
+          const [moved] = n.commands.splice(fromIdx, 1);
+          n.commands.splice(toIdx, 0, moved);
+          if (selectedCmdIdx === fromIdx) selectedCmdIdx = toIdx;
+          else if (fromIdx < selectedCmdIdx && toIdx >= selectedCmdIdx) selectedCmdIdx--;
+          else if (fromIdx > selectedCmdIdx && toIdx <= selectedCmdIdx) selectedCmdIdx++;
+          onNodeDataChanged();
+          updateInspector();
+        }
+      });
 
       // Verb
       const verb = document.createElement('span');

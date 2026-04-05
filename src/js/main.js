@@ -16,7 +16,7 @@ import { getBorderPoint } from './connections/geometry.js';
 import { renderConnGroup, updateConnection } from './connections/conn-render.js';
 import { recalcPairOffsets } from './connections/conn-model.js';
 import { updateInspector, showJsonExport, showRunLog, showJsonLoad } from './inspector.js';
-import { startExecution, startStepExecution, stepNext, stopExecution, isRunning, isStepping, isPaused, getRunLog } from './engine.js';
+import { startExecution, startStepExecution, stepNext, stopExecution, isRunning, isStepping, isPaused, getRunLog, logEntry } from './engine.js';
 import { initFlowchart, classifyBlock, applyFungusStyles, syncAutoConnections } from './fungus-mode.js';
 
 // ── Toolbar: Fit All ─────────────────────────────────────────────────────────
@@ -578,6 +578,8 @@ function showPlayButtons() {
   btnPlayStep.style.display = '';
   btnStepContinue.style.display = 'none';
   btnStop.style.display = 'none';
+  if (btnStepInto) btnStepInto.style.display = 'none';
+  if (btnStepOver) btnStepOver.style.display = 'none';
 }
 
 function showRunningButtons() {
@@ -585,6 +587,8 @@ function showRunningButtons() {
   btnPlayStep.style.display = 'none';
   btnStepContinue.style.display = 'none';
   btnStop.style.display = '';
+  if (btnStepInto) btnStepInto.style.display = 'none';
+  if (btnStepOver) btnStepOver.style.display = 'none';
 }
 
 function showStepPausedButtons() {
@@ -592,6 +596,8 @@ function showStepPausedButtons() {
   btnPlayStep.style.display = 'none';
   btnStepContinue.style.display = '';
   btnStop.style.display = '';
+  if (btnStepInto) btnStepInto.style.display = 'none';
+  if (btnStepOver) btnStepOver.style.display = 'none';
 }
 
 btnPlay.addEventListener('click', () => {
@@ -653,7 +659,7 @@ function clearDebugHighlights() {
 }
 
 function updateDebugStatus(msg) {
-  if (debugStatusText) debugStatusText.textContent = msg || '';
+  if (debugStatusText) debugStatusText.textContent = msg ? `DEBUG run: ${msg}` : '';
 }
 
 function highlightReferencedVars(cmd) {
@@ -738,13 +744,15 @@ btnStop.addEventListener('click', () => {
 S.onStepPause = () => {
   showStepPausedButtons();
 
-  if (debugMode && S.executingNode) {
-    const cmd = S.executingNode.commands[S.executingCommandIdx];
-
-    // Update status bar
+  if (debugMode) {
+    // Always update status bar from latest log entry
     const lastLog = getRunLog();
     const lastEntry = lastLog.length > 0 ? lastLog[lastLog.length - 1].message : '';
     updateDebugStatus(lastEntry);
+  }
+
+  if (debugMode && S.executingNode) {
+    const cmd = S.executingNode ? S.executingNode.commands[S.executingCommandIdx] : null;
 
     // Highlight referenced variables
     if (cmd) highlightReferencedVars(cmd);
@@ -979,6 +987,13 @@ const variablesNewType = document.getElementById('variables-new-type');
 const variablesNewName = document.getElementById('variables-new-name');
 const variablesAddBtn  = document.getElementById('variables-add-btn');
 
+function logVarEdit(varName, newValue) {
+  if (debugMode && isRunning()) {
+    logEntry(`⚡ User edited variable: ${varName} = ${JSON.stringify(newValue)}`);
+    debugEditedVars.add(varName);
+  }
+}
+
 function renderVariablesList() {
   variablesList.innerHTML = '';
 
@@ -1083,7 +1098,7 @@ function renderVariablesList() {
           valSelect.appendChild(opt);
         }
       }
-      valSelect.addEventListener('change', () => { v.value = valSelect.value; });
+      valSelect.addEventListener('change', () => { v.value = valSelect.value; logVarEdit(v.name, v.value); });
       row.appendChild(valSelect);
     } else {
       row.appendChild(buildValueInput(v));
@@ -1109,7 +1124,7 @@ function renderVariablesList() {
       textarea.value = String(v.value ?? '');
       textarea.addEventListener('input', () => {
         v.value = textarea.value;
-        // Re-render if crossing the threshold
+        logVarEdit(v.name, v.value);
         if (textarea.value.length <= 12) renderVariablesList();
       });
       textarea.addEventListener('keydown', (e) => e.stopPropagation());
@@ -1127,7 +1142,7 @@ function buildValueInput(v) {
     cb.type = 'checkbox';
     cb.className = 'variable-value-checkbox';
     cb.checked = !!v.value;
-    cb.addEventListener('change', () => { v.value = cb.checked; });
+    cb.addEventListener('change', () => { v.value = cb.checked; logVarEdit(v.name, v.value); });
     return cb;
   }
   const input = document.createElement('input');
@@ -1136,7 +1151,7 @@ function buildValueInput(v) {
     input.type = 'text';
     input.inputMode = 'numeric';
     input.value = String(v.value ?? 0);
-    input.addEventListener('change', () => { v.value = parseInt(input.value, 10) || 0; input.value = String(v.value); });
+    input.addEventListener('change', () => { v.value = parseInt(input.value, 10) || 0; input.value = String(v.value); logVarEdit(v.name, v.value); });
     input.addEventListener('keydown', (e) => {
       if (e.ctrlKey || e.metaKey || ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'].includes(e.key)) return;
       if (e.key === '-') return;
@@ -1148,9 +1163,8 @@ function buildValueInput(v) {
     input.type = 'text';
     input.inputMode = 'decimal';
     input.value = String(v.value ?? 0);
-    input.addEventListener('change', () => { v.value = parseFloat(input.value) || 0; input.value = String(v.value); });
+    input.addEventListener('change', () => { v.value = parseFloat(input.value) || 0; input.value = String(v.value); logVarEdit(v.name, v.value); });
     input.addEventListener('keydown', (e) => {
-      // Allow navigation, backspace, delete, tab, arrows, minus, decimal
       if (e.ctrlKey || e.metaKey || ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'].includes(e.key)) return;
       if (e.key === '-' || e.key === '.') return;
       if (e.key >= '0' && e.key <= '9') return;
@@ -1161,6 +1175,7 @@ function buildValueInput(v) {
     input.value = String(v.value ?? '');
     input.addEventListener('change', () => {
       v.value = input.value;
+      logVarEdit(v.name, v.value);
       if (input.value.length > 12) renderVariablesList();
     });
   }
