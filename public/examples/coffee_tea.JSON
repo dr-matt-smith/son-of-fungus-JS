@@ -16,6 +16,13 @@
       },
       "commands": [
         {
+          "type": "playSound",
+          "id": "e8a22238-65a0-489b-8346-2a807945ac3f",
+          "audioUrl": "/audio/defaults/MidVoice.wav",
+          "volume": 1,
+          "waitUntilFinished": false
+        },
+        {
           "type": "stageBgImage",
           "id": "264155c1-2693-4274-8666-8b86632ce0c1",
           "imageUrl": "/images/FungusTown_1.png"
@@ -25,14 +32,22 @@
           "id": "5c68cc3e-8d8c-4f19-a0a4-3684d2b2030a",
           "character": "",
           "text": "beginning",
-          "portrait": ""
+          "portrait": "",
+          "waitForNext": true,
+          "typingAnimation": true,
+          "typingAudio": true,
+          "typingAudioUrl": "/audio/defaults/MidVoice.wav"
         },
         {
           "type": "say",
           "id": "c14607d0-af0c-4fac-b7ae-a5dc4e70874e",
           "character": "",
           "text": "hello from the start block",
-          "portrait": ""
+          "portrait": "",
+          "waitForNext": true,
+          "typingAnimation": true,
+          "typingAudio": true,
+          "typingAudioUrl": "/audio/defaults/MidVoice.wav"
         },
         {
           "type": "call",
@@ -95,7 +110,11 @@
           "id": "82ba1d16-e9a5-40ed-9123-7edaee5e3839",
           "character": "",
           "text": "TEA",
-          "portrait": ""
+          "portrait": "",
+          "waitForNext": true,
+          "typingAnimation": true,
+          "typingAudio": true,
+          "typingAudioUrl": "/audio/defaults/MidVoice.wav"
         },
         {
           "type": "call",
@@ -122,7 +141,11 @@
           "id": "0e681c58-0086-4ed9-8056-6a3dd8886b8f",
           "character": "",
           "text": "COFFEE",
-          "portrait": ""
+          "portrait": "",
+          "waitForNext": true,
+          "typingAnimation": true,
+          "typingAudio": true,
+          "typingAudioUrl": "/audio/defaults/MidVoice.wav"
         },
         {
           "type": "call",
@@ -166,26 +189,26 @@
     },
     {
       "id": 2,
-      "fromId": 3,
-      "toId": 5,
-      "label": ""
-    },
-    {
-      "id": 3,
-      "fromId": 4,
-      "toId": 5,
-      "label": ""
-    },
-    {
-      "id": 4,
       "fromId": 2,
       "toId": 3,
       "label": ""
     },
     {
-      "id": 5,
+      "id": 3,
       "fromId": 2,
       "toId": 4,
+      "label": ""
+    },
+    {
+      "id": 4,
+      "fromId": 3,
+      "toId": 5,
+      "label": ""
+    },
+    {
+      "id": 5,
+      "fromId": 4,
+      "toId": 5,
       "label": ""
     }
   ]

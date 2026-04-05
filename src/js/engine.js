@@ -8,6 +8,46 @@
 import { S } from './state.js';
 import { updateInspector } from './inspector.js';
 
+// Web Audio API for typing sounds (more reliable than HTML Audio for rapid playback)
+let audioCtx = null;
+const audioBufferCache = {};
+
+function getAudioContext() {
+  if (!audioCtx) {
+    const Ctor = window.AudioContext || window.webkitAudioContext;
+    if (!Ctor) return null;
+    audioCtx = new Ctor();
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+async function loadAudioBuffer(url) {
+  if (audioBufferCache[url]) return audioBufferCache[url];
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return null;
+    const resp = await fetch(url);
+    const data = await resp.arrayBuffer();
+    const buffer = await ctx.decodeAudioData(data);
+    audioBufferCache[url] = buffer;
+    return buffer;
+  } catch (_) { return null; }
+}
+
+function playTypingSound(buffer, volume) {
+  if (!buffer) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  const gain = ctx.createGain();
+  gain.gain.value = volume;
+  source.connect(gain);
+  gain.connect(ctx.destination);
+  source.start(0);
+}
+
 let running     = false;
 let stepping    = false;   // step-by-step mode
 let paused      = false;   // paused between steps
@@ -67,6 +107,7 @@ function clearOutput() {
 export function startExecution() {
   if (running) return;
   running = true;
+  getAudioContext(); // init audio context on user gesture
 
   // Find the entry point: a node with gameStarted event
   const entryNode = S.nodes.find(n => n.event?.type === 'gameStarted');
@@ -77,7 +118,6 @@ export function startExecution() {
   }
 
   clearOutput();
-  ensureOutputPanel();
   callStack = [];
   runLog = [];
   ifBranchTaken = [];
@@ -160,6 +200,7 @@ export function stopExecution() {
   pendingContinuation = null;
   if (waitTimer) { clearTimeout(waitTimer); waitTimer = null; }
   if (menuOverlay) { menuOverlay.remove(); menuOverlay = null; }
+  document.querySelectorAll('.say-dialog').forEach(d => d.remove());
   if (outputEl) { outputEl.remove(); outputEl = null; }
   S.executingNode = null;
   S.executingCommandIdx = -1;
@@ -237,7 +278,6 @@ function executeNextCommand() {
       executeNextCommand();
     } else {
       logEntry('Execution complete');
-      appendOutput('<div class="exec-msg exec-info">Execution complete.</div>');
       running = false;
       stepping = false;
       paused = false;
@@ -295,10 +335,78 @@ function substituteVars(text) {
 
 function execSay(cmd) {
   const text = substituteVars(cmd.text);
-  const charName = cmd.character ? `<strong>${cmd.character}:</strong> ` : '';
   logEntry(`Block ${currentNode.id} "${currentNode.label}": Say: ${cmd.character ? cmd.character + ': ' : ''}${text}`);
-  appendOutput(`<div class="exec-say">${charName}${text}</div>`);
-  waitTimer = setTimeout(() => { waitTimer = null; executeNextCommand(); }, 600);
+
+  // Create dialog element
+  const dialog = document.createElement('div');
+  dialog.className = 'say-dialog';
+
+  if (cmd.character) {
+    const charEl = document.createElement('div');
+    charEl.className = 'say-dialog-character';
+    charEl.textContent = cmd.character;
+    dialog.appendChild(charEl);
+  }
+
+  const textEl = document.createElement('div');
+  textEl.className = 'say-dialog-text';
+  dialog.appendChild(textEl);
+
+  document.body.appendChild(dialog);
+
+  // Load typing audio buffer then start
+  const typingUrl = cmd.typingAudioUrl || '/audio/defaults/MidVoice.wav';
+  const wantTypingAudio = cmd.typingAudio !== false && typingUrl;
+  (wantTypingAudio ? loadAudioBuffer(typingUrl) : Promise.resolve(null)).then(typingBuffer => {
+    startSayContent(dialog, textEl, text, cmd, typingBuffer);
+  });
+}
+
+function startSayContent(dialog, textEl, text, cmd, typingBuffer) {
+  function finishDialog() {
+    if (cmd.waitForNext !== false) {
+      // Show next button and wait for click
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'say-dialog-next';
+      nextBtn.innerHTML = '▼';
+      nextBtn.addEventListener('click', () => {
+        dialog.style.opacity = '0';
+        setTimeout(() => { dialog.remove(); executeNextCommand(); }, 250);
+      });
+      dialog.appendChild(nextBtn);
+    } else {
+      // Auto-advance after brief delay
+      waitTimer = setTimeout(() => {
+        waitTimer = null;
+        dialog.style.opacity = '0';
+        setTimeout(() => { dialog.remove(); executeNextCommand(); }, 250);
+      }, 600);
+    }
+  }
+
+  if (cmd.typingAnimation !== false) {
+    // Typing animation
+    let i = 0;
+    const speed = 30;
+    function typeChar() {
+      if (!running) { dialog.remove(); return; }
+      if (i < text.length) {
+        textEl.textContent += text[i];
+        if (typingBuffer && text[i] !== ' ') {
+          playTypingSound(typingBuffer, 0.3);
+        }
+        i++;
+        waitTimer = setTimeout(typeChar, speed);
+      } else {
+        waitTimer = null;
+        finishDialog();
+      }
+    }
+    typeChar();
+  } else {
+    textEl.textContent = text;
+    finishDialog();
+  }
 }
 
 function execCall(cmd) {
@@ -324,23 +432,21 @@ function execMenu(cmd) {
     choices.push({ text: currentNode.commands[peekIdx].text, targetBlockId: currentNode.commands[peekIdx].targetBlockId });
     peekIdx++;
   }
-  // Skip past the consecutive menus we consumed (currentCmd already points past the first one)
   currentCmd = peekIdx;
 
   logEntry(`Block ${currentNode.id} "${currentNode.label}": Menu: ${choices.map(c => c.text).join(' / ')}`);
-  ensureOutputPanel();
+
+  // Create centered menu overlay
   menuOverlay = document.createElement('div');
-  menuOverlay.className = 'exec-menu';
-  menuOverlay.innerHTML = '<div class="exec-menu-title">Choose:</div>';
+  menuOverlay.className = 'menu-choices-overlay';
 
   for (const choice of choices) {
     const btn = document.createElement('button');
-    btn.className = 'exec-menu-btn';
+    btn.className = 'menu-choice-btn';
     btn.textContent = choice.text;
     btn.addEventListener('click', () => {
       menuOverlay.remove();
       menuOverlay = null;
-      appendOutput(`<div class="exec-say exec-choice">&gt; ${choice.text}</div>`);
       if (choice.targetBlockId != null) {
         const target = S.nodes.find(n => n.id === choice.targetBlockId);
         if (target) {
@@ -353,9 +459,7 @@ function execMenu(cmd) {
     menuOverlay.appendChild(btn);
   }
 
-  const body = outputEl.querySelector('#exec-output-body');
-  body.appendChild(menuOverlay);
-  body.scrollTop = body.scrollHeight;
+  document.body.appendChild(menuOverlay);
 }
 
 function coerceToType(val, varType) {

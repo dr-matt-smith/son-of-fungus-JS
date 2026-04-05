@@ -44,7 +44,7 @@ export function createCommand(type) {
   const base = { type, id: crypto.randomUUID?.() || String(Date.now() + Math.random()) };
   switch (type) {
     case 'say':
-      return { ...base, character: '', text: 'Hello!', portrait: '' };
+      return { ...base, character: '', text: 'Hello!', portrait: '', waitForNext: true, typingAnimation: true, typingAudio: true, typingAudioUrl: '/audio/defaults/MidVoice.wav' };
     case 'menu':
       return { ...base, text: 'Choice', targetBlockId: null };
     case 'call':

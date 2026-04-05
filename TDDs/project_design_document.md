@@ -856,3 +856,35 @@ NOTE - I give you permission to visit these web links, and the web links about t
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 
+
+Version 65 features -improve command search UX
+==================
+
+- ✅ command search now supports keyboard navigation
+  - ✅ UP/DOWN arrows to navigate the list
+  - ✅ ENTER to select the highlighted command
+  - ✅ highlighted item shown with blue outline
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+
+Version 66 features - step-by-step dialog output for say and menu commands
+==================
+
+- ✅ Say command now shows a styled dialog at the bottom of the screen
+  - ✅ nice border with rounded corners, dark background
+  - ✅ ▼ next button at bottom-right (when "Wait for next" is enabled)
+  - ✅ dialog fades away (0.25s) when next is clicked, then execution continues
+
+- ✅ Say command enhancements
+  - ✅ "Wait for next" option (default: on) — shows next button, waits for click
+  - ✅ "Typing animation" option (default: on) — characters appear one at a time
+  - ✅ "Typing audio" option (default: on) — typing sound per character
+    - ✅ defaults to /audio/defaults/MidVoice.wav, user can choose any audio file
+
+- ✅ Menu command — choices displayed centered on screen with full-width buttons
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+

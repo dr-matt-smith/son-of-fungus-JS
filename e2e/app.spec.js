@@ -525,6 +525,9 @@ test.describe('V27 – Run Log', () => {
     await page.mouse.click(box.x + 5, box.y + 5);
     await page.locator('#btn-play').click();
     await page.waitForTimeout(1500);
+    // Click Say next button if visible
+    if (await page.locator('.say-dialog-next').count() > 0) await page.locator('.say-dialog-next').click();
+    await page.waitForTimeout(500);
 
     // Check run log
     await page.locator('#btn-run-log').click();
@@ -589,6 +592,9 @@ test.describe('V28 – Run Log Style', () => {
     await page.mouse.click(box.x + 5, box.y + 5);
     await page.locator('#btn-play').click();
     await page.waitForTimeout(1500);
+    // Click Say next button if visible
+    if (await page.locator('.say-dialog-next').count() > 0) await page.locator('.say-dialog-next').click();
+    await page.waitForTimeout(500);
 
     // Check run log
     await page.locator('#btn-run-log').click();
@@ -609,11 +615,15 @@ test.describe('V28 – Run Log Style', () => {
     await page.mouse.click(box.x + 5, box.y + 5);
     await page.locator('#btn-play').click();
     await page.waitForTimeout(1500);
+    // Click Say next button if visible
+    if (await page.locator('.say-dialog-next').count() > 0) await page.locator('.say-dialog-next').click();
+    await page.waitForTimeout(500);
+    // Stop to return to editor and check log
+    if (await page.locator('#btn-stop').isVisible()) await page.locator('#btn-stop').click();
 
     // Check run log has id: name: prefix on Say command
     await page.locator('#btn-run-log').click();
     const logText = await page.locator('#json-modal-body pre').textContent();
-    // Should match pattern like "1: New Block 1: Say:"
     expect(logText).toMatch(/Block \d+ ".+": Say:/);
   });
 
@@ -629,6 +639,9 @@ test.describe('V28 – Run Log Style', () => {
     await page.mouse.click(box.x + 5, box.y + 5);
     await page.locator('#btn-play').click();
     await page.waitForTimeout(1500);
+    // Click Say next button if visible
+    if (await page.locator('.say-dialog-next').count() > 0) await page.locator('.say-dialog-next').click();
+    await page.waitForTimeout(500);
 
     // Check run log
     await page.locator('#btn-run-log').click();
@@ -1012,8 +1025,9 @@ test.describe('V36 – Fungus command summary list', () => {
     await page.locator('.state-node').click();
     await addCommand(page, 'Say');
 
-    // Editor should show character and text fields
-    await expect(page.locator('.fungus-cmd-editor .cmd-field')).toHaveCount(2);
+    // Editor should show character, text, checkboxes, and audio fields
+    const fields = page.locator('.fungus-cmd-editor .cmd-field');
+    await expect(fields).toHaveCount(6); // character, text, wait-for-next, typing-anim, typing-audio, typing-sound
   });
 });
 
@@ -1366,6 +1380,9 @@ test.describe('V47 – Variable init in Run Log', () => {
     await page.mouse.click(box.x + 5, box.y + 5);
     await page.locator('#btn-play').click();
     await page.waitForTimeout(1500);
+    // Click Say next button if visible
+    if (await page.locator('.say-dialog-next').count() > 0) await page.locator('.say-dialog-next').click();
+    await page.waitForTimeout(500);
 
     // Check run log
     await page.locator('#btn-run-log').click();

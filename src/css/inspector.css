@@ -425,6 +425,15 @@
   background: var(--bg-card);
 }
 
+.cmd-search-item.cmd-search-highlighted {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.cmd-search-item.cmd-search-highlighted .cmd-search-cat {
+  color: #bfdbfe;
+}
+
 .cmd-search-label {
   font-weight: 600;
 }

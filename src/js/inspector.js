@@ -107,6 +107,23 @@ function showCommandSearch(node, parentEl) {
   results.className = 'cmd-search-results';
   cmdSearchContainer.appendChild(results);
 
+  let highlightedIdx = 0;
+
+  function selectItem(item) {
+    const key = item.dataset.cmdKey;
+    node.commands.push(createCommand(key));
+    selectedCmdIdx = node.commands.length - 1;
+    cmdSearchContainer = null;
+    onNodeDataChanged();
+    updateInspector();
+  }
+
+  function updateHighlight() {
+    const items = results.querySelectorAll('.cmd-search-item');
+    items.forEach((el, i) => el.classList.toggle('cmd-search-highlighted', i === highlightedIdx));
+    if (items[highlightedIdx]) items[highlightedIdx].scrollIntoView({ block: 'nearest' });
+  }
+
   function renderResults(filter) {
     results.innerHTML = '';
     for (const [key, ct] of Object.entries(COMMAND_TYPES)) {
@@ -114,23 +131,34 @@ function showCommandSearch(node, parentEl) {
       if (filter && !text.toLowerCase().includes(filter.toLowerCase())) continue;
       const item = document.createElement('div');
       item.className = 'cmd-search-item';
+      item.dataset.cmdKey = key;
       item.innerHTML = `<span class="cmd-search-label">${ct.label}</span><span class="cmd-search-cat">${ct.category}</span>`;
-      item.addEventListener('click', () => {
-        node.commands.push(createCommand(key));
-        selectedCmdIdx = node.commands.length - 1;
-        cmdSearchContainer = null;
-        onNodeDataChanged();
-        updateInspector();
-      });
+      item.addEventListener('click', () => selectItem(item));
       results.appendChild(item);
     }
+    highlightedIdx = 0;
+    updateHighlight();
   }
 
   renderResults('');
   input.addEventListener('input', () => renderResults(input.value));
   input.addEventListener('keydown', (e) => {
     e.stopPropagation();
-    if (e.key === 'Escape') { cmdSearchContainer.remove(); cmdSearchContainer = null; }
+    const items = results.querySelectorAll('.cmd-search-item');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      highlightedIdx = Math.min(highlightedIdx + 1, items.length - 1);
+      updateHighlight();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      highlightedIdx = Math.max(highlightedIdx - 1, 0);
+      updateHighlight();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (items[highlightedIdx]) selectItem(items[highlightedIdx]);
+    } else if (e.key === 'Escape') {
+      cmdSearchContainer.remove(); cmdSearchContainer = null;
+    }
   });
 
   parentEl.appendChild(cmdSearchContainer);
@@ -557,6 +585,13 @@ function renderCommandFields(container, cmd, node) {
     case 'say':
       container.appendChild(labeledInput('Character', cmd.character, v => { cmd.character = v; updateCmdSummaryRow(); }));
       container.appendChild(labeledTextarea('Text', cmd.text, v => { cmd.text = v; updateCmdSummaryRow(); }));
+      container.appendChild(labeledCheckbox('Wait for next', cmd.waitForNext ?? true, v => { cmd.waitForNext = v; }));
+      container.appendChild(labeledCheckbox('Typing animation', cmd.typingAnimation ?? true, v => { cmd.typingAnimation = v; }));
+      container.appendChild(labeledCheckbox('Typing audio', cmd.typingAudio ?? true, v => { cmd.typingAudio = v; }));
+      if (cmd.typingAudio !== false) {
+        const audioOpts = [['', '— none —'], ...AUDIO_FILES.map(f => [f, f])];
+        container.appendChild(labeledSelect('Typing sound', cmd.typingAudioUrl || '/audio/defaults/MidVoice.wav', audioOpts, v => { cmd.typingAudioUrl = v; }));
+      }
       break;
     case 'call':
       container.appendChild(labeledBlockSelect('Target Block', cmd.targetBlockId, v => { cmd.targetBlockId = v; onNodeDataChanged(); }, node));

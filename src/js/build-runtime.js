@@ -20,14 +20,13 @@ function generateRuntimeHTML(diagramJson) {
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; background: #000; color: #fff; overflow: hidden; }
 #stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
-#output { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 600px; max-width: 90vw; max-height: 40vh; background: rgba(0,0,0,0.85); border: 1px solid #444; border-radius: 12px; padding: 16px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; z-index: 100; }
-#output:empty { display: none; }
-.say { font-size: 15px; line-height: 1.5; }
-.say strong { color: #60a5fa; }
-.choice { color: #9ca3af; font-style: italic; }
-.menu { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-.menu-btn { padding: 8px 18px; border: 1px solid #60a5fa; border-radius: 8px; background: rgba(59,130,246,0.1); color: #93c5fd; cursor: pointer; font-size: 14px; font-family: inherit; }
-.menu-btn:hover { background: rgba(59,130,246,0.25); }
+.say-dialog { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); width: 700px; max-width: 90vw; background: #3d4554; border: 4px solid #e0e0e0; border-radius: 16px; padding: 20px 24px; color: #f0f0f0; font-size: 18px; line-height: 1.6; z-index: 200; box-shadow: 0 8px 40px rgba(0,0,0,0.5); min-height: 80px; transition: opacity 0.25s; }
+.say-char { font-weight: 700; color: #60a5fa; margin-bottom: 4px; }
+.say-next { position: absolute; bottom: 10px; right: 14px; width: 36px; height: 36px; border-radius: 50%; border: 2px solid #4dd0e1; background: transparent; color: #4dd0e1; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.say-next:hover { background: rgba(77,208,225,0.15); }
+.menu-overlay { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; z-index: 200; }
+.menu-btn { width: 500px; max-width: 80vw; padding: 16px 24px; background: #3d4554; border: none; border-radius: 8px; color: #e0e0e0; font-size: 18px; font-family: inherit; cursor: pointer; text-align: center; }
+.menu-btn:hover { background: #4b5563; }
 </style>
 </head>
 <body>
@@ -129,9 +128,21 @@ function exec(cmd) {
   switch (cmd.type) {
     case 'say': {
       const text = cmd.text?.replace(/\\{\\$(\\w+)\\}/g, (_, n) => { const v = S.variables.find(x => x.name === n); return v ? String(v.value) : '{$' + n + '}'; }) || '';
-      const ch = cmd.character ? '<strong>' + cmd.character + ':</strong> ' : '';
-      appendOutput('<div class="say">' + ch + text + '</div>');
-      waitTimer = setTimeout(() => { waitTimer = null; next(); }, 600);
+      const dlg = document.createElement('div'); dlg.className = 'say-dialog';
+      if (cmd.character) { const ch = document.createElement('div'); ch.className = 'say-char'; ch.textContent = cmd.character; dlg.appendChild(ch); }
+      const txt = document.createElement('div'); dlg.appendChild(txt);
+      document.body.appendChild(dlg);
+      const ta = cmd.typingAudio !== false && cmd.typingAudioUrl ? new Audio(rel(cmd.typingAudioUrl)) : null;
+      function finSay() {
+        if (cmd.waitForNext !== false) {
+          const nb = document.createElement('button'); nb.className = 'say-next'; nb.innerHTML = '▼';
+          nb.addEventListener('click', () => { dlg.style.opacity = '0'; setTimeout(() => { dlg.remove(); next(); }, 250); });
+          dlg.appendChild(nb);
+        } else { waitTimer = setTimeout(() => { dlg.style.opacity = '0'; setTimeout(() => { dlg.remove(); next(); }, 250); }, 600); }
+      }
+      if (cmd.typingAnimation !== false) {
+        let i = 0; function tc() { if (!running) { dlg.remove(); return; } if (i < text.length) { txt.textContent += text[i]; if (ta && text[i] !== ' ') { ta.currentTime = 0; ta.volume = 0.3; ta.play().catch(() => {}); } i++; waitTimer = setTimeout(tc, 30); } else { finSay(); } } tc();
+      } else { txt.textContent = text; finSay(); }
       break;
     }
     case 'call': {
@@ -147,14 +158,14 @@ function exec(cmd) {
         choices.push({ text: currentNode.commands[currentCmd].text, targetBlockId: currentNode.commands[currentCmd].targetBlockId });
         currentCmd++;
       }
-      const menuDiv = document.createElement('div'); menuDiv.className = 'menu';
+      const menuDiv = document.createElement('div'); menuDiv.className = 'menu-overlay';
       for (const ch of choices) {
         const btn = document.createElement('button'); btn.className = 'menu-btn'; btn.textContent = ch.text;
-        btn.addEventListener('click', () => { menuDiv.remove(); appendOutput('<div class="say choice">&gt; ' + ch.text + '</div>');
+        btn.addEventListener('click', () => { menuDiv.remove();
           if (ch.targetBlockId != null) { const t = S.nodes.find(n => n.id === ch.targetBlockId); if (t) { execBlock(t); return; } } next(); });
         menuDiv.appendChild(btn);
       }
-      output.appendChild(menuDiv); output.scrollTop = output.scrollHeight;
+      document.body.appendChild(menuDiv);
       break;
     }
     case 'wait': waitTimer = setTimeout(() => { waitTimer = null; next(); }, (cmd.duration || 1) * 1000); break;
