@@ -15,7 +15,7 @@ import { cancelConnEditing } from './connections/conn-editing.js';
 import { getBorderPoint } from './connections/geometry.js';
 import { renderConnGroup, updateConnection } from './connections/conn-render.js';
 import { recalcPairOffsets } from './connections/conn-model.js';
-import { updateInspector, showJsonExport, showRunLog } from './inspector.js';
+import { updateInspector, showJsonExport, showRunLog, showJsonLoad } from './inspector.js';
 import { startExecution, startStepExecution, stepNext, stopExecution, isRunning, isStepping, isPaused } from './engine.js';
 import { initFlowchart, classifyBlock, applyFungusStyles, syncAutoConnections } from './fungus-mode.js';
 
@@ -500,6 +500,71 @@ S.onSelectionChange = updateInspector;
 document.getElementById('btn-export-json').addEventListener('click', showJsonExport);
 document.getElementById('btn-run-log').addEventListener('click', showRunLog);
 
+// ── Load from JSON ──────────────────────────────────────────────────────────
+
+function loadDiagram(data) {
+  // Clear existing
+  while (S.nodes.length > 0) {
+    const n = S.nodes[0];
+    n.el.remove();
+    n.mmEl.remove();
+    S.nodes.splice(0, 1);
+  }
+  while (S.connections.length > 0) {
+    const c = S.connections[0];
+    if (c.group) c.group.remove();
+    S.connections.splice(0, 1);
+  }
+  S.activeNode = null;
+  S.selectedConn = null;
+  S.selectedNodes = [];
+
+  // Load variables, messages, enums
+  S.variables = data.variables || [];
+  S.messages = data.messages || [];
+  S.enums = data.enums || [];
+
+  // Load nodes
+  let maxId = 0;
+  for (const nd of data.nodes) {
+    const node = createNodeWithEvents(nd.type, nd.x, nd.y);
+    // Override the auto-generated id and label
+    node.id = nd.id;
+    node.el.dataset.id = String(nd.id);
+    if (nd.label) {
+      node.label = nd.label;
+      const labelEl = node.el.querySelector('.node-label');
+      if (labelEl) labelEl.textContent = nd.label;
+    }
+    node.w = nd.w; node.h = nd.h;
+    node.el.style.width = `${nd.w}px`;
+    node.el.style.height = `${nd.h}px`;
+    node.event = nd.event || { type: 'none' };
+    node.commands = nd.commands || [];
+    node.description = nd.description || '';
+    const idLabel = node.el.querySelector('.node-id-label');
+    if (idLabel) idLabel.textContent = `id: ${nd.id}`;
+    if (nd.id >= maxId) maxId = nd.id + 1;
+  }
+  S.nextId = maxId;
+
+  // Apply styles and sync connections
+  applyFungusStyles();
+  syncAutoConnections();
+  refreshMinimap();
+  renderVariablesList();
+  renderEnumsList();
+  renderMessagesList();
+  updateInspector();
+}
+
+const btnLoadJson = document.getElementById('btn-load-json');
+if (btnLoadJson) {
+  btnLoadJson.addEventListener('click', () => {
+    showJsonLoad(loadDiagram);
+  });
+}
+
 // ── Play / Stop / Step ───────────────────────────────────────────────────────
 
 const btnPlay         = document.getElementById('btn-play');
@@ -688,6 +753,9 @@ closeSettingsBtn.addEventListener('click', () => {
 });
 
 // ── Theme toggle ────────────────────────────────────────────────────────────
+
+// Default to light theme
+document.documentElement.dataset.theme = 'light';
 
 for (const radio of document.querySelectorAll('input[name="theme"]')) {
   radio.addEventListener('change', () => {

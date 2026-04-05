@@ -1,15 +1,4 @@
 
-
-Version X features - load from JSON
-==================
-
-- [] add a button LOAD JSON
-  - [] this accepts the text from a JSON export and will re-create the flowchart from the JSON data
-  - [] add a popup asking the user if they are sure, since it will mean losing any existing work
-
-- [] and add Vite and PlayWright tests for the above feature(s)
-
-
 Version X features - simple debugger
 ==================
 

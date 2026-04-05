@@ -11,14 +11,6 @@ export function setupDOM() {
       <button id="btn-step-continue" class="toolbar-btn" style="display:none;">Next</button>
       <button id="btn-stop" class="toolbar-btn" style="display:none;">Stop</button>
     </div>
-    <div id="zoom-toolbar">
-      <button id="btn-fit-all" class="toolbar-btn"></button>
-      <button id="btn-zoom-out" class="toolbar-btn"></button>
-      <input id="zoom-slider" type="range" min="8" max="500" value="100">
-      <button id="btn-zoom-in" class="toolbar-btn"></button>
-      <span id="zoom-label" class="zoom-label">100%</span>
-      <button id="btn-hand-tool" class="toolbar-btn tool-btn"></button>
-    </div>
     <div id="main-area">
       <div id="data-panel">
         <div class="data-panel-header">
@@ -76,7 +68,7 @@ export function setupDOM() {
           </div>
         </div>
       </div>
-      <button id="btn-expand-data" class="data-expand-btn" style="display:none;">▶</button>
+      <button id="btn-expand-data" class="data-expand-btn" style="display:none;">▶ Data</button>
       <div id="divider-left"></div>
       <div id="canvas-container" style="width:800px;height:600px;">
         <div id="canvas" style="width:4000px;height:3000px;">
@@ -84,6 +76,7 @@ export function setupDOM() {
         </div>
         <div id="canvas-overlay-buttons">
           <button id="btn-export-json" class="toolbar-btn">Export JSON</button>
+          <button id="btn-load-json" class="toolbar-btn">Load JSON</button>
           <button id="btn-run-log" class="toolbar-btn">Run Log</button>
         </div>
         <div id="minimap" style="width:200px;height:150px;">
@@ -93,6 +86,14 @@ export function setupDOM() {
           <button id="minimap-minimize">_</button>
         </div>
         <button id="minimap-restore" style="display:none;">Minimap</button>
+        <div id="zoom-toolbar">
+          <button id="btn-fit-all" class="toolbar-btn"></button>
+          <button id="btn-zoom-out" class="toolbar-btn"></button>
+          <input id="zoom-slider" type="range" min="8" max="500" value="100">
+          <button id="btn-zoom-in" class="toolbar-btn"></button>
+          <span id="zoom-label" class="zoom-label">100%</span>
+          <button id="btn-hand-tool" class="toolbar-btn tool-btn"></button>
+        </div>
       </div>
       <div id="divider"></div>
       <div id="inspector">
@@ -116,12 +117,12 @@ export function setupDOM() {
           <div class="settings-section">
             <div class="settings-section-title">Theme</div>
             <label class="settings-mode-option">
-              <input type="radio" name="theme" value="dark" checked>
-              <span class="settings-mode-name">Dark</span>
+              <input type="radio" name="theme" value="light" checked>
+              <span class="settings-mode-name">Light</span>
             </label>
             <label class="settings-mode-option">
-              <input type="radio" name="theme" value="light">
-              <span class="settings-mode-name">Light</span>
+              <input type="radio" name="theme" value="dark">
+              <span class="settings-mode-name">Dark</span>
             </label>
           </div>
         </div>

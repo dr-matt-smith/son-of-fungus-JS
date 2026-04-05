@@ -729,7 +729,9 @@ function renderConnInspector(c) {
 
 export function serialiseDiagram() {
   return {
-    variables: S.variables.map(v => ({ name: v.name, type: v.type, value: v.value })),
+    variables: S.variables.map(v => ({ name: v.name, type: v.type, value: v.value, ...(v.enumName ? { enumName: v.enumName } : {}) })),
+    messages: [...S.messages],
+    enums: S.enums.map(e => ({ name: e.name, values: e.values.map(v => ({ key: v.key, label: v.label })) })),
     nodes: S.nodes.map(n => ({
       id: n.id,
       type: n.type,
@@ -836,5 +838,51 @@ export function showRunLog() {
   overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
   document.addEventListener('keydown', function handler(e) {
     if (e.key === 'Escape') { close(); document.removeEventListener('keydown', handler); }
+  });
+}
+
+// ── Load from JSON ──────────────────────────────────────────────────────────
+
+export function showJsonLoad(onLoad) {
+  const overlay = document.createElement('div');
+  overlay.id = 'json-modal-overlay';
+  overlay.innerHTML = `
+    <div id="json-modal">
+      <div id="json-modal-header">
+        <span>Load JSON</span>
+        <button id="json-modal-close" class="json-modal-btn" title="Close">&times;</button>
+      </div>
+      <div id="json-modal-body">
+        <textarea id="json-load-input" class="inspector-textarea" rows="12" placeholder="Paste JSON here…" style="width:100%;resize:vertical;"></textarea>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+          <span id="json-load-error" style="color:#ef4444;font-size:11px;"></span>
+          <button id="json-load-btn" class="toolbar-btn">Load</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  const close = () => overlay.remove();
+  overlay.querySelector('#json-modal-close').addEventListener('click', close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  document.addEventListener('keydown', function escHandler(e) {
+    if (e.key === 'Escape') { close(); document.removeEventListener('keydown', escHandler); }
+  });
+
+  const textarea = overlay.querySelector('#json-load-input');
+  const errorEl = overlay.querySelector('#json-load-error');
+  textarea.addEventListener('keydown', (e) => e.stopPropagation());
+
+  overlay.querySelector('#json-load-btn').addEventListener('click', () => {
+    const text = textarea.value.trim();
+    if (!text) { errorEl.textContent = 'Please paste JSON data.'; return; }
+    let data;
+    try { data = JSON.parse(text); } catch (err) { errorEl.textContent = 'Invalid JSON: ' + err.message; return; }
+    if (!data.nodes || !Array.isArray(data.nodes)) { errorEl.textContent = 'JSON must contain a "nodes" array.'; return; }
+
+    if (!confirm('This will replace your current flowchart. Are you sure?')) return;
+
+    close();
+    onLoad(data);
   });
 }

@@ -1,6 +1,6 @@
 /* ── Zoom toolbar (bottom-left) ────────────────────────────────────────────── */
 #zoom-toolbar {
-  position: fixed;
+  position: absolute;
   bottom: 16px;
   left: 16px;
   height: 36px;

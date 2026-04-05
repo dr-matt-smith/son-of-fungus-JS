@@ -1192,27 +1192,20 @@ test.describe('V42 – Theme toggle', () => {
     await expect(radios).toHaveCount(2);
   });
 
-  test('selecting light theme changes appearance', async ({ page }) => {
-    await page.locator('#btn-settings-cog').click();
-    await page.locator('input[name="theme"][value="light"]').check();
+  test('light is the default theme', async ({ page }) => {
     const theme = await page.locator('html').getAttribute('data-theme');
     expect(theme).toBe('light');
   });
 
   test('selecting dark theme removes data-theme', async ({ page }) => {
     await page.locator('#btn-settings-cog').click();
-    await page.locator('input[name="theme"][value="light"]').check();
     await page.locator('input[name="theme"][value="dark"]').check();
     const theme = await page.locator('html').getAttribute('data-theme');
     expect(theme).toBeNull();
   });
 
-  test('light theme body has lighter background', async ({ page }) => {
-    await page.locator('#btn-settings-cog').click();
-    await page.locator('input[name="theme"][value="light"]').check();
-    await page.locator('#btn-close-settings').click();
+  test('light theme body has lighter background by default', async ({ page }) => {
     const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-    // Light bg should not be dark (#111827 = rgb(17, 24, 39))
     expect(bg).not.toBe('rgb(17, 24, 39)');
   });
 });
@@ -1367,6 +1360,49 @@ test.describe('V47 – Variable init in Run Log', () => {
     const initPos = logText.indexOf('initialisation');
     const startPos = logText.indexOf('Execution started');
     expect(initPos).toBeLessThan(startPos);
+  });
+});
+
+// ─── Keyboard shortcuts ────────────────────────────────────────────────────
+
+// ─── Version 49: Zoom toolbar in canvas ──────────────────────────────────
+
+test.describe('V49 – Zoom toolbar in canvas', () => {
+  test('zoom toolbar is inside canvas-container', async ({ page }) => {
+    const toolbar = page.locator('#canvas-container #zoom-toolbar');
+    await expect(toolbar).toBeVisible();
+  });
+
+  test('data expand button shows "Data" text', async ({ page }) => {
+    // Collapse data panel
+    await page.locator('#btn-collapse-data').click();
+    const expandBtn = page.locator('#btn-expand-data');
+    await expect(expandBtn).toBeVisible();
+    await expect(expandBtn).toContainText('Data');
+  });
+});
+
+// ─── Version 50: Load JSON ──────────────────────────────────────────────────
+
+test.describe('V50 – Load JSON', () => {
+  test('Load JSON button is visible', async ({ page }) => {
+    await expect(page.locator('#btn-load-json')).toBeVisible();
+  });
+
+  test('clicking Load JSON shows modal with textarea', async ({ page }) => {
+    await page.locator('#btn-load-json').click();
+    await expect(page.locator('#json-modal-overlay')).toBeVisible();
+    await expect(page.locator('#json-load-input')).toBeVisible();
+    await expect(page.locator('#json-load-btn')).toBeVisible();
+    await page.keyboard.press('Escape');
+  });
+
+  test('invalid JSON shows error message', async ({ page }) => {
+    await page.locator('#btn-load-json').click();
+    await page.locator('#json-load-input').fill('not json');
+    await page.locator('#json-load-btn').click();
+    await expect(page.locator('#json-load-error')).toContainText('Invalid JSON');
+    await page.keyboard.press('Escape');
   });
 });
 

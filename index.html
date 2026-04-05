@@ -92,49 +92,6 @@
   </div>
 
 
-  <!-- ── Zoom toolbar (bottom-left) ──────────────────────────────────────── -->
-  <div id="zoom-toolbar">
-    <button id="btn-fit-all" class="toolbar-btn" title="Fit All – zoom to show all diagram elements (F)">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <polyline points="15 3 21 3 21 9"/>
-        <polyline points="9 21 3 21 3 15"/>
-        <line x1="21" y1="3" x2="14" y2="10"/>
-        <line x1="3"  y1="21" x2="10" y2="14"/>
-      </svg>
-    </button>
-
-    <div class="toolbar-sep"></div>
-
-    <button id="btn-zoom-out" class="toolbar-btn" title="Zoom Out (-)">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
-    </button>
-
-    <input id="zoom-slider" type="range" min="8" max="500" value="100" title="Zoom slider">
-
-    <button id="btn-zoom-in" class="toolbar-btn" title="Zoom In (= or +)">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5"  y1="12" x2="19" y2="12"/>
-      </svg>
-    </button>
-
-    <span id="zoom-label" class="zoom-label">100%</span>
-
-    <div class="toolbar-sep"></div>
-
-    <button id="btn-hand-tool" class="toolbar-btn tool-btn" title="Hand Tool – pan canvas (H or middle-mouse drag)">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v1M10 5V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8"/>
-        <path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
-      </svg>
-    </button>
-  </div>
 
   <!-- ── Main area (canvas + divider + inspector) ─────────────────────── -->
   <div id="main-area">
@@ -195,7 +152,7 @@
         </div>
       </div>
     </div>
-    <button id="btn-expand-data" class="data-expand-btn" title="Show data panel" style="display:none;">▶</button>
+    <button id="btn-expand-data" class="data-expand-btn" title="Show data panel" style="display:none;">▶ Data</button>
     <div id="divider-left"></div>
     <div id="canvas-container">
       <div id="canvas">
@@ -203,6 +160,7 @@
       </div>
       <div id="canvas-overlay-buttons">
         <button id="btn-export-json" class="toolbar-btn canvas-overlay-btn" title="Export diagram as JSON">Export JSON</button>
+        <button id="btn-load-json" class="toolbar-btn canvas-overlay-btn" title="Load diagram from JSON">Load JSON</button>
         <button id="btn-run-log" class="toolbar-btn canvas-overlay-btn" title="View execution run log">Run Log</button>
       </div>
 
@@ -214,6 +172,43 @@
         <button id="minimap-minimize" title="Minimize minimap">_</button>
       </div>
       <button id="minimap-restore" title="Show minimap">Minimap</button>
+
+      <!-- ── Zoom toolbar ─────────────────────────────────────────────── -->
+      <div id="zoom-toolbar">
+        <button id="btn-fit-all" class="toolbar-btn" title="Fit All (F)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 3 21 3 21 9"/>
+            <polyline points="9 21 3 21 3 15"/>
+            <line x1="21" y1="3" x2="14" y2="10"/>
+            <line x1="3"  y1="21" x2="10" y2="14"/>
+          </svg>
+        </button>
+        <div class="toolbar-sep"></div>
+        <button id="btn-zoom-out" class="toolbar-btn" title="Zoom Out (-)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+        <input id="zoom-slider" type="range" min="8" max="500" value="100" title="Zoom slider">
+        <button id="btn-zoom-in" class="toolbar-btn" title="Zoom In (= or +)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5"  y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+        <span id="zoom-label" class="zoom-label">100%</span>
+        <div class="toolbar-sep"></div>
+        <button id="btn-hand-tool" class="toolbar-btn tool-btn" title="Hand Tool (H)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v1M10 5V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8"/>
+            <path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <div id="divider"></div>
@@ -245,12 +240,12 @@
         <div class="settings-section">
           <div class="settings-section-title">Theme</div>
           <label class="settings-mode-option">
-            <input type="radio" name="theme" value="dark" checked>
-            <span class="settings-mode-name">Dark</span>
+            <input type="radio" name="theme" value="light" checked>
+            <span class="settings-mode-name">Light</span>
           </label>
           <label class="settings-mode-option">
-            <input type="radio" name="theme" value="light">
-            <span class="settings-mode-name">Light</span>
+            <input type="radio" name="theme" value="dark">
+            <span class="settings-mode-name">Dark</span>
           </label>
         </div>
 
