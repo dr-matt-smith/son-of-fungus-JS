@@ -6,6 +6,7 @@ import { refreshMinimap } from './minimap.js';
 import { updateInspector, showJsonExport, showRunLog, showJsonLoad } from './inspector.js';
 import { buildRuntime } from './build-runtime.js';
 import { initFlowchart, applyFungusStyles, syncAutoConnections } from './fungus-mode.js';
+import { undo, redo, saveSnapshot } from './undo-redo.js';
 
 // ── Import modules (side-effects wire up event listeners) ───────────────────
 
@@ -16,12 +17,58 @@ import { renderVariablesList, renderEnumsList, renderMessagesList, showTab } fro
 
 // ── Inspector ────────────────────────────────────────────────────────────────
 
-S.onSelectionChange = updateInspector;
-S.onInspectorUpdate = updateInspector;
+S.onSelectionChange = () => { updateInspector(); S.emit('selectionChanged'); };
+S.onInspectorUpdate = () => { updateInspector(); S.emit('inspectorUpdate'); };
 document.getElementById('btn-export-json').addEventListener('click', showJsonExport);
 document.getElementById('btn-run-log').addEventListener('click', showRunLog);
 const btnBuild = document.getElementById('btn-build');
 if (btnBuild) btnBuild.addEventListener('click', buildRuntime);
+
+// ── Undo/Redo ───────────────────────────────────────────────────────────────
+
+S.onRestoreNode = (nd) => {
+  const node = createNodeWithEvents(nd.type, nd.x, nd.y);
+  node.id = nd.id;
+  node.el.dataset.id = String(nd.id);
+  if (nd.label) {
+    node.label = nd.label;
+    const labelEl = node.el.querySelector('.node-label');
+    if (labelEl) labelEl.textContent = nd.label;
+  }
+  node.w = nd.w; node.h = nd.h;
+  node.el.style.width = `${nd.w}px`;
+  node.el.style.height = `${nd.h}px`;
+  node.event = nd.event || { type: 'none' };
+  node.commands = nd.commands || [];
+  node.description = nd.description || '';
+  const idLabel = node.el.querySelector('.node-id-label');
+  if (idLabel) idLabel.textContent = `id: ${nd.id}`;
+};
+
+S.on('modelChanged', () => {
+  applyFungusStyles();
+  syncAutoConnections();
+  refreshMinimap();
+  renderVariablesList();
+  renderEnumsList();
+  renderMessagesList();
+  updateInspector();
+});
+
+document.addEventListener('keydown', (e) => {
+  // Ctrl+Z / Cmd+Z = undo
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    e.preventDefault();
+    undo();
+  }
+  // Ctrl+Shift+Z / Cmd+Shift+Z = redo
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    e.preventDefault();
+    redo();
+  }
+});
 
 // ── Load from JSON ──────────────────────────────────────────────────────────
 

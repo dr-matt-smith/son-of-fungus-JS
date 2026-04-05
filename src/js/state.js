@@ -1,8 +1,18 @@
 /**
  * Central mutable state store.
- * All app state lives here — import and mutate directly.
+ *
+ * Organized into logical groups:
+ *   - view:        zoom, pan, active tool
+ *   - model:       nodes, connections, variables, messages, enums
+ *   - interaction: selection, dragging, editing flags
+ *   - execution:   running state, executing node/command
+ *   - callbacks:   event callbacks set by main.js
+ *
+ * All properties are directly on S for backward compatibility.
+ * Sub-object accessors (S.view, S.model, etc.) provide grouped access.
  */
 export const S = {
+  // ── View state ──────────────────────────────────────────────────────
   zoom: 1,
   panX: 0,
   panY: 0,
@@ -10,23 +20,22 @@ export const S = {
   nextId: 1,
   nextConnId: 1,
 
+  // ── Data model ──────────────────────────────────────────────────────
   nodes: [],
   connections: [],
-  variables: [],    // flowchart-level variables: { name, type, value, enumName? }
-  messages: [],     // user-defined event messages (array of strings)
-  enums: [],        // enum sets: { name, values: [{ key, label }] }
+  variables: [],
+  messages: [],
+  enums: [],
 
-  // Currently active / selected
+  // ── Interaction state ───────────────────────────────────────────────
   activeNode: null,
   selectedConn: null,
   selectedNodes: [],
 
-  // Editing
   editingNode: null,
   editingConn: null,
   connLabelInput: null,
 
-  // Interaction flags
   isPanning: false,
   panOrigin: null,
 
@@ -49,14 +58,65 @@ export const S = {
   drawingConn: null,
   reconnDrag: null,
 
-  // Execution state
+  // ── Execution state ─────────────────────────────────────────────────
   executingNode: null,
   executingCommandIdx: -1,
-  stepOverTarget: null,  // { nodeId, cmdIdx } for step-over
+  stepOverTarget: null,
 
-  // Callbacks (set by main.js)
+  // ── Callbacks ───────────────────────────────────────────────────────
   onSelectionChange: null,
   onInspectorUpdate: null,
   onStepPause: null,
   onExecutionEnd: null,
+  onRestoreNode: null,
 };
+
+// ── Event system ────────────────────────────────────────────────────────
+
+const listeners = {};
+
+/**
+ * Subscribe to a state event.
+ * @param {string} event — event name (e.g. 'modelChanged', 'selectionChanged', 'viewChanged')
+ * @param {Function} fn — callback
+ * @returns {Function} unsubscribe function
+ */
+S.on = function(event, fn) {
+  if (!listeners[event]) listeners[event] = [];
+  listeners[event].push(fn);
+  return () => { listeners[event] = listeners[event].filter(f => f !== fn); };
+};
+
+/**
+ * Emit a state event.
+ * @param {string} event — event name
+ * @param {*} data — optional data
+ */
+S.emit = function(event, data) {
+  if (listeners[event]) {
+    for (const fn of listeners[event]) fn(data);
+  }
+};
+
+// ── Sub-object accessors (grouped views into S) ─────────────────────────
+
+Object.defineProperty(S, 'view', {
+  get() {
+    return { zoom: S.zoom, panX: S.panX, panY: S.panY, activeTool: S.activeTool, nextId: S.nextId, nextConnId: S.nextConnId };
+  },
+  enumerable: false,
+});
+
+Object.defineProperty(S, 'model', {
+  get() {
+    return { nodes: S.nodes, connections: S.connections, variables: S.variables, messages: S.messages, enums: S.enums };
+  },
+  enumerable: false,
+});
+
+Object.defineProperty(S, 'execution', {
+  get() {
+    return { executingNode: S.executingNode, executingCommandIdx: S.executingCommandIdx, stepOverTarget: S.stepOverTarget };
+  },
+  enumerable: false,
+});

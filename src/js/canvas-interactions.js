@@ -2,6 +2,7 @@
 
 import { NODE_DEFAULTS, NODE_MIN_SIZE, ZOOM_STEP } from './config.js';
 import { S } from './state.js';
+import { saveSnapshot } from './undo-redo.js';
 import { canvasContainer, canvasEl, minimapEl, mmVP, btnHandTool } from './dom-refs.js';
 import { applyTransform, zoomAround, clientToWorld, relativeToContainer, fitAll, updateCursor } from './transform.js';
 import { refreshMinimap, getMinimapScales, updateMinimapViewport } from './minimap.js';
@@ -139,6 +140,7 @@ function showNodeContextMenu(node, clientX, clientY) {
   deleteBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     removeCtxMenu();
+    saveSnapshot();
     deleteNode(node);
     updateInspector();
   });
@@ -149,6 +151,7 @@ function showNodeContextMenu(node, clientX, clientY) {
   dupBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     removeCtxMenu();
+    saveSnapshot();
     duplicateNode(node);
   });
 
@@ -352,6 +355,7 @@ document.addEventListener('mouseup', (e) => {
       const overCanvas = e.clientX >= rect.left && e.clientX <= rect.right &&
                          e.clientY >= rect.top  && e.clientY <= rect.bottom;
       if (overCanvas) {
+        saveSnapshot();
         const def = NODE_DEFAULTS[S.creatingNodeType];
         const world = clientToWorld(e.clientX, e.clientY);
         const newNode = createNodeWithEvents(S.creatingNodeType, world.x - def.w / 2, world.y - def.h / 2);
