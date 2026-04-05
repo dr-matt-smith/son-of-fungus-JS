@@ -339,42 +339,59 @@ function renderNodeInspector(n) {
         row.classList.add('cmd-executing');
       }
 
-      // Drag handle for reordering
+      // Drag handle for reordering (pointer-based)
       const dragHandle = document.createElement('span');
       dragHandle.className = 'fungus-cmd-drag-handle';
       dragHandle.textContent = '⠿';
       dragHandle.title = 'Drag to reorder';
       row.appendChild(dragHandle);
 
-      // HTML5 drag and drop — live preview
-      row.draggable = true;
       row.dataset.cmdIdx = String(idx);
-      row.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', String(idx));
-        e.dataTransfer.effectAllowed = 'move';
-        selectedCmdIdx = idx; // select the dragged command
-        row.classList.add('cmd-dragging');
-      });
-      row.addEventListener('dragend', () => {
-        row.classList.remove('cmd-dragging');
-        onNodeDataChanged();
-        updateInspector();
-      });
-      row.addEventListener('dragover', (e) => {
+      dragHandle.addEventListener('pointerdown', (e) => {
         e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        const fromIdx = parseInt(e.dataTransfer.getData('text/plain') || row.parentElement.querySelector('.cmd-dragging')?.dataset.cmdIdx, 10);
-        const toIdx = idx;
-        if (!isNaN(fromIdx) && fromIdx !== toIdx) {
-          const [moved] = n.commands.splice(fromIdx, 1);
-          n.commands.splice(toIdx, 0, moved);
-          selectedCmdIdx = toIdx;
-          // Update all row indices
-          const rows = cmdList.querySelectorAll('.fungus-cmd-summary');
-          rows.forEach(r => r.classList.remove('fungus-cmd-selected', 'cmd-dragging'));
-          // Re-render
+        e.stopPropagation();
+        selectedCmdIdx = idx;
+        cmdList.querySelectorAll('.fungus-cmd-selected').forEach(r => r.classList.remove('fungus-cmd-selected'));
+        row.classList.add('fungus-cmd-selected');
+
+        let dragIdx = idx;
+        const onMove = (me) => {
+          const rows = Array.from(cmdList.querySelectorAll('.fungus-cmd-summary'));
+          // Find which row the pointer is over
+          for (let i = 0; i < rows.length; i++) {
+            const rect = rows[i].getBoundingClientRect();
+            const midY = rect.top + rect.height / 2;
+            if (me.clientY < midY && i < dragIdx) {
+              // Move up
+              cmdList.insertBefore(rows[dragIdx], rows[i]);
+              const [moved] = n.commands.splice(dragIdx, 1);
+              n.commands.splice(i, 0, moved);
+              dragIdx = i;
+              selectedCmdIdx = i;
+              // Re-index
+              rows.forEach((r, ri) => r.dataset.cmdIdx = String(ri));
+              break;
+            } else if (me.clientY > midY && i > dragIdx) {
+              // Move down
+              if (i < rows.length - 1) cmdList.insertBefore(rows[dragIdx], rows[i + 1]);
+              else cmdList.appendChild(rows[dragIdx]);
+              const [moved] = n.commands.splice(dragIdx, 1);
+              n.commands.splice(i, 0, moved);
+              dragIdx = i;
+              selectedCmdIdx = i;
+              rows.forEach((r, ri) => r.dataset.cmdIdx = String(ri));
+              break;
+            }
+          }
+        };
+        const onUp = () => {
+          document.removeEventListener('pointermove', onMove);
+          document.removeEventListener('pointerup', onUp);
+          onNodeDataChanged();
           updateInspector();
-        }
+        };
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
       });
 
       // Verb

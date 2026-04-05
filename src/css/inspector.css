@@ -340,11 +340,8 @@
 }
 
 .fungus-cmd-summary.cmd-dragging {
-  opacity: 0.4;
-}
-
-.fungus-cmd-summary.cmd-drag-over {
-  border-top: 2px solid #3b82f6;
+  opacity: 0.5;
+  outline: 2px solid #3b82f6;
 }
 
 /* ── Command action bar ──────────────────────────────────────────────────── */

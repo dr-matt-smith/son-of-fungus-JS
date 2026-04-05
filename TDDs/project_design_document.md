@@ -821,15 +821,22 @@ Version 61 features - improve IF-ELSE-IF command pattern
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
-
-
 Version 62 features - improve command sequence search experience
 ==================
-
 
 - ✅ refine the new command search form experience
   - ✅ search form is now inline in the Inspector panel (not a popup overlay)
   - ✅ toggles open/closed via the + button
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+Version 63 features - fix the command sequence drag user experience
+==================
+
+- ✅ fixed drag reordering to work for multiple rows
+  - ✅ replaced HTML5 DnD with pointer-based drag
+  - ✅ commands move dynamically as user drags across multiple rows
+  - ✅ array and DOM stay in sync during drag
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 

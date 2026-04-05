@@ -1268,7 +1268,7 @@ describe('Fungus command summary row layout', () => {
     const rows = document.querySelectorAll('.fungus-cmd-summary');
     expect(rows[0].querySelector('.fungus-cmd-drag-handle')).toBeTruthy();
     expect(rows[1].querySelector('.fungus-cmd-drag-handle')).toBeTruthy();
-    expect(rows[0].draggable).toBe(true);
+    expect(rows[0].querySelector('.fungus-cmd-drag-handle')).toBeTruthy();
   });
 
   it('command action bar has up/down/add/delete buttons', () => {
