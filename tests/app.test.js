@@ -69,8 +69,7 @@ describe('Node creation', () => {
 describe('Node labels', () => {
   it('state node has editable label with default text', () => {
     const node = app.createNode('state', 0, 0);
-    // Default mode is fungus, so label is "New Block N"
-    expect(node.label).toMatch(/New Block|State/);
+    expect(node.label).toMatch(/^New Block \d+$/);
     const labelEl = node.el.querySelector('.node-label');
     expect(labelEl).toBeTruthy();
     expect(labelEl.textContent).toBeTruthy();
@@ -121,24 +120,6 @@ describe('Node resizing', () => {
     expect(node.el.style.height).toBe('80px');
   });
 
-  it('state node has reset button', () => {
-    const node = app.createNode('state', 0, 0);
-    expect(node.el.querySelector('.node-reset-btn')).toBeTruthy();
-  });
-
-  it('choice node has reset button', () => {
-    const node = app.createNode('choice', 0, 0);
-    expect(node.el.querySelector('.node-reset-btn')).toBeTruthy();
-  });
-
-  it('resetNodeSize restores default dimensions', () => {
-    const node = app.createNode('state', 100, 100);
-    app.resizeNode(node, 100, 100, 300, 200);
-    app.resetNodeSize(node);
-    expect(node.w).toBe(app.NODE_DEFAULTS.state.w);
-    expect(node.h).toBe(app.NODE_DEFAULTS.state.h);
-  });
-
   it('respects minimum size constants', () => {
     expect(app.NODE_MIN_SIZE.state.w).toBeLessThan(app.NODE_DEFAULTS.state.w);
     expect(app.NODE_MIN_SIZE.choice.w).toBeLessThan(app.NODE_DEFAULTS.choice.w);
@@ -155,47 +136,12 @@ describe('Node activation', () => {
     expect(node.el.classList.contains('node-active')).toBe(true);
   });
 
-  it('activateNode adds resize handles for state nodes in statechart mode', () => {
-    const prevMode = app.S.diagramMode;
-    app.S.diagramMode = 'statechart';
-    const node = app.createNode('state', 0, 0);
-    app.activateNode(node);
-    expect(node.el.querySelectorAll('.resize-handle').length).toBe(8);
-    app.deactivateNode();
-    app.S.diagramMode = prevMode;
-  });
-
-  it('activateNode adds connection handle in statechart mode', () => {
-    const prevMode = app.S.diagramMode;
-    app.S.diagramMode = 'statechart';
-    const node = app.createNode('state', 0, 0);
-    app.activateNode(node);
-    expect(node.el.querySelector('.conn-handle')).toBeTruthy();
-    app.deactivateNode();
-    app.S.diagramMode = prevMode;
-  });
-
-  it('activateNode adds delete handle', () => {
-    const node = app.createNode('state', 0, 0);
-    app.activateNode(node);
-    expect(node.el.querySelector('.node-delete-handle')).toBeTruthy();
-  });
-
   it('deactivateNode clears selection', () => {
     const node = app.createNode('state', 0, 0);
     app.activateNode(node);
     app.deactivateNode();
     expect(app.S.activeNode).toBeNull();
     expect(node.el.classList.contains('node-active')).toBe(false);
-  });
-
-  it('deactivateNode removes handles', () => {
-    const node = app.createNode('state', 0, 0);
-    app.activateNode(node);
-    app.deactivateNode();
-    expect(node.el.querySelectorAll('.resize-handle').length).toBe(0);
-    expect(node.el.querySelector('.conn-handle')).toBeNull();
-    expect(node.el.querySelector('.node-delete-handle')).toBeNull();
   });
 
   it('activating a new node deactivates the previous one', () => {
@@ -307,30 +253,17 @@ describe('Connections', () => {
 // ─── Version 6: Auto text sized to fit ──────────────────────────────────────
 
 describe('Auto text font sizing', () => {
-  it('fitLabelFontSize sets a font size on the label in statechart mode', () => {
-    const prevMode = app.S.diagramMode;
-    app.S.diagramMode = 'statechart';
+  it('fitLabelFontSize clears explicit font size (uses CSS default)', () => {
     const node = app.createNode('state', 0, 0);
-    app.fitLabelFontSize(node);
     const labelEl = node.el.querySelector('.node-label');
-    expect(labelEl.style.fontSize).toBeTruthy();
-    app.S.diagramMode = prevMode;
+    labelEl.style.fontSize = '20px';
+    app.fitLabelFontSize(node);
+    expect(labelEl.style.fontSize).toBe('');
   });
 
   it('does nothing for start/end nodes', () => {
     const node = app.createNode('start', 0, 0);
-    // Should not throw
     app.fitLabelFontSize(node);
-  });
-
-  it('is called during resize in statechart mode', () => {
-    const prevMode = app.S.diagramMode;
-    app.S.diagramMode = 'statechart';
-    const node = app.createNode('state', 0, 0);
-    app.resizeNode(node, 0, 0, 300, 200);
-    const labelEl = node.el.querySelector('.node-label');
-    expect(labelEl.style.fontSize).toBeTruthy();
-    app.S.diagramMode = prevMode;
   });
 });
 
@@ -432,42 +365,6 @@ describe('Node deletion', () => {
     expect(app.canvasEl.contains(node.el)).toBe(false);
   });
 
-  it('deleteNode preserves connections as dangling in statechart mode', () => {
-    const prevMode = app.S.diagramMode;
-    app.S.diagramMode = 'statechart';
-    const a = app.createNode('state', 0, 0);
-    const b = app.createNode('state', 300, 0);
-    app.createConnection(a, b);
-    const conn = app.S.connections[app.S.connections.length - 1];
-    const beforeConns = connCount();
-
-    app.deleteNode(a);
-    expect(connCount()).toBe(beforeConns); // connection still exists
-    expect(conn.fromId).toBeNull();
-    expect(conn.danglingFrom).toBeTruthy();
-    expect(conn.toId).toBe(b.id);
-    app.S.diagramMode = prevMode;
-  });
-
-  it('deleteNode sets both ends dangling when middle node deleted in statechart mode', () => {
-    const prevMode = app.S.diagramMode;
-    app.S.diagramMode = 'statechart';
-    const a = app.createNode('state', 0, 0);
-    const b = app.createNode('state', 200, 0);
-    const c = app.createNode('state', 400, 0);
-    app.createConnection(a, b);
-    app.createConnection(b, c);
-    const conn1 = app.S.connections[app.S.connections.length - 2];
-    const conn2 = app.S.connections[app.S.connections.length - 1];
-
-    app.deleteNode(b);
-    expect(conn1.toId).toBeNull();
-    expect(conn1.danglingTo).toBeTruthy();
-    expect(conn2.fromId).toBeNull();
-    expect(conn2.danglingFrom).toBeTruthy();
-    app.S.diagramMode = prevMode;
-  });
-
   it('deleteNode deactivates the node if active', () => {
     const node = app.createNode('state', 0, 0);
     app.activateNode(node);
@@ -482,8 +379,7 @@ describe('Node deletion', () => {
     expect(document.getElementById('minimap-states').contains(mmEl)).toBe(false);
   });
 
-  it('deleteNode in fungus mode removes connections and clears call references', () => {
-    app.enterFungusMode();
+  it('deleteNode removes connections and clears call references', () => {
     const a = app.createNode('state', 0, 0);
     const b = app.createNode('state', 300, 0);
     const c = app.createNode('state', 600, 0);
@@ -506,8 +402,6 @@ describe('Node deletion', () => {
     // Auto-connections to deleted node should be gone
     const autosAfter = app.S.connections.filter(c => c.auto && c.toId === b.id);
     expect(autosAfter.length).toBe(0);
-
-    app.exitFungusMode();
   });
 });
 
@@ -724,13 +618,6 @@ describe('Inspector/Events tabs and Settings cog', () => {
     expect(document.getElementById('inspector-tabs').style.display).toBe('');
     expect(document.getElementById('inspector-panel').style.display).toBe('');
   });
-
-  it('settings panel has radio buttons for diagram modes', () => {
-    const radios = document.querySelectorAll('input[name="diagram-mode"]');
-    expect(radios.length).toBe(2);
-    expect(radios[0].value).toBe('fungus');
-    expect(radios[1].value).toBe('statechart');
-  });
 });
 
 describe('Block classification', () => {
@@ -786,67 +673,22 @@ describe('Block classification', () => {
   });
 });
 
-describe('Fungus mode enter/exit', () => {
-  afterEach(() => {
-    // Reset to statechart mode
-    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
-  });
-
-  it('enterFungusMode sets diagramMode and body data attribute', () => {
-    app.enterFungusMode();
-    expect(app.S.diagramMode).toBe('fungus');
-    expect(document.body.dataset.mode).toBe('fungus');
-  });
-
-  it('exitFungusMode restores statechart mode', () => {
-    app.enterFungusMode();
-    app.exitFungusMode();
-    expect(app.S.diagramMode).toBe('statechart');
-    expect(document.body.dataset.mode).toBeUndefined();
-  });
-
-  it('enterFungusMode applies fungus CSS classes to state nodes', () => {
-    const node = app.createNode('state', 0, 0);
-    node.event = { type: 'none' };
-    node.commands = [];
-    app.enterFungusMode();
-    expect(node.el.classList.contains('fungus-standard-block')).toBe(true);
-  });
-
-  it('exitFungusMode removes fungus CSS classes', () => {
-    const node = app.createNode('state', 0, 0);
-    node.event = { type: 'none' };
-    app.enterFungusMode();
-    expect(node.el.classList.contains('fungus-standard-block')).toBe(true);
-    app.exitFungusMode();
-    expect(node.el.classList.contains('fungus-standard-block')).toBe(false);
-  });
-
-  it('enterFungusMode creates auto-connections from call commands', () => {
+describe('Auto-connections from call commands', () => {
+  it('syncAutoConnections creates auto-connections from call commands', () => {
     const a = app.createNode('state', 0, 0);
     const b = app.createNode('state', 300, 0);
     a.commands = [{ type: 'call', targetBlockId: b.id }];
-    app.enterFungusMode();
+    app.syncAutoConnections();
     const autoConn = app.S.connections.find(c => c.auto && c.fromId === a.id && c.toId === b.id);
     expect(autoConn).toBeTruthy();
     expect(autoConn.label).toBe('');
-  });
-
-  it('exitFungusMode removes all auto-connections', () => {
-    const a = app.createNode('state', 0, 0);
-    const b = app.createNode('state', 300, 0);
-    a.commands = [{ type: 'call', targetBlockId: b.id }];
-    app.enterFungusMode();
-    expect(app.S.connections.some(c => c.auto)).toBe(true);
-    app.exitFungusMode();
-    expect(app.S.connections.some(c => c.auto)).toBe(false);
   });
 
   it('auto-connections have conn-auto CSS class', () => {
     const a = app.createNode('state', 0, 0);
     const b = app.createNode('state', 300, 0);
     a.commands = [{ type: 'call', targetBlockId: b.id }];
-    app.enterFungusMode();
+    app.syncAutoConnections();
     const autoConn = app.S.connections.find(c => c.auto);
     expect(autoConn.group.classList.contains('conn-auto')).toBe(true);
   });
@@ -905,78 +747,19 @@ describe('Export JSON button location', () => {
   });
 });
 
-describe('Choice button hidden in Fungus mode', () => {
-  afterEach(() => {
-    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
-  });
-
-  it('choice button is visible in statechart mode', () => {
-    const btn = document.getElementById('btn-new-choice');
-    expect(btn).toBeTruthy();
-  });
-});
-
-describe('Fungus mode naming', () => {
-  afterEach(() => {
-    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
-  });
-
-  it('new state nodes are named "New Block N" in Fungus mode', () => {
-    app.enterFungusMode();
+describe('Block naming', () => {
+  it('new state nodes are named "New Block N"', () => {
     const node = app.createNode('state', 0, 0);
     expect(node.label).toMatch(/^New Block \d+$/);
   });
 
-  it('new state nodes are named "State N" in statechart mode', () => {
-    app.exitFungusMode();
-    const node = app.createNode('state', 0, 0);
-    expect(node.label).toMatch(/^State \d+$/);
-  });
-
-  it('toolbar button text changes to "Block" in Fungus mode', () => {
+  it('toolbar button text says "Block"', () => {
     const btn = document.getElementById('btn-new-state');
-    app.enterFungusMode();
     expect(btn.textContent).toContain('Block');
   });
-
-  it('toolbar button text changes back to "State" when exiting Fungus mode', () => {
-    const btn = document.getElementById('btn-new-state');
-    app.enterFungusMode();
-    app.exitFungusMode();
-    expect(btn.textContent).toContain('State');
-  });
 });
 
-// ─── Version 25: Default Fungus mode, mode label, step execution ───────────
-
-describe('Default Fungus mode', () => {
-  it('fungus radio is listed first in settings', () => {
-    const radios = document.querySelectorAll('input[name="diagram-mode"]');
-    expect(radios[0].value).toBe('fungus');
-  });
-
-  it('enterFungusMode can be called to set fungus as active mode', () => {
-    app.enterFungusMode();
-    expect(app.S.diagramMode).toBe('fungus');
-    expect(document.body.dataset.mode).toBe('fungus');
-    app.exitFungusMode();
-  });
-});
-
-describe('Mode label', () => {
-  it('mode label element exists', () => {
-    expect(document.getElementById('mode-label-text')).toBeTruthy();
-  });
-
-  it('mode label shows "Fungus Mode" when in fungus mode', () => {
-    expect(document.getElementById('mode-label-text').textContent).toBe('Fungus Mode');
-  });
-
-  it('mode label hint exists', () => {
-    expect(document.getElementById('mode-label-hint')).toBeTruthy();
-    expect(document.getElementById('mode-label-hint').textContent).toContain('Settings');
-  });
-});
+// ─── Version 25: Step execution ─────────────────────────────────────────────
 
 describe('Step-by-step execution', () => {
   it('step button exists in DOM', () => {
@@ -987,31 +770,8 @@ describe('Step-by-step execution', () => {
     expect(document.getElementById('btn-step-continue')).toBeTruthy();
   });
 
-  it('play label shows "Play All" in fungus mode', () => {
+  it('play label shows "Play All"', () => {
     expect(document.getElementById('play-label').textContent).toBe('Play All');
-  });
-});
-
-// ─── Version 26: JSON copy button, no resize in Fungus mode ────────────────
-
-describe('Fungus mode hides resize handles', () => {
-  afterEach(() => {
-    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
-  });
-
-  it('no resize handles on state nodes in fungus mode', () => {
-    app.enterFungusMode();
-    const node = app.createNode('state', 0, 0);
-    app.activateNode(node);
-    expect(node.el.querySelectorAll('.resize-handle').length).toBe(0);
-  });
-
-  it('resize handles appear in statechart mode', () => {
-    app.exitFungusMode();
-    const node = app.createNode('state', 0, 0);
-    app.activateNode(node);
-    expect(node.el.querySelectorAll('.resize-handle').length).toBe(8);
-    app.deactivateNode();
   });
 });
 
@@ -1087,37 +847,20 @@ describe('Run Log Style', () => {
 // ─── Version 29: Fungus block default style & event annotation ──────────────
 
 describe('Fungus block default style', () => {
-  afterEach(() => {
-    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
-  });
-
-  it('new block in fungus mode gets fungus-standard-block class', () => {
-    app.enterFungusMode();
+  it('new block gets fungus-standard-block class', () => {
     const node = app.createNode('state', 0, 0);
     expect(node.el.classList.contains('fungus-standard-block')).toBe(true);
   });
 
-  it('new block in fungus mode does NOT have event or branching class', () => {
-    app.enterFungusMode();
+  it('new block does NOT have event or branching class', () => {
     const node = app.createNode('state', 0, 0);
     expect(node.el.classList.contains('fungus-event-block')).toBe(false);
     expect(node.el.classList.contains('fungus-branching-block')).toBe(false);
   });
-
-  it('new block in statechart mode does NOT get fungus classes', () => {
-    app.exitFungusMode();
-    const node = app.createNode('state', 0, 0);
-    expect(node.el.classList.contains('fungus-standard-block')).toBe(false);
-  });
 });
 
 describe('Fungus event annotation', () => {
-  afterEach(() => {
-    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
-  });
-
   it('block with gameStarted event shows <Game Started> annotation', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.event = { type: 'gameStarted' };
     app.applyFungusStyles();
@@ -1127,7 +870,6 @@ describe('Fungus event annotation', () => {
   });
 
   it('block with no event has no annotation', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.event = { type: 'none' };
     app.applyFungusStyles();
@@ -1136,7 +878,6 @@ describe('Fungus event annotation', () => {
   });
 
   it('annotation is removed when event is set to none', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.event = { type: 'gameStarted' };
     app.applyFungusStyles();
@@ -1147,19 +888,7 @@ describe('Fungus event annotation', () => {
     expect(node.el.querySelector('.fungus-event-label')).toBeFalsy();
   });
 
-  it('annotation is removed when exiting fungus mode', () => {
-    app.enterFungusMode();
-    const node = app.createNode('state', 0, 0);
-    node.event = { type: 'gameStarted' };
-    app.applyFungusStyles();
-    expect(node.el.querySelector('.fungus-event-label')).toBeTruthy();
-
-    app.exitFungusMode();
-    expect(node.el.querySelector('.fungus-event-label')).toBeFalsy();
-  });
-
   it('messageReceived event shows <Message Received> annotation', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.event = { type: 'messageReceived', message: 'test' };
     app.applyFungusStyles();
@@ -1178,11 +907,15 @@ describe('Play Sound wait checkbox', () => {
     expect(node.commands[0].waitUntilFinished).toBe(false);
   });
 
-  it('inspector shows wait checkbox for playSound command', () => {
+  it('inspector shows wait checkbox for playSound command when selected', () => {
     const node = app.createNode('state', 0, 0);
     node.commands.push({ type: 'playSound', audioUrl: '', volume: 1.0, waitUntilFinished: false });
     app.activateNode(node);
     app.updateInspector();
+
+    // Select the command in the summary list to show the editor
+    const summary = document.querySelector('.fungus-cmd-summary');
+    if (summary) summary.click();
 
     const checkbox = document.querySelector('.cmd-checkbox-label input[type="checkbox"]');
     expect(checkbox).toBeTruthy();
@@ -1207,11 +940,9 @@ describe('Play Sound wait checkbox', () => {
 describe('Fungus inspector layout', () => {
   afterEach(() => {
     app.deactivateNode();
-    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
   });
 
-  it('in fungus mode, Name appears as section at top of inspector', () => {
-    app.enterFungusMode();
+  it('Name appears as section at top of inspector', () => {
     const node = app.createNode('state', 0, 0);
     app.activateNode(node);
     app.updateInspector();
@@ -1223,8 +954,7 @@ describe('Fungus inspector layout', () => {
     expect(nameInput.value).toBe(node.label);
   });
 
-  it('in fungus mode, Description textarea appears below Name', () => {
-    app.enterFungusMode();
+  it('Description textarea appears below Name', () => {
     const node = app.createNode('state', 0, 0);
     app.activateNode(node);
     app.updateInspector();
@@ -1234,8 +964,7 @@ describe('Fungus inspector layout', () => {
     expect(descInput.tagName).toBe('TEXTAREA');
   });
 
-  it('in fungus mode, Size/Position/Connections rows are hidden', () => {
-    app.enterFungusMode();
+  it('Size/Position/Connections rows are hidden', () => {
     const node = app.createNode('state', 0, 0);
     app.activateNode(node);
     app.updateInspector();
@@ -1247,21 +976,7 @@ describe('Fungus inspector layout', () => {
     expect(cellTexts).not.toContain('Connections');
   });
 
-  it('in statechart mode, Size/Position/Connections ARE shown', () => {
-    app.exitFungusMode();
-    const node = app.createNode('state', 0, 0);
-    app.activateNode(node);
-    app.updateInspector();
-
-    const allCells = Array.from(document.querySelectorAll('#inspector-table td'));
-    const cellTexts = allCells.map(td => td.textContent);
-    expect(cellTexts).toContain('Size');
-    expect(cellTexts).toContain('Position');
-    expect(cellTexts).toContain('Connections');
-  });
-
   it('description textarea updates node.description', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     app.activateNode(node);
     app.updateInspector();
@@ -1273,28 +988,14 @@ describe('Fungus inspector layout', () => {
   });
 });
 
-describe('Fungus delete handle hidden', () => {
-  afterEach(() => {
-    app.deactivateNode();
-    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
-  });
-
-  it('body has data-mode=fungus which hides .node-delete-handle via CSS', () => {
-    app.enterFungusMode();
-    expect(document.body.dataset.mode).toBe('fungus');
-  });
-});
-
 // ─── Version 32: Fungus inspector id label ──────────────────────────────────
 
 describe('Fungus inspector id label', () => {
   afterEach(() => {
     app.deactivateNode();
-    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
   });
 
-  it('in fungus mode, id label is shown in the name header', () => {
-    app.enterFungusMode();
+  it('id label is shown in the name header', () => {
     const node = app.createNode('state', 0, 0);
     app.activateNode(node);
     app.updateInspector();
@@ -1304,8 +1005,7 @@ describe('Fungus inspector id label', () => {
     expect(idLabel.textContent).toBe(`id: ${node.id}`);
   });
 
-  it('in fungus mode, props table has no Type/ID rows', () => {
-    app.enterFungusMode();
+  it('props table has no Type/ID rows', () => {
     const node = app.createNode('state', 0, 0);
     app.activateNode(node);
     app.updateInspector();
@@ -1315,18 +1015,6 @@ describe('Fungus inspector id label', () => {
     expect(cellTexts).not.toContain('Type');
     expect(cellTexts).not.toContain('ID');
   });
-
-  it('in statechart mode, props table still shows Type and ID', () => {
-    app.exitFungusMode();
-    const node = app.createNode('state', 0, 0);
-    app.activateNode(node);
-    app.updateInspector();
-
-    const allCells = Array.from(document.querySelectorAll('#inspector-table td'));
-    const cellTexts = allCells.map(td => td.textContent);
-    expect(cellTexts).toContain('Type');
-    expect(cellTexts).toContain('ID');
-  });
 });
 
 // ─── Version 33: Event label & description on stage ─────────────────────────
@@ -1334,11 +1022,9 @@ describe('Fungus inspector id label', () => {
 describe('Fungus event section label', () => {
   afterEach(() => {
     app.deactivateNode();
-    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
   });
 
-  it('in fungus mode, event section says "Execute on Event"', () => {
-    app.enterFungusMode();
+  it('event section says "Execute on Event"', () => {
     const node = app.createNode('state', 0, 0);
     app.activateNode(node);
     app.updateInspector();
@@ -1348,19 +1034,7 @@ describe('Fungus event section label', () => {
     expect(eventTitle).toBeTruthy();
   });
 
-  it('in statechart mode, event section says "Event Trigger"', () => {
-    app.exitFungusMode();
-    const node = app.createNode('state', 0, 0);
-    app.activateNode(node);
-    app.updateInspector();
-
-    const titles = Array.from(document.querySelectorAll('.inspector-section-title'));
-    const eventTitle = titles.find(t => t.textContent === 'Event Trigger');
-    expect(eventTitle).toBeTruthy();
-  });
-
-  it('in fungus mode, event dropdown is inline with label', () => {
-    app.enterFungusMode();
+  it('event dropdown is inline with label', () => {
     const node = app.createNode('state', 0, 0);
     app.activateNode(node);
     app.updateInspector();
@@ -1374,11 +1048,9 @@ describe('Fungus event section label', () => {
 describe('Fungus description on stage', () => {
   afterEach(() => {
     app.deactivateNode();
-    if (app.S.diagramMode === 'fungus') app.exitFungusMode();
   });
 
   it('description label appears on stage when description is set', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.description = 'Test description';
     app.applyFungusStyles();
@@ -1389,7 +1061,6 @@ describe('Fungus description on stage', () => {
   });
 
   it('no description label when description is empty', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.description = '';
     app.applyFungusStyles();
@@ -1398,19 +1069,7 @@ describe('Fungus description on stage', () => {
     expect(label).toBeFalsy();
   });
 
-  it('description label is removed when exiting fungus mode', () => {
-    app.enterFungusMode();
-    const node = app.createNode('state', 0, 0);
-    node.description = 'Test';
-    app.applyFungusStyles();
-    expect(node.el.querySelector('.fungus-desc-label')).toBeTruthy();
-
-    app.exitFungusMode();
-    expect(node.el.querySelector('.fungus-desc-label')).toBeFalsy();
-  });
-
   it('description updates in real-time via inspector textarea', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     app.activateNode(node);
     app.updateInspector();
@@ -1491,12 +1150,7 @@ describe('Messages tab', () => {
 });
 
 describe('Message Received shows message name on diagram', () => {
-  afterEach(() => {
-    if (app.S.diagramMode !== 'fungus') app.enterFungusMode();
-  });
-
   it('annotation includes message name for messageReceived event', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.event = { type: 'messageReceived', message: 'myMsg' };
     app.applyFungusStyles();
@@ -1506,7 +1160,6 @@ describe('Message Received shows message name on diagram', () => {
   });
 
   it('annotation does not show message name when message is empty', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.event = { type: 'messageReceived', message: '' };
     app.applyFungusStyles();
@@ -1528,7 +1181,7 @@ describe('Send Message uses dropdown', () => {
     app.activateNode(node);
     app.updateInspector();
 
-    // In fungus mode, click the command summary to open the editor
+    // Click the command summary to open the editor
     const summary = document.querySelector('.fungus-cmd-summary');
     if (summary) summary.click();
 
@@ -1542,11 +1195,9 @@ describe('Send Message uses dropdown', () => {
 describe('Fungus command summary list', () => {
   afterEach(() => {
     app.deactivateNode();
-    if (app.S.diagramMode !== 'fungus') app.enterFungusMode();
   });
 
-  it('commands shown as summary rows in fungus mode', () => {
-    app.enterFungusMode();
+  it('commands shown as summary rows', () => {
     const node = app.createNode('state', 0, 0);
     node.commands.push({ type: 'say', text: 'hi', character: '' });
     node.commands.push({ type: 'wait', duration: 2 });
@@ -1560,7 +1211,6 @@ describe('Fungus command summary list', () => {
   });
 
   it('clicking a summary row highlights it with green', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.commands.push({ type: 'say', text: 'hi', character: '' });
     app.activateNode(node);
@@ -1574,7 +1224,6 @@ describe('Fungus command summary list', () => {
   });
 
   it('selecting a command shows editor section', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.commands.push({ type: 'say', text: 'hello', character: '' });
     app.activateNode(node);
@@ -1588,7 +1237,6 @@ describe('Fungus command summary list', () => {
   });
 
   it('no editor shown when no command is selected', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.commands.push({ type: 'say', text: 'hello', character: '' });
     app.activateNode(node);
@@ -1597,19 +1245,6 @@ describe('Fungus command summary list', () => {
     const editor = document.querySelector('.fungus-cmd-editor');
     expect(editor).toBeFalsy();
   });
-
-  it('statechart mode still uses inline fields', () => {
-    app.exitFungusMode();
-    const node = app.createNode('state', 0, 0);
-    node.commands.push({ type: 'say', text: 'hello', character: '' });
-    app.activateNode(node);
-    app.updateInspector();
-
-    const summaries = document.querySelectorAll('.fungus-cmd-summary');
-    expect(summaries.length).toBe(0);
-    const items = document.querySelectorAll('.inspector-cmd-item');
-    expect(items.length).toBe(1);
-  });
 });
 
 // ─── Version 37: Command summary row refinement ────────────────────────────
@@ -1617,11 +1252,9 @@ describe('Fungus command summary list', () => {
 describe('Fungus command summary row layout', () => {
   afterEach(() => {
     app.deactivateNode();
-    if (app.S.diagramMode !== 'fungus') app.enterFungusMode();
   });
 
   it('summary rows have verb and detail elements', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.commands.push({ type: 'say', text: 'hello world', character: '' });
     app.activateNode(node);
@@ -1635,7 +1268,6 @@ describe('Fungus command summary row layout', () => {
   });
 
   it('summary rows have move arrows', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.commands.push({ type: 'say', text: 'a', character: '' });
     node.commands.push({ type: 'wait', duration: 1 });
@@ -1655,7 +1287,6 @@ describe('Fungus command summary row layout', () => {
   });
 
   it('editor does NOT have move up/down buttons', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.commands.push({ type: 'say', text: 'a', character: '' });
     node.commands.push({ type: 'wait', duration: 1 });
@@ -1671,7 +1302,6 @@ describe('Fungus command summary row layout', () => {
   });
 
   it('call command detail shows target block and mode', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     const target = app.createNode('state', 100, 0);
     node.commands.push({ type: 'call', targetBlockId: target.id, mode: 'stop' });
@@ -1843,11 +1473,9 @@ describe('Theme toggle', () => {
 describe('Command color coding', () => {
   afterEach(() => {
     app.deactivateNode();
-    if (app.S.diagramMode !== 'fungus') app.enterFungusMode();
   });
 
   it('summary rows have command-type CSS class', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.commands.push({ type: 'say', text: 'hi', character: '' });
     node.commands.push({ type: 'call', targetBlockId: null, mode: 'stop' });
@@ -1860,7 +1488,6 @@ describe('Command color coding', () => {
   });
 
   it('different command types have different classes', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.commands.push({ type: 'wait', duration: 1 });
     node.commands.push({ type: 'sendMessage', message: '' });
@@ -1873,7 +1500,6 @@ describe('Command color coding', () => {
   });
 
   it('selected command still gets green class regardless of type', () => {
-    app.enterFungusMode();
     const node = app.createNode('state', 0, 0);
     node.commands.push({ type: 'say', text: 'hi', character: '' });
     app.activateNode(node);

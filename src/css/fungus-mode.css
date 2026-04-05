@@ -1,35 +1,35 @@
 /* ── Fungus FlowChart mode overrides ────────────────────────────────────────── */
 
 /* Hide start/end/choice palette buttons */
-body[data-mode="fungus"] #btn-new-start,
-body[data-mode="fungus"] #btn-new-end,
-body[data-mode="fungus"] #btn-new-choice {
+#btn-new-start,
+#btn-new-end,
+#btn-new-choice {
   display: none;
 }
 
 /* Hide manual connection handles */
-body[data-mode="fungus"] .conn-handle {
+.conn-handle {
   display: none;
 }
 
 /* Dim existing start/end nodes on the canvas */
-body[data-mode="fungus"] .start-node,
-body[data-mode="fungus"] .end-node {
+.start-node,
+.end-node {
   opacity: 0.3;
   pointer-events: none;
 }
 
 /* Hide resize handles and reset button on blocks */
-body[data-mode="fungus"] .resize-handle {
+.resize-handle {
   display: none;
 }
 
-body[data-mode="fungus"] .node-reset-btn {
+.node-reset-btn {
   display: none;
 }
 
 /* Hide red delete "x" on blocks — use right-click menu instead */
-body[data-mode="fungus"] .node-delete-handle {
+.node-delete-handle {
   display: none;
 }
 
@@ -58,7 +58,7 @@ body[data-mode="fungus"] .node-delete-handle {
 }
 
 /* Increase default font size for block labels */
-body[data-mode="fungus"] .state-node .node-label {
+.state-node .node-label {
   font-size: 15px;
 }
 

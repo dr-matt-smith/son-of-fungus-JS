@@ -545,7 +545,6 @@ Version 42 features - light and dark theme
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
-
 Version 43 features - color code command summary rows in inspector
 ==================
 

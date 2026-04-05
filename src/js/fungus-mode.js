@@ -1,20 +1,16 @@
 import { S } from './state.js';
 import { createAutoConnection, deleteConnection } from './connections/conn-model.js';
-import { deactivateNode } from './nodes/node-selection.js';
-import { deselectConn } from './connections/conn-selection.js';
 import { EVENT_TYPES } from './commands.js';
 
 const FUNGUS_CLASSES = ['fungus-event-block', 'fungus-branching-block', 'fungus-standard-block'];
 
 /**
- * Classify a block node for Fungus mode.
+ * Classify a block node.
  * Returns 'event', 'branching', or 'standard'.
  */
 export function classifyBlock(node) {
-  // Event overrides everything
   if (node.event && node.event.type !== 'none') return 'event';
 
-  // Count unique non-null target block IDs from call + menu commands
   const targets = new Set();
   for (const cmd of node.commands) {
     if (cmd.type === 'call' && cmd.targetBlockId != null) {
@@ -33,13 +29,12 @@ export function classifyBlock(node) {
 
 /**
  * Update the event annotation label on a node's DOM element.
- * Shows `<Event Name>` above the block when the node has an event trigger.
  */
 export function updateEventAnnotation(node) {
   let label = node.el.querySelector('.fungus-event-label');
 
   const eventType = node.event?.type;
-  if (!eventType || eventType === 'none' || S.diagramMode !== 'fungus') {
+  if (!eventType || eventType === 'none') {
     if (label) label.remove();
     return;
   }
@@ -60,12 +55,11 @@ export function updateEventAnnotation(node) {
 
 /**
  * Update the description label below a node's DOM element.
- * Shows the description text when non-empty in fungus mode.
  */
 export function updateDescriptionLabel(node) {
   let label = node.el.querySelector('.fungus-desc-label');
 
-  if (!node.description || S.diagramMode !== 'fungus') {
+  if (!node.description) {
     if (label) label.remove();
     return;
   }
@@ -79,7 +73,7 @@ export function updateDescriptionLabel(node) {
 }
 
 /**
- * Apply Fungus CSS classes to all state/choice nodes based on classification.
+ * Apply block CSS classes to all state/choice nodes based on classification.
  */
 export function applyFungusStyles() {
   for (const node of S.nodes) {
@@ -93,21 +87,7 @@ export function applyFungusStyles() {
 }
 
 /**
- * Remove all Fungus CSS classes from nodes.
- */
-function clearFungusStyles() {
-  for (const node of S.nodes) {
-    for (const cls of FUNGUS_CLASSES) node.el.classList.remove(cls);
-    const eventLabel = node.el.querySelector('.fungus-event-label');
-    if (eventLabel) eventLabel.remove();
-    const descLabel = node.el.querySelector('.fungus-desc-label');
-    if (descLabel) descLabel.remove();
-  }
-}
-
-/**
  * Get desired auto-connection pairs from all nodes' call/menu commands.
- * Returns array of { fromId, toId } (deduplicated).
  */
 function getDesiredAutoConnections() {
   const pairs = [];
@@ -138,14 +118,12 @@ function getDesiredAutoConnections() {
 export function syncAutoConnections() {
   const desired = getDesiredAutoConnections();
 
-  // Index existing auto-connections
   const existing = new Map();
   for (const conn of S.connections) {
     if (!conn.auto) continue;
     existing.set(`${conn.fromId}->${conn.toId}`, conn);
   }
 
-  // Create missing
   const desiredKeys = new Set();
   for (const { fromId, toId } of desired) {
     const key = `${fromId}->${toId}`;
@@ -157,7 +135,6 @@ export function syncAutoConnections() {
     }
   }
 
-  // Remove stale
   const toRemove = [];
   for (const [key, conn] of existing) {
     if (!desiredKeys.has(key)) toRemove.push(conn);
@@ -166,37 +143,11 @@ export function syncAutoConnections() {
 }
 
 /**
- * Remove all auto-connections.
+ * Initialise the flowchart (called once at startup).
  */
-function removeAllAutoConnections() {
-  const autos = S.connections.filter(c => c.auto);
-  for (const conn of autos) deleteConnection(conn);
-}
-
-/**
- * Enter Fungus FlowChart mode.
- */
-export function enterFungusMode() {
-  S.diagramMode = 'fungus';
-  document.body.dataset.mode = 'fungus';
-  if (S.activeNode) deactivateNode();
-  if (S.selectedConn) deselectConn();
+export function initFlowchart() {
   applyFungusStyles();
   syncAutoConnections();
   const stateBtn = document.getElementById('btn-new-state');
   if (stateBtn && stateBtn.lastChild) stateBtn.lastChild.textContent = 'Block';
-}
-
-/**
- * Exit Fungus FlowChart mode (back to State Chart).
- */
-export function exitFungusMode() {
-  S.diagramMode = 'statechart';
-  delete document.body.dataset.mode;
-  if (S.activeNode) deactivateNode();
-  if (S.selectedConn) deselectConn();
-  clearFungusStyles();
-  removeAllAutoConnections();
-  const stateBtn = document.getElementById('btn-new-state');
-  if (stateBtn && stateBtn.lastChild) stateBtn.lastChild.textContent = 'State';
 }

@@ -174,10 +174,6 @@
 .inspector-cmd-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-body[data-mode="fungus"] .inspector-cmd-list {
   gap: 0;
 }
 

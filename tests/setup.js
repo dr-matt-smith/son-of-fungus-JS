@@ -5,18 +5,11 @@
 export function setupDOM() {
   document.body.innerHTML = `
     <div id="toolbar">
-      <button id="btn-new-state" class="toolbar-btn palette-btn" draggable="false">State</button>
-      <button id="btn-new-start" class="toolbar-btn palette-btn" draggable="false"></button>
-      <button id="btn-new-end" class="toolbar-btn palette-btn" draggable="false"></button>
-      <button id="btn-new-choice" class="toolbar-btn palette-btn" draggable="false"></button>
+      <button id="btn-new-state" class="toolbar-btn palette-btn" draggable="false">Block</button>
       <button id="btn-play" class="toolbar-btn"><span id="play-label">Play All</span></button>
       <button id="btn-play-step" class="toolbar-btn" style="display:none;">Step</button>
       <button id="btn-step-continue" class="toolbar-btn" style="display:none;">Next</button>
       <button id="btn-stop" class="toolbar-btn" style="display:none;">Stop</button>
-    </div>
-    <div id="mode-label">
-      <span id="mode-label-text">Fungus Mode</span>
-      <span id="mode-label-hint">(change in Settings ⚙)</span>
     </div>
     <div id="zoom-toolbar">
       <button id="btn-fit-all" class="toolbar-btn"></button>
@@ -76,17 +69,6 @@ export function setupDOM() {
               <span class="settings-mode-name">Light</span>
             </label>
           </div>
-          <div class="settings-section">
-            <div class="settings-section-title">Diagram Mode</div>
-            <label class="settings-mode-option">
-              <input type="radio" name="diagram-mode" value="fungus" checked>
-              <span class="settings-mode-name">Fungus FlowChart</span>
-            </label>
-            <label class="settings-mode-option">
-              <input type="radio" name="diagram-mode" value="statechart">
-              <span class="settings-mode-name">State Chart Diagram</span>
-            </label>
-          </div>
         </div>
         <div id="messages-panel" class="tab-panel" style="display:none;">
           <div class="settings-section">
@@ -108,7 +90,7 @@ export function setupDOM() {
                 <option value="Integer">Integer</option>
                 <option value="Float">Float</option>
                 <option value="String" selected>String</option>
-              <option value="Enum">Enum</option>
+                <option value="Enum">Enum</option>
               </select>
               <input id="variables-new-name" type="text" class="inspector-input variable-name-input" placeholder="Variable name…">
               <button id="variables-add-btn" class="toolbar-btn">Add</button>

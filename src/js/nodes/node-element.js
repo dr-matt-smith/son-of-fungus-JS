@@ -1,7 +1,6 @@
 /**
  * DOM element construction and font sizing for nodes.
  */
-import { S } from '../state.js';
 
 export function buildNodeElement(type, id) {
   const el = document.createElement('div');
@@ -17,8 +16,7 @@ export function buildNodeElement(type, id) {
       '</svg>' +
       '<span class="node-label">?</span>';
   } else if (type === 'state') {
-    const name = S.diagramMode === 'fungus' ? `New Block ${id}` : `State ${id}`;
-    el.innerHTML = `<span class="node-label">${name}</span>`;
+    el.innerHTML = `<span class="node-label">New Block ${id}</span>`;
   } else if (type === 'start') {
     el.innerHTML = '<span class="node-label-fixed">start</span>';
   } else if (type === 'end') {
@@ -31,15 +29,6 @@ export function buildNodeElement(type, id) {
   idSpan.textContent = `id: ${id}`;
   el.appendChild(idSpan);
 
-  if (type === 'state' || type === 'choice') {
-    const btn = document.createElement('button');
-    btn.className = 'node-reset-btn';
-    btn.title     = 'Reset to default size';
-    btn.textContent = '↺';
-    btn.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); });
-    el.appendChild(btn);
-  }
-
   return el;
 }
 
@@ -47,35 +36,6 @@ export function fitLabelFontSize(node) {
   if (node.type !== 'state' && node.type !== 'choice') return;
   const labelEl = node.el.querySelector('.node-label');
   if (!labelEl) return;
-
-  // In fungus mode, use CSS font size (no auto-fit shrinking)
-  if (S.diagramMode === 'fungus') {
-    labelEl.style.fontSize = '';
-    return;
-  }
-
-  const MAX_FONT = 200;
-  const MIN_FONT = 6;
-
-  let availH, availW;
-  if (node.type === 'choice') {
-    availH = node.h * 0.48 - 4;
-    availW = node.w * 0.48 - 4;
-  } else {
-    availH = node.h - 14;
-    availW = node.w - 18;
-  }
-
-  let lo = MIN_FONT, hi = MAX_FONT, best = MIN_FONT;
-  while (lo <= hi) {
-    const mid = (lo + hi) / 2;
-    labelEl.style.fontSize = `${mid}px`;
-    if (labelEl.scrollHeight <= availH && labelEl.scrollWidth <= availW) {
-      best = mid;
-      lo = mid + 0.5;
-    } else {
-      hi = mid - 0.5;
-    }
-  }
-  labelEl.style.fontSize = `${best}px`;
+  // Use CSS font size (no auto-fit shrinking)
+  labelEl.style.fontSize = '';
 }

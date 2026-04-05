@@ -7,7 +7,6 @@ export const S = {
   panX: 0,
   panY: 0,
   activeTool: 'select',
-  diagramMode: 'fungus',  // 'statechart' | 'fungus'
   nextId: 1,
   nextConnId: 1,
 

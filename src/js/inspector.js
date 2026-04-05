@@ -69,10 +69,8 @@ function cmdDetail(cmd) {
 // ── Fungus mode reactivity ──────────────────────────────────────────────────
 
 function onNodeDataChanged() {
-  if (S.diagramMode === 'fungus') {
-    applyFungusStyles();
-    syncAutoConnections();
-  }
+  applyFungusStyles();
+  syncAutoConnections();
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -121,10 +119,8 @@ function renderNodeInspector(n) {
   // Clean up previous sections
   propsContainer.querySelectorAll('.inspector-section').forEach(s => s.remove());
 
-  const isFungus = S.diagramMode === 'fungus';
-
-  // In fungus mode, show Name and Description at the top (before the table)
-  if (isFungus && (n.type === 'state' || n.type === 'choice')) {
+  // Name and Description at the top
+  if (n.type === 'state' || n.type === 'choice') {
     const nameSection = document.createElement('div');
     nameSection.className = 'inspector-section inspector-name-section';
 
@@ -172,58 +168,14 @@ function renderNodeInspector(n) {
     propsContainer.insertBefore(nameSection, propsContainer.firstChild);
   }
 
-  if (isFungus) {
-    // In fungus mode, hide the props table — id is shown in the name header
-    tbody.innerHTML = '';
-  } else {
-    const rows = [['Type', n.type], ['ID', n.id]];
-    if (n.type === 'state' || n.type === 'choice') {
-      rows.push(['Size', `${n.w} × ${n.h}`]);
-    }
-    rows.push(['Position', `${Math.round(n.x)}, ${Math.round(n.y)}`]);
-    const outgoing = S.connections.filter(c => c.fromId === n.id).length;
-    const incoming = S.connections.filter(c => c.toId === n.id).length;
-    rows.push(['Connections', `${outgoing} out / ${incoming} in`]);
-    setPropsRows(rows);
-  }
-
-  // Editable name field for state/choice nodes (statechart mode only — fungus has it above)
-  if (!isFungus && (n.type === 'state' || n.type === 'choice')) {
-    const nameRow = document.createElement('tr');
-    const nameTd = document.createElement('td');
-    nameTd.textContent = 'Name';
-    const valueTd = document.createElement('td');
-    const nameInput = document.createElement('input');
-    nameInput.type = 'text';
-    nameInput.className = 'inspector-input inspector-name-input';
-    nameInput.value = n.label;
-    nameInput.addEventListener('input', () => {
-      const val = nameInput.value.trim();
-      if (val) {
-        n.label = val;
-        const labelEl = n.el.querySelector('.node-label');
-        if (labelEl) labelEl.textContent = val;
-        fitLabelFontSize(n);
-      }
-    });
-    nameInput.addEventListener('keydown', (e) => e.stopPropagation());
-    valueTd.appendChild(nameInput);
-    nameRow.appendChild(nameTd);
-    nameRow.appendChild(valueTd);
-    // Insert after the ID row (index 1)
-    const idRow = tbody.rows[1];
-    if (idRow && idRow.nextSibling) {
-      tbody.insertBefore(nameRow, idRow.nextSibling);
-    } else {
-      tbody.appendChild(nameRow);
-    }
-  }
+  // Hide the props table — id is shown in the name header
+  tbody.innerHTML = '';
 
   // Event section
   const eventSection = document.createElement('div');
   eventSection.className = 'inspector-section';
 
-  if (isFungus) {
+  {
     // Inline layout: label + dropdown on same row
     const eventRow = document.createElement('div');
     eventRow.className = 'inspector-event-row';
@@ -250,26 +202,6 @@ function renderNodeInspector(n) {
     });
     eventRow.appendChild(eventSelect);
     eventSection.appendChild(eventRow);
-  } else {
-    eventSection.innerHTML = `<div class="inspector-section-title">Event Trigger</div>`;
-
-    const eventSelect = document.createElement('select');
-    eventSelect.className = 'inspector-select';
-    for (const [key, ev] of Object.entries(EVENT_TYPES)) {
-      const opt = document.createElement('option');
-      opt.value = key;
-      opt.textContent = ev.label;
-      if (n.event?.type === key) opt.selected = true;
-      eventSelect.appendChild(opt);
-    }
-    eventSelect.addEventListener('change', () => {
-      n.event = { type: eventSelect.value };
-      if (eventSelect.value === 'messageReceived') n.event.message = '';
-      if (eventSelect.value === 'keyPressed') n.event.key = '';
-      onNodeDataChanged();
-      updateInspector();
-    });
-    eventSection.appendChild(eventSelect);
   }
 
   // Extra fields for message/key events
@@ -297,8 +229,8 @@ function renderNodeInspector(n) {
   // Clamp selected index
   if (selectedCmdIdx >= n.commands.length) selectedCmdIdx = n.commands.length - 1;
 
-  if (isFungus) {
-    // ── Fungus mode: summary list + editor ──────────────────────────────
+  {
+    // ── Command summary list + editor ───────────────────────────────────
     n.commands.forEach((cmd, idx) => {
       const row = document.createElement('div');
       row.className = `fungus-cmd-summary fungus-cmd-${cmd.type}`;
@@ -405,79 +337,6 @@ function renderNodeInspector(n) {
 
       cmdsSection.appendChild(editor);
     }
-  } else {
-    // ── Statechart mode: original inline layout ─────────────────────────
-    n.commands.forEach((cmd, idx) => {
-      const item = document.createElement('div');
-      item.className = 'inspector-cmd-item';
-      if (S.executingCommandIdx === idx && S.executingNode === n) {
-        item.classList.add('cmd-executing');
-      }
-
-      const header = document.createElement('div');
-      header.className = 'inspector-cmd-header';
-
-      const label = COMMAND_TYPES[cmd.type]?.label || cmd.type;
-      const catLabel = COMMAND_TYPES[cmd.type]?.category || '';
-      header.innerHTML = `<span class="cmd-label">${label}</span><span class="cmd-cat">${catLabel}</span>`;
-
-      const btnGroup = document.createElement('span');
-      btnGroup.className = 'cmd-btn-group';
-
-      if (idx > 0) {
-        const upBtn = document.createElement('button');
-        upBtn.className = 'cmd-btn';
-        upBtn.textContent = '↑';
-        upBtn.title = 'Move up';
-        upBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx - 1, 0, n.commands.splice(idx, 1)[0]); onNodeDataChanged(); updateInspector(); });
-        btnGroup.appendChild(upBtn);
-      }
-      if (idx < n.commands.length - 1) {
-        const downBtn = document.createElement('button');
-        downBtn.className = 'cmd-btn';
-        downBtn.textContent = '↓';
-        downBtn.title = 'Move down';
-        downBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx + 1, 0, n.commands.splice(idx, 1)[0]); onNodeDataChanged(); updateInspector(); });
-        btnGroup.appendChild(downBtn);
-      }
-      const delBtn = document.createElement('button');
-      delBtn.className = 'cmd-btn cmd-btn-del';
-      delBtn.textContent = '×';
-      delBtn.title = 'Remove command';
-      delBtn.addEventListener('click', (e) => { e.stopPropagation(); n.commands.splice(idx, 1); onNodeDataChanged(); updateInspector(); });
-      btnGroup.appendChild(delBtn);
-
-      header.appendChild(btnGroup);
-      item.appendChild(header);
-
-      // Command-specific fields
-      const fields = document.createElement('div');
-      fields.className = 'inspector-cmd-fields';
-      renderCommandFields(fields, cmd, n);
-      item.appendChild(fields);
-
-      cmdList.appendChild(item);
-    });
-
-    cmdsSection.appendChild(cmdList);
-
-    // Add command dropdown
-    const addRow = document.createElement('div');
-    addRow.className = 'inspector-add-cmd';
-    const addSelect = document.createElement('select');
-    addSelect.className = 'inspector-select';
-    addSelect.innerHTML = '<option value="">+ Add command...</option>';
-    for (const [key, ct] of Object.entries(COMMAND_TYPES)) {
-      addSelect.innerHTML += `<option value="${key}">${ct.label} (${ct.category})</option>`;
-    }
-    addSelect.addEventListener('change', () => {
-      if (!addSelect.value) return;
-      n.commands.push(createCommand(addSelect.value));
-      onNodeDataChanged();
-      updateInspector();
-    });
-    addRow.appendChild(addSelect);
-    cmdsSection.appendChild(addRow);
   }
 
   // Append sections after the table

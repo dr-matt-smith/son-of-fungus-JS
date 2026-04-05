@@ -5,7 +5,7 @@ import { S } from './state.js';
 import { canvasContainer, canvasEl, minimapEl, mmVP, btnHandTool, zoomSlider } from './dom-refs.js';
 import { applyTransform, zoomAround, clientToWorld, relativeToContainer, fitAll, updateCursor } from './transform.js';
 import { refreshMinimap, getMinimapScales, updateMinimapViewport } from './minimap.js';
-import { createNode, moveNode, resizeNode, resetNodeSize } from './nodes/node-model.js';
+import { createNode, moveNode, resizeNode } from './nodes/node-model.js';
 import { activateNode, deactivateNode, selectGroup, clearGroup,
          startSelectionRect, updateSelectionRect, finishSelectionRect, deleteNode } from './nodes/node-selection.js';
 import { startEditing, commitEditing } from './nodes/node-editing.js';
@@ -17,7 +17,7 @@ import { renderConnGroup, updateConnection } from './connections/conn-render.js'
 import { recalcPairOffsets } from './connections/conn-model.js';
 import { updateInspector, showJsonExport, showRunLog } from './inspector.js';
 import { startExecution, startStepExecution, stepNext, stopExecution, isRunning, isStepping, isPaused } from './engine.js';
-import { enterFungusMode, exitFungusMode, classifyBlock, applyFungusStyles, syncAutoConnections } from './fungus-mode.js';
+import { initFlowchart, classifyBlock, applyFungusStyles, syncAutoConnections } from './fungus-mode.js';
 
 // ── Toolbar: Fit All ─────────────────────────────────────────────────────────
 
@@ -55,6 +55,7 @@ btnHandTool.addEventListener('click', () => {
 
 function setupPaletteBtn(btnId, type) {
   const btn = document.getElementById(btnId);
+  if (!btn) return;
   btn.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
     e.preventDefault();
@@ -72,7 +73,7 @@ function setupPaletteBtn(btnId, type) {
         '</svg>' +
         '<span class="node-label">?</span>';
     } else if (type === 'state') {
-      const name = S.diagramMode === 'fungus' ? `New Block ${S.nextId}` : `State ${S.nextId}`;
+      const name = `New Block ${S.nextId}`;
       S.ghostEl.innerHTML = `<span class="node-label">${name}</span>`;
     }
     positionGhost(e.clientX, e.clientY);
@@ -247,7 +248,7 @@ function duplicateNode(srcNode) {
   newNode.event = srcNode.event ? { ...srcNode.event } : { type: 'none' };
   newNode.commands = srcNode.commands.map(cmd => JSON.parse(JSON.stringify(cmd)));
   newNode.description = srcNode.description || '';
-  if (S.diagramMode === 'fungus') {
+  if (true) {
     applyFungusStyles();
     syncAutoConnections();
   }
@@ -256,7 +257,7 @@ function duplicateNode(srcNode) {
 }
 
 function onNodeContextMenu(e) {
-  if (S.diagramMode !== 'fungus') return;
+  // Context menu only
   e.preventDefault();
   e.stopPropagation();
   const id   = Number(e.currentTarget.dataset.id);
@@ -277,14 +278,6 @@ export function createNodeWithEvents(type, worldX, worldY) {
   node.el.addEventListener('mousedown', onNodeMouseDown);
   node.el.addEventListener('dblclick',  onNodeDblClick);
   node.el.addEventListener('contextmenu', onNodeContextMenu);
-
-  const resetBtn = node.el.querySelector('.node-reset-btn');
-  if (resetBtn) {
-    resetBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      resetNodeSize(node);
-    });
-  }
 
   return node;
 }
@@ -436,7 +429,7 @@ document.addEventListener('mouseup', (e) => {
         const def = NODE_DEFAULTS[S.creatingNodeType];
         const world = clientToWorld(e.clientX, e.clientY);
         const newNode = createNodeWithEvents(S.creatingNodeType, world.x - def.w / 2, world.y - def.h / 2);
-        if (S.diagramMode === 'fungus') {
+        if (true) {
           activateNode(newNode);
           updateInspector();
         }
@@ -514,11 +507,10 @@ const btnPlayStep     = document.getElementById('btn-play-step');
 const btnStepContinue = document.getElementById('btn-step-continue');
 const btnStop         = document.getElementById('btn-stop');
 const playLabel       = document.getElementById('play-label');
-const modeLabelText   = document.getElementById('mode-label-text');
 
 function showPlayButtons() {
   btnPlay.style.display = '';
-  btnPlayStep.style.display = S.diagramMode === 'fungus' ? '' : 'none';
+  btnPlayStep.style.display = '';
   btnStepContinue.style.display = 'none';
   btnStop.style.display = 'none';
 }
@@ -620,24 +612,8 @@ for (const radio of document.querySelectorAll('input[name="theme"]')) {
   });
 }
 
-function updateModeUI() {
-  if (S.diagramMode === 'fungus') {
-    modeLabelText.textContent = 'Fungus Mode';
-    playLabel.textContent = 'Play All';
-  } else {
-    modeLabelText.textContent = 'State Chart Mode';
-    playLabel.textContent = 'Play';
-  }
-  showPlayButtons();
-}
-
-for (const radio of document.querySelectorAll('input[name="diagram-mode"]')) {
-  radio.addEventListener('change', () => {
-    if (radio.value === 'fungus') enterFungusMode();
-    else exitFungusMode();
-    updateModeUI();
-  });
-}
+playLabel.textContent = 'Play All';
+showPlayButtons();
 
 // ── Messages tab ────────────────────────────────────────────────────────────
 
@@ -1020,8 +996,7 @@ export { renderEnumsList };
 
 // ── Initialise ───────────────────────────────────────────────────────────────
 
-enterFungusMode();
-updateModeUI();
+initFlowchart();
 applyTransform();
 
 // ── Re-exports (facade for tests) ───────────────────────────────────────────
@@ -1031,7 +1006,7 @@ export { WORLD_W, WORLD_H, ZOOM_MIN, ZOOM_MAX, ZOOM_STEP, NODE_DEFAULTS, NODE_MI
 export { canvasContainer, canvasEl, connSvg, minimapEl } from './dom-refs.js';
 export { applyTransform, zoomAround, clientToWorld, relativeToContainer, fitAll } from './transform.js';
 export { refreshMinimap, getMinimapBounds, getMinimapScales } from './minimap.js';
-export { createNode, moveNode, resizeNode, resetNodeSize } from './nodes/node-model.js';
+export { createNode, moveNode, resizeNode } from './nodes/node-model.js';
 export { buildNodeElement, fitLabelFontSize } from './nodes/node-element.js';
 export { activateNode, deactivateNode, selectGroup, clearGroup, deleteNode } from './nodes/node-selection.js';
 export { startEditing, commitEditing, cancelEditing } from './nodes/node-editing.js';
@@ -1040,5 +1015,5 @@ export { updateConnection } from './connections/conn-render.js';
 export { selectConn, deselectConn } from './connections/conn-selection.js';
 export { getBorderPoint, getPairPerpendicular } from './connections/geometry.js';
 export { updateInspector } from './inspector.js';
-export { classifyBlock, applyFungusStyles, syncAutoConnections, enterFungusMode, exitFungusMode } from './fungus-mode.js';
+export { classifyBlock, applyFungusStyles, syncAutoConnections, initFlowchart } from './fungus-mode.js';
 export { startExecution, startStepExecution, stepNext, stopExecution, isRunning, isStepping, isPaused, getRunLog } from './engine.js';

@@ -90,11 +90,6 @@
 
   </div>
 
-  <!-- ── Mode label (top-left, below toolbar) ──────────────────────────────── -->
-  <div id="mode-label">
-    <span id="mode-label-text">Fungus Mode</span>
-    <span id="mode-label-hint">(change in Settings ⚙)</span>
-  </div>
 
   <!-- ── Zoom toolbar (bottom-left) ──────────────────────────────────────── -->
   <div id="zoom-toolbar">
@@ -202,44 +197,6 @@
           </label>
         </div>
 
-        <div class="settings-section">
-          <div class="settings-section-title">Diagram Mode</div>
-
-          <label class="settings-mode-option">
-            <input type="radio" name="diagram-mode" value="fungus" checked>
-            <div class="settings-mode-info">
-              <span class="settings-mode-name">Fungus FlowChart</span>
-              <svg class="settings-mode-preview" viewBox="0 0 180 80" aria-hidden="true">
-                <rect x="10" y="20" width="50" height="40" rx="10" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1.5"/>
-                <text x="35" y="44" text-anchor="middle" fill="#bfdbfe" font-size="8">Event</text>
-                <rect x="80" y="20" width="50" height="40" rx="3" fill="#422006" stroke="#eab308" stroke-width="1.5"/>
-                <text x="105" y="44" text-anchor="middle" fill="#fde047" font-size="7">Standard</text>
-                <line x1="60" y1="40" x2="80" y2="40" stroke="#60a5fa" stroke-width="1.2"/>
-                <polygon points="77,37 80,40 77,43" fill="#60a5fa"/>
-                <polygon points="160,20 180,40 160,60 140,40" fill="#7c2d12" stroke="#f97316" stroke-width="1.5"/>
-                <text x="160" y="43" text-anchor="middle" fill="#fed7aa" font-size="6">Branch</text>
-              </svg>
-            </div>
-          </label>
-
-          <label class="settings-mode-option">
-            <input type="radio" name="diagram-mode" value="statechart">
-            <div class="settings-mode-info">
-              <span class="settings-mode-name">State Chart Diagram</span>
-              <svg class="settings-mode-preview" viewBox="0 0 180 80" aria-hidden="true">
-                <circle cx="20" cy="40" r="8" fill="#3b82f6" stroke="#2563eb" stroke-width="1.5"/>
-                <rect x="55" y="22" width="50" height="36" rx="4" fill="#1f2937" stroke="#2563eb" stroke-width="1.5"/>
-                <text x="80" y="44" text-anchor="middle" fill="#bfdbfe" font-size="9">State</text>
-                <line x1="28" y1="40" x2="55" y2="40" stroke="#60a5fa" stroke-width="1.2"/>
-                <polygon points="52,37 55,40 52,43" fill="#60a5fa"/>
-                <rect x="130" y="22" width="40" height="36" rx="4" fill="#1f2937" stroke="#2563eb" stroke-width="1.5"/>
-                <text x="150" y="44" text-anchor="middle" fill="#bfdbfe" font-size="8">State 2</text>
-                <line x1="105" y1="40" x2="130" y2="40" stroke="#60a5fa" stroke-width="1.2"/>
-                <polygon points="127,37 130,40 127,43" fill="#60a5fa"/>
-              </svg>
-            </div>
-          </label>
-        </div>
       </div>
 
       <!-- Messages panel -->
