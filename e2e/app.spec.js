@@ -1,11 +1,19 @@
 import { test, expect } from '@playwright/test';
 import { dragNewNode, drag, getNodeBox } from './helpers.js';
 
-// Helper: add a command via the search popup
-async function addCommand(page, cmdType) {
+// Helper: add a command via the search popup (matches exact label)
+async function addCommand(page, cmdLabel) {
   await page.locator('.cmd-action-btn.cmd-action-add').click();
-  await page.locator('.cmd-search-input').fill(cmdType);
-  await page.locator('.cmd-search-item').first().click();
+  await page.locator('.cmd-search-input').fill(cmdLabel);
+  // Click the item whose label exactly matches
+  const items = page.locator('.cmd-search-item');
+  const count = await items.count();
+  for (let i = 0; i < count; i++) {
+    const label = await items.nth(i).locator('.cmd-search-label').textContent();
+    if (label === cmdLabel) { await items.nth(i).click(); return; }
+  }
+  // Fallback: click first match
+  await items.first().click();
 }
 
 test.beforeEach(async ({ page }) => {
@@ -1244,36 +1252,35 @@ test.describe('V43 – Command color coding', () => {
 // ─── Version 45: IF / END-IF commands ────────────────────────────────────
 
 test.describe('V45 – IF / END-IF', () => {
-  test('adding IF command auto-inserts END-IF', async ({ page }) => {
+  test('adding IF does NOT auto-insert End', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
     await addCommand(page, 'If');
 
     const summaries = page.locator('.fungus-cmd-summary');
-    await expect(summaries).toHaveCount(2);
+    await expect(summaries).toHaveCount(1);
     await expect(summaries.nth(0).locator('.fungus-cmd-verb')).toHaveText('If');
-    await expect(summaries.nth(1).locator('.fungus-cmd-verb')).toHaveText('End-If');
   });
 
-  test('END-IF is not available in the command search', async ({ page }) => {
+  test('End, Else-If, Else are available in command search', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
 
     await page.locator('.cmd-action-btn.cmd-action-add').click();
-    await page.locator('.cmd-search-input').fill('End');
+    await page.locator('.cmd-search-input').fill('');
     const items = await page.locator('.cmd-search-item .cmd-search-label').allTextContents();
-    expect(items.some(t => t === 'End-If')).toBe(false);
+    expect(items).toContain('End');
+    expect(items).toContain('Else-If');
+    expect(items).toContain('Else');
     await page.keyboard.press('Escape');
   });
 
-  test('commands between IF and END-IF are indented', async ({ page }) => {
+  test('IF and End can be added separately', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
 
-    // Add IF (auto-inserts END-IF)
     await addCommand(page, 'If');
-    // Add a Say command — it will go after END-IF, need to move it
-    // Actually let's just check the IF gets selected and we can verify layout
+    await addCommand(page, 'End');
     await expect(page.locator('.fungus-cmd-ifCondition')).toHaveCount(1);
     await expect(page.locator('.fungus-cmd-endIf')).toHaveCount(1);
   });
@@ -1300,35 +1307,32 @@ test.describe('V45 – IF / END-IF', () => {
 
 // ─── Version 46: ELSE-IF, ELSE, AND/OR ───────────────────────────────────
 
-test.describe('V46 – ELSE-IF and ELSE', () => {
-  test('IF editor has Add Else-If and Add Else buttons', async ({ page }) => {
+test.describe('V46/V61 – ELSE-IF and ELSE via search', () => {
+  test('Else-If can be added via command search', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
     await addCommand(page, 'If');
-
-    const editor = page.locator('.fungus-cmd-editor');
-    await expect(editor.locator('.cmd-btn').filter({ hasText: '+ Else-If' })).toBeVisible();
-    await expect(editor.locator('.cmd-btn').filter({ hasText: /^\+ Else$/ })).toBeVisible();
-  });
-
-  test('clicking Add Else-If inserts an Else-If command', async ({ page }) => {
-    await dragNewNode(page, '#btn-new-state');
-    await page.locator('.state-node').click();
-    await addCommand(page, 'If');
-
-    await page.locator('.fungus-cmd-editor .cmd-btn').filter({ hasText: '+ Else-If' }).click();
+    await addCommand(page, 'Else-If');
 
     await expect(page.locator('.fungus-cmd-elseIf')).toHaveCount(1);
   });
 
-  test('clicking Add Else inserts an Else command', async ({ page }) => {
+  test('Else can be added via command search', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
     await addCommand(page, 'If');
-
-    await page.locator('.fungus-cmd-editor .cmd-btn').filter({ hasText: /^\+ Else$/ }).click();
+    await addCommand(page, 'Else');
 
     await expect(page.locator('.fungus-cmd-elseCmd')).toHaveCount(1);
+  });
+
+  test('End can be added via command search', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await addCommand(page, 'If');
+    await addCommand(page, 'End');
+
+    await expect(page.locator('.fungus-cmd-endIf')).toHaveCount(1);
   });
 
   test('IF editor has + AND/OR condition button', async ({ page }) => {

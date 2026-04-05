@@ -31,7 +31,7 @@ export const COMMAND_TYPES = {
   ifCondition:  { label: 'If',            category: 'Flow',       description: 'Conditional execution' },
   elseIf:       { label: 'Else-If',      category: 'Flow',       description: 'Alternative condition' },
   elseCmd:      { label: 'Else',          category: 'Flow',       description: 'Execute if no conditions matched' },
-  endIf:        { label: 'End-If',        category: 'Flow',       description: 'End of conditional block' },
+  endIf:        { label: 'End',            category: 'Flow',       description: 'End of conditional block' },
   stageBgColor: { label: 'Stage BG Color', category: 'Stage',      description: 'Set the stage background color' },
   stageBgImage: { label: 'Stage BG Image',category: 'Stage',      description: 'Set the stage background image' },
   wait:         { label: 'Wait',          category: 'Flow',       description: 'Pause execution for a duration' },

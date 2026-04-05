@@ -812,13 +812,13 @@ Version 60 features - change menu to non-green color
 Version 61 features - improve IF-ELSE-IF command pattern
 ==================
 
-- [] at the moment ELSE-IF and ELSE are added when an IF is selected
-  - [] remove these options
-  - [] add to the new command lise ELSE-IF and ELSE
-  - [] replaace END-IF with END, and make it the user's responsibility to add END
-  - so the new pattern is that when an IF has been added, all commands after this will be part of the IF block, until an END or ELSE-IF or ELSE command is add
+- ✅ removed Else-If/Else buttons from IF editor
+- ✅ ELSE-IF, ELSE, and END are now in the command search list
+- ✅ END-IF renamed to "End"
+- ✅ IF no longer auto-inserts END — user adds END manually
+- ✅ delete now removes single commands (no longer deletes IF block)
 
-- [] and add Vite and PlayWright tests for the above feature(s)
+- ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
 

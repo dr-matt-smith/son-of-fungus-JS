@@ -101,7 +101,6 @@ function showCommandSearch(node) {
   function renderResults(filter) {
     results.innerHTML = '';
     for (const [key, ct] of Object.entries(COMMAND_TYPES)) {
-      if (key === 'endIf' || key === 'elseIf' || key === 'elseCmd') continue;
       const text = `${ct.label} (${ct.category})`;
       if (filter && !text.toLowerCase().includes(filter.toLowerCase())) continue;
       const item = document.createElement('div');
@@ -110,8 +109,7 @@ function showCommandSearch(node) {
       item.addEventListener('click', () => {
         overlay.remove();
         node.commands.push(createCommand(key));
-        if (key === 'ifCondition') node.commands.push(createCommand('endIf'));
-        selectedCmdIdx = node.commands.length - (key === 'ifCondition' ? 2 : 1);
+        selectedCmdIdx = node.commands.length - 1;
         onNodeDataChanged();
         updateInspector();
       });
@@ -438,26 +436,7 @@ function renderNodeInspector(n) {
     delBtn2.title = 'Delete selected command';
     delBtn2.addEventListener('click', () => {
       if (selectedCmdIdx < 0 || selectedCmdIdx >= n.commands.length) return;
-      const cmd2 = n.commands[selectedCmdIdx];
-      if (cmd2.type === 'ifCondition') {
-        let d = 0, endIdx = -1;
-        for (let i = selectedCmdIdx; i < n.commands.length; i++) {
-          if (n.commands[i].type === 'ifCondition') d++;
-          if (n.commands[i].type === 'endIf') { d--; if (d === 0) { endIdx = i; break; } }
-        }
-        if (endIdx >= 0) n.commands.splice(selectedCmdIdx, endIdx - selectedCmdIdx + 1);
-        else n.commands.splice(selectedCmdIdx, 1);
-      } else if (cmd2.type === 'endIf') {
-        let d = 0, ifIdx = -1;
-        for (let i = selectedCmdIdx; i >= 0; i--) {
-          if (n.commands[i].type === 'endIf') d++;
-          if (n.commands[i].type === 'ifCondition') { d--; if (d === 0) { ifIdx = i; break; } }
-        }
-        if (ifIdx >= 0) n.commands.splice(ifIdx, selectedCmdIdx - ifIdx + 1);
-        else n.commands.splice(selectedCmdIdx, 1);
-      } else {
-        n.commands.splice(selectedCmdIdx, 1);
-      }
+      n.commands.splice(selectedCmdIdx, 1);
       selectedCmdIdx = -1;
       onNodeDataChanged();
       updateInspector();
@@ -482,53 +461,6 @@ function renderNodeInspector(n) {
       fields.className = 'inspector-cmd-fields';
       renderCommandFields(fields, cmd, n);
       editor.appendChild(fields);
-
-      // Add Else-If / Else buttons for IF and Else-If commands
-      const btnRow = document.createElement('div');
-      btnRow.className = 'fungus-cmd-btn-row';
-      if (cmd.type === 'ifCondition' || cmd.type === 'elseIf') {
-        // Find the matching END-IF to insert before it
-        let depth = 0;
-        let endIdx = -1;
-        for (let i = selectedCmdIdx; i < n.commands.length; i++) {
-          if (n.commands[i].type === 'ifCondition') depth++;
-          if (n.commands[i].type === 'endIf') { depth--; if (depth === 0) { endIdx = i; break; } }
-        }
-        // Only search within the current IF block for existing else/elseIf
-        if (endIdx >= 0) {
-          const addElseIfBtn = document.createElement('button');
-          addElseIfBtn.className = 'cmd-btn';
-          addElseIfBtn.textContent = '+ Else-If';
-          addElseIfBtn.addEventListener('click', () => {
-            n.commands.splice(endIdx, 0, createCommand('elseIf'));
-            selectedCmdIdx = endIdx;
-            onNodeDataChanged(); updateInspector();
-          });
-          btnRow.appendChild(addElseIfBtn);
-
-          // Only show Add Else if there isn't already an Else in this IF block
-          let hasElse = false;
-          let d2 = 1;
-          for (let i = selectedCmdIdx + 1; i < endIdx; i++) {
-            if (n.commands[i].type === 'ifCondition') d2++;
-            if (n.commands[i].type === 'endIf') d2--;
-            if (d2 === 1 && n.commands[i].type === 'elseCmd') { hasElse = true; break; }
-          }
-          if (!hasElse) {
-            const addElseBtn = document.createElement('button');
-            addElseBtn.className = 'cmd-btn';
-            addElseBtn.textContent = '+ Else';
-            addElseBtn.addEventListener('click', () => {
-              n.commands.splice(endIdx, 0, createCommand('elseCmd'));
-              selectedCmdIdx = endIdx;
-              onNodeDataChanged(); updateInspector();
-            });
-            btnRow.appendChild(addElseBtn);
-          }
-        }
-      }
-
-      editor.appendChild(btnRow);
 
       cmdsSection.appendChild(editor);
     }
