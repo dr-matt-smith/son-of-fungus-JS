@@ -6,6 +6,7 @@
  */
 
 import { S } from './state.js';
+import { coerceToType, evaluateCondition, conditionSummary, substituteVars } from './runtime-core.js';
 // No direct inspector import — uses S.onInspectorUpdate callback to avoid circular dependency
 
 // Web Audio API for typing sounds
@@ -326,15 +327,13 @@ function executeCommand(cmd) {
 
 // ── Command implementations ──────────────────────────────────────────────────
 
-function substituteVars(text) {
-  return text.replace(/\{\$(\w+)\}/g, (_, name) => {
-    const v = S.variables.find(v => v.name === name);
-    return v ? String(v.value) : `{$${name}}`;
-  });
+// substituteVars wrapper — passes S.variables to the pure function
+function subVars(text) {
+  return substituteVars(text, S.variables);
 }
 
 function execSay(cmd) {
-  const text = substituteVars(cmd.text);
+  const text = subVars(cmd.text);
   logEntry(`Block ${currentNode.id} "${currentNode.label}": Say: ${cmd.character ? cmd.character + ': ' : ''}${text}`);
 
   // Create dialog element
@@ -462,58 +461,7 @@ function execMenu(cmd) {
   document.body.appendChild(menuOverlay);
 }
 
-function coerceToType(val, varType) {
-  if (varType === 'Integer') return parseInt(val, 10) || 0;
-  if (varType === 'Float')   return parseFloat(val) || 0;
-  if (varType === 'Boolean') return val === true || val === 'true';
-  return String(val ?? '');
-}
-
-function evaluateOneCondition(cond) {
-  const v = S.variables.find(v => v.name === cond.variableName);
-  const varType = v ? v.type : 'String';
-  const leftVal = v ? coerceToType(v.value, varType) : undefined;
-
-  let rightVal;
-  if (cond.compareType === 'variable') {
-    const rv = S.variables.find(v => v.name === cond.compareVarName);
-    rightVal = rv ? coerceToType(rv.value, varType) : undefined;
-  } else {
-    rightVal = coerceToType(cond.compareValue, varType);
-  }
-
-  switch (cond.operator) {
-    case '==': return leftVal == rightVal;
-    case '!=': return leftVal != rightVal;
-    case '<':  return leftVal < rightVal;
-    case '<=': return leftVal <= rightVal;
-    case '>':  return leftVal > rightVal;
-    case '>=': return leftVal >= rightVal;
-    default:   return false;
-  }
-}
-
-function evaluateCondition(cmd) {
-  let result = evaluateOneCondition(cmd);
-  if (cmd.extraConditions) {
-    for (const ec of cmd.extraConditions) {
-      const ecResult = evaluateOneCondition(ec);
-      if (ec.logic === 'OR') result = result || ecResult;
-      else result = result && ecResult;
-    }
-  }
-  return result;
-}
-
-function conditionSummary(cmd) {
-  let s = `${cmd.variableName} ${cmd.operator} ${cmd.compareType === 'variable' ? cmd.compareVarName : cmd.compareValue}`;
-  if (cmd.extraConditions) {
-    for (const ec of cmd.extraConditions) {
-      s += ` ${ec.logic} ${ec.variableName} ${ec.operator} ${ec.compareType === 'variable' ? ec.compareVarName : ec.compareValue}`;
-    }
-  }
-  return s;
-}
+// coerceToType, evaluateCondition, conditionSummary imported from runtime-core.js
 
 // Skip forward to the next ELSE-IF, ELSE, or END-IF at current depth
 function skipToNextBranch() {
@@ -549,7 +497,7 @@ function skipToEndIf() {
 }
 
 function execIfCondition(cmd) {
-  const result = evaluateCondition(cmd);
+  const result = evaluateCondition(cmd, S.variables);
   logEntry(`Block ${currentNode.id} "${currentNode.label}": If: ${conditionSummary(cmd)} → ${result}`);
 
   ifBranchTaken.push(result);
@@ -567,7 +515,7 @@ function execElseIf(cmd) {
     return;
   }
 
-  const result = evaluateCondition(cmd);
+  const result = evaluateCondition(cmd, S.variables);
   logEntry(`Block ${currentNode.id} "${currentNode.label}": Else-If: ${conditionSummary(cmd)} → ${result}`);
 
   if (result) {

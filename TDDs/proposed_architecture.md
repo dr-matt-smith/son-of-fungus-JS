@@ -113,7 +113,7 @@ Alternatively, `engine.js` could accept an `onUpdate` callback via its public AP
 
 ---
 
-## 5. Extract Shared Logic from build-runtime.js
+## 5. ✅ COMPLETED — Extract Shared Logic from build-runtime.js
 
 ### Problem
 `build-runtime.js` embeds ~150 lines of execution logic inside a template literal (HTML string). This duplicates:

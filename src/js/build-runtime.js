@@ -8,6 +8,13 @@ import JSZip from 'jszip';
 import { serialiseDiagram } from './inspector.js';
 import { AUDIO_FILES } from './audio-manifest.js';
 import { IMAGE_FILES } from './image-manifest.js';
+import runtimeCoreSource from './runtime-core.js?raw';
+
+// Strip 'export ' from runtime-core source for inline embedding
+const runtimeCoreInline = runtimeCoreSource
+  .replace(/export /g, '')
+  .replace(/\/\*\*[\s\S]*?\*\//g, '') // remove JSDoc comments
+  .trim();
 
 function generateRuntimeHTML(diagramJson) {
   return `<!DOCTYPE html>
@@ -49,33 +56,13 @@ function rel(url) { return url && url.startsWith('/') ? url.slice(1) : url; }
 const output = document.getElementById('output');
 const stage = document.getElementById('stage');
 
-function coerce(val, type) {
-  if (type === 'Integer') return parseInt(val, 10) || 0;
-  if (type === 'Float') return parseFloat(val) || 0;
-  if (type === 'Boolean') return val === true || val === 'true';
-  return String(val ?? '');
-}
+// Shared runtime-core functions (inlined from runtime-core.js at build time)
+${runtimeCoreInline}
 
-function evalCond(c) {
-  const v = S.variables.find(x => x.name === c.variableName);
-  const vt = v ? v.type : 'String';
-  const left = v ? coerce(v.value, vt) : undefined;
-  let right;
-  if (c.compareType === 'variable') { const rv = S.variables.find(x => x.name === c.compareVarName); right = rv ? coerce(rv.value, vt) : undefined; }
-  else right = coerce(c.compareValue, vt);
-  switch (c.operator) {
-    case '==': return left == right; case '!=': return left != right;
-    case '<': return left < right; case '<=': return left <= right;
-    case '>': return left > right; case '>=': return left >= right;
-  }
-  return false;
-}
-
-function evalFullCond(cmd) {
-  let r = evalCond(cmd);
-  if (cmd.extraConditions) for (const ec of cmd.extraConditions) { const er = evalCond(ec); r = ec.logic === 'OR' ? r || er : r && er; }
-  return r;
-}
+// Aliases for backward compat in runtime
+const coerce = coerceToType;
+const evalCond = (c) => evaluateOneCondition(c, S.variables);
+const evalFullCond = (cmd) => evaluateCondition(cmd, S.variables);
 
 function appendOutput(html) { const d = document.createElement('div'); d.innerHTML = html; output.appendChild(d); output.scrollTop = output.scrollHeight; }
 
@@ -127,7 +114,7 @@ function exec(cmd) {
   if (!running) return;
   switch (cmd.type) {
     case 'say': {
-      const text = cmd.text?.replace(/\\{\\$(\\w+)\\}/g, (_, n) => { const v = S.variables.find(x => x.name === n); return v ? String(v.value) : '{$' + n + '}'; }) || '';
+      const text = substituteVars(cmd.text || '', S.variables);
       const dlg = document.createElement('div'); dlg.className = 'say-dialog';
       if (cmd.character) { const ch = document.createElement('div'); ch.className = 'say-char'; ch.textContent = cmd.character; dlg.appendChild(ch); }
       const txt = document.createElement('div'); dlg.appendChild(txt);
