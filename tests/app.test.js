@@ -1742,6 +1742,32 @@ describe('Debug pause at every log line', () => {
   });
 });
 
+// ─── Version 55: Run stage and stage commands ───────────────────────────────
+
+describe('Run stage', () => {
+  it('run-stage element exists in DOM', () => {
+    expect(document.getElementById('run-stage')).toBeTruthy();
+  });
+
+  it('run-stage is hidden by default', () => {
+    expect(document.getElementById('run-stage').style.display).toBe('none');
+  });
+});
+
+describe('Stage commands', () => {
+  it('stageBgColor command creates with color property', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'stageBgColor', color: '#ff0000' });
+    expect(node.commands[0].color).toBe('#ff0000');
+  });
+
+  it('stageBgImage command creates with imageUrl property', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'stageBgImage', imageUrl: '/images/FungusTown_1.png' });
+    expect(node.commands[0].imageUrl).toBe('/images/FungusTown_1.png');
+  });
+});
+
 describe('Audio manifest', () => {
   it('AUDIO_FILES is exported and contains entries', () => {
     // Import is via the app facade; audio-manifest is used by inspector

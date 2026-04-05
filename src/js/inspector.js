@@ -4,6 +4,7 @@ import { EVENT_TYPES, COMMAND_TYPES, createCommand } from './commands.js';
 import { applyFungusStyles, syncAutoConnections, updateDescriptionLabel } from './fungus-mode.js';
 import { getRunLog } from './engine.js';
 import { AUDIO_FILES } from './audio-manifest.js';
+import { IMAGE_FILES } from './image-manifest.js';
 
 const inspectorEl    = document.getElementById('inspector');
 const emptyMsg       = document.getElementById('inspector-empty');
@@ -72,6 +73,8 @@ function cmdDetail(cmd) {
     }
     case 'elseCmd':     return '';
     case 'endIf':       return '';
+    case 'stageBgColor': return cmd.color || '';
+    case 'stageBgImage': return cmd.imageUrl || '(none)';
     case 'stopAudio':   return '';
     default:            return '';
   }
@@ -581,6 +584,25 @@ function renderCommandFields(container, cmd, node) {
       container.appendChild(labeledSelect('Audio File', cmd.audioUrl || '', audioOptions, v => { cmd.audioUrl = v; }));
       container.appendChild(labeledInput('Volume', cmd.volume, v => { cmd.volume = parseFloat(v) || 0; }));
       container.appendChild(labeledCheckbox('Wait for sound to finish playing', cmd.waitUntilFinished ?? false, v => { cmd.waitUntilFinished = v; }));
+      break;
+    }
+    case 'stageBgColor': {
+      const colorRow = document.createElement('div');
+      colorRow.className = 'cmd-field';
+      colorRow.innerHTML = '<span class="cmd-field-label">Color</span>';
+      const colorInput = document.createElement('input');
+      colorInput.type = 'color';
+      colorInput.className = 'inspector-input';
+      colorInput.value = cmd.color || '#ffffff';
+      colorInput.addEventListener('input', () => { cmd.color = colorInput.value; });
+      colorInput.addEventListener('keydown', (e) => e.stopPropagation());
+      colorRow.appendChild(colorInput);
+      container.appendChild(colorRow);
+      break;
+    }
+    case 'stageBgImage': {
+      const imgOptions = [['', '— none —'], ...IMAGE_FILES.map(f => [f, f])];
+      container.appendChild(labeledSelect('Image', cmd.imageUrl || '', imgOptions, v => { cmd.imageUrl = v; }));
       break;
     }
     case 'wait':

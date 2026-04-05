@@ -16,6 +16,7 @@ export function setupDOM() {
     <div id="debug-status-bar" style="display:none;">
       <span id="debug-status-text"></span>
     </div>
+    <div id="run-stage" style="display:none;"></div>
     <div id="main-area">
       <div id="data-panel">
         <div class="data-panel-header">

@@ -32,6 +32,8 @@ export const COMMAND_TYPES = {
   elseIf:       { label: 'Else-If',      category: 'Flow',       description: 'Alternative condition' },
   elseCmd:      { label: 'Else',          category: 'Flow',       description: 'Execute if no conditions matched' },
   endIf:        { label: 'End-If',        category: 'Flow',       description: 'End of conditional block' },
+  stageBgColor: { label: 'Stage BG Color', category: 'Stage',      description: 'Set the stage background color' },
+  stageBgImage: { label: 'Stage BG Image',category: 'Stage',      description: 'Set the stage background image' },
   wait:         { label: 'Wait',          category: 'Flow',       description: 'Pause execution for a duration' },
   sendMessage:  { label: 'Send Message',  category: 'Flow',       description: 'Broadcast a named message' },
 };
@@ -68,6 +70,10 @@ export function createCommand(type) {
       return { ...base };
     case 'endIf':
       return { ...base };
+    case 'stageBgColor':
+      return { ...base, color: '#ffffff' };
+    case 'stageBgImage':
+      return { ...base, imageUrl: '' };
     case 'wait':
       return { ...base, duration: 1.0 };
     case 'sendMessage':

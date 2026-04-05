@@ -1517,6 +1517,55 @@ test.describe('V53 – Debug pauses at every step', () => {
   });
 });
 
+// ─── Version 55: Run stage ───────────────────────────────────────────────
+
+test.describe('V55 – Run stage', () => {
+  test('Play hides main area and shows run stage', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
+    // Add a wait command so execution doesn't finish instantly
+    await page.locator('.inspector-add-cmd select').selectOption('wait');
+
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+
+    await page.locator('#btn-play').click();
+    // run-stage should be visible while running
+    await expect(page.locator('#run-stage')).toBeVisible();
+    await expect(page.locator('#main-area')).toBeHidden();
+
+    // Stop before wait finishes
+    await page.locator('#btn-stop').click();
+    await expect(page.locator('#run-stage')).toBeHidden();
+    await expect(page.locator('#main-area')).toBeVisible();
+  });
+
+  test('stageBgColor command can be added', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('stageBgColor');
+
+    const verb = page.locator('.fungus-cmd-verb');
+    await expect(verb).toHaveText('Stage BG Color');
+  });
+
+  test('stageBgImage command shows image dropdown', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-add-cmd select').selectOption('stageBgImage');
+
+    // Select the command to show editor
+    const editor = page.locator('.fungus-cmd-editor');
+    await expect(editor).toBeVisible();
+    const imgSelect = editor.locator('.cmd-field select');
+    await expect(imgSelect).toBeVisible();
+    const options = await imgSelect.locator('option').allTextContents();
+    expect(options.some(o => o.includes('FungusTown'))).toBe(true);
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

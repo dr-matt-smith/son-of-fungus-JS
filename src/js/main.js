@@ -600,7 +600,25 @@ function showStepPausedButtons() {
   if (btnStepOver) btnStepOver.style.display = 'none';
 }
 
+const runStage = document.getElementById('run-stage');
+const mainArea = document.getElementById('main-area');
+
+function enterRunStage() {
+  if (runStage) runStage.style.display = '';
+  if (mainArea) mainArea.style.display = 'none';
+}
+
+function exitRunStage() {
+  if (runStage) {
+    runStage.style.display = 'none';
+    runStage.style.backgroundColor = '';
+    runStage.style.backgroundImage = '';
+  }
+  if (mainArea) mainArea.style.display = '';
+}
+
 btnPlay.addEventListener('click', () => {
+  enterRunStage();
   showRunningButtons();
   startExecution();
 });
@@ -738,6 +756,7 @@ if (btnStepOver) {
 btnStop.addEventListener('click', () => {
   stopExecution();
   if (debugMode) exitDebugMode();
+  exitRunStage();
   showPlayButtons();
 });
 
@@ -775,6 +794,7 @@ S.onStepPause = () => {
 
 S.onExecutionEnd = () => {
   if (debugMode) exitDebugMode();
+  exitRunStage();
   showPlayButtons();
 };
 

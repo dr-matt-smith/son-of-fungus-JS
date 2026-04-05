@@ -302,6 +302,8 @@
 .fungus-cmd-elseCmd        { background: #2d1a3a; }  /* deep purple */
 .fungus-cmd-endIf          { background: #2d1a3a; }  /* deep purple */
 .fungus-cmd-sendMessage    { background: #1a3a3a; }  /* cyan */
+.fungus-cmd-stageBgColor   { background: #2a1a2a; }  /* plum */
+.fungus-cmd-stageBgImage   { background: #2a1a2a; }  /* plum */
 
 [data-theme="light"] .fungus-cmd-say          { background: #f3e8ff; }
 [data-theme="light"] .fungus-cmd-menu         { background: #d1fae5; }
@@ -317,6 +319,8 @@
 [data-theme="light"] .fungus-cmd-elseCmd      { background: #ede9fe; }
 [data-theme="light"] .fungus-cmd-endIf        { background: #ede9fe; }
 [data-theme="light"] .fungus-cmd-sendMessage  { background: #ccfbf1; }
+[data-theme="light"] .fungus-cmd-stageBgColor { background: #fce7f3; }
+[data-theme="light"] .fungus-cmd-stageBgImage { background: #fce7f3; }
 
 /* Selected always overrides with green */
 .fungus-cmd-summary.fungus-cmd-selected { background: #14532d; }

@@ -273,6 +273,8 @@ function executeCommand(cmd) {
     case 'setVarCopy':  execSetVarCopy(cmd); break;
     case 'wait':      execWait(cmd); break;
     case 'sendMessage': execSendMessage(cmd); break;
+    case 'stageBgColor': execStageBgColor(cmd); break;
+    case 'stageBgImage': execStageBgImage(cmd); break;
     case 'playMusic': execPlayMusic(cmd); break;
     case 'playSound': execPlaySound(cmd); break;
     case 'stopAudio': execStopAudio(cmd); break;
@@ -512,6 +514,27 @@ function execSendMessage(cmd) {
   } else {
     executeNextCommand();
   }
+}
+
+function execStageBgColor(cmd) {
+  logEntry(`Block ${currentNode.id} "${currentNode.label}": Stage BG Color: ${cmd.color}`);
+  const stage = document.getElementById('run-stage');
+  if (stage) {
+    stage.style.backgroundColor = cmd.color;
+    stage.style.backgroundImage = '';
+  }
+  executeNextCommand();
+}
+
+function execStageBgImage(cmd) {
+  logEntry(`Block ${currentNode.id} "${currentNode.label}": Stage BG Image: ${cmd.imageUrl || '(none)'}`);
+  const stage = document.getElementById('run-stage');
+  if (stage && cmd.imageUrl) {
+    stage.style.backgroundImage = `url(${cmd.imageUrl})`;
+    stage.style.backgroundSize = 'cover';
+    stage.style.backgroundPosition = 'center';
+  }
+  executeNextCommand();
 }
 
 function execPlayMusic(cmd) {

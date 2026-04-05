@@ -730,3 +730,24 @@ Version 54 features - Fungus style
   - ✅ add a drag widget instead, allowing user to drag a command up/down in the sequence
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+Version 55 features - run-time stage
+==================
+
+- ✅ when the flowchart is RUN (not debugged)
+  - ✅ hide the tools (Inspector panel, Data panel)
+  - ✅ hide the flowchart
+  - ✅ so user just sees the 'stage'
+
+- ✅ add a "Stage BG Color" command
+  - ✅ this allows the user to choose a colour for the background of the stage
+
+- ✅ add a "Stage BG Image" command
+  - ✅ this allows the user to choose an image from the /public/images folder
+    - ✅ a dropdown of all the images in /public/images offered to the user
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+
