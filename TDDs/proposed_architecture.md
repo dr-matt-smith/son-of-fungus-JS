@@ -207,7 +207,7 @@ undo(); // reverses the last command
 
 ---
 
-## 8. CSS Organisation
+## 8. ✅ COMPLETED — CSS Organisation
 
 ### Problem
 `styles.css` (641 lines) is a catch-all for node styling, execution output, debug UI, run stage, and load project modals. Class names are not namespaced.

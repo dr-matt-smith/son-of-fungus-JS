@@ -1,0 +1,44 @@
+/* ── Debug status bar ────────────────────────────────────────────────────── */
+#debug-status-bar {
+  position: fixed;
+  top: 46px;
+  left: 0;
+  right: 0;
+  height: 24px;
+  background: #1e40af;
+  color: #dbeafe;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  z-index: 150;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+[data-theme="light"] #debug-status-bar {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+/* Shift main area down when debug bar is visible */
+body.debug-active #main-area {
+  top: 70px;
+}
+
+/* Variable highlight in debug mode */
+.variable-item.var-highlighted {
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: 3px;
+}
+
+.variable-item.var-edited {
+  background: rgba(234, 179, 8, 0.15);
+  border-radius: 3px;
+}
+
+/* Transition arrow highlight */
+.conn-auto.conn-debug-highlight line,
+.conn-auto.conn-debug-highlight polyline {
+  stroke: #f59e0b;
+  stroke-width: 3;
+}
