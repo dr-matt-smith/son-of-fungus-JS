@@ -421,8 +421,8 @@ test.describe('V25 – Step-by-step execution', () => {
     await expect(page.locator('#btn-play-step')).toBeVisible();
   });
 
-  test('Play button shows "Play All"', async ({ page }) => {
-    await expect(page.locator('#play-label')).toHaveText('Play All');
+  test('Play button shows "Play"', async ({ page }) => {
+    await expect(page.locator('#play-label')).toHaveText('Play');
   });
 
   test('clicking Step starts execution and shows Next/Stop buttons', async ({ page }) => {
@@ -1403,6 +1403,58 @@ test.describe('V50 – Load JSON', () => {
     await page.locator('#json-load-btn').click();
     await expect(page.locator('#json-load-error')).toContainText('Invalid JSON');
     await page.keyboard.press('Escape');
+  });
+});
+
+// ─── Version 51: Debug mode ──────────────────────────────────────────────
+
+test.describe('V51 – Debug mode', () => {
+  test('Play button shows "Play"', async ({ page }) => {
+    await expect(page.locator('#play-label')).toHaveText('Play');
+  });
+
+  test('Debug button is visible and labeled', async ({ page }) => {
+    await expect(page.locator('#btn-play-step')).toBeVisible();
+    await expect(page.locator('#btn-play-step')).toContainText('Debug');
+  });
+
+  test('debug status bar appears when Debug is clicked', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
+    await page.locator('.inspector-add-cmd select').selectOption('say');
+
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+
+    await page.locator('#btn-play-step').click();
+    await page.waitForTimeout(500);
+
+    await expect(page.locator('#debug-status-bar')).toBeVisible();
+
+    await page.locator('#btn-stop').click();
+    await expect(page.locator('#debug-status-bar')).toBeHidden();
+  });
+
+  test('Enums and Events hidden, Variables visible in debug mode', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
+    await page.locator('.inspector-add-cmd select').selectOption('say');
+
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+
+    await page.locator('#btn-play-step').click();
+    await page.waitForTimeout(500);
+
+    await expect(page.locator('#data-enums')).toBeHidden();
+    await expect(page.locator('#data-events')).toBeHidden();
+    await expect(page.locator('#data-variables')).toBeVisible();
+
+    await page.locator('#btn-stop').click();
   });
 });
 

@@ -150,6 +150,19 @@ function executeNextCommand() {
 
   // In step mode, pause before each command (except when resuming from a pause)
   if (stepping && currentCmd > 0 && !resuming) {
+    // If stepping over, skip pausing until we return to target
+    if (S.stepOverTarget) {
+      if (currentNode.id === S.stepOverTarget.nodeId && currentCmd >= S.stepOverTarget.cmdIdx) {
+        S.stepOverTarget = null; // reached target, resume normal stepping
+      } else {
+        // Still inside stepped-over block, continue without pausing
+        const cmd = currentNode.commands[currentCmd];
+        S.executingCommandIdx = currentCmd;
+        currentCmd++;
+        executeCommand(cmd);
+        return;
+      }
+    }
     paused = true;
     S.executingCommandIdx = currentCmd;
     updateInspector();

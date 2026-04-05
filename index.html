@@ -65,14 +65,14 @@
         <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
           <polygon points="3,1 12,7 3,13" fill="currentColor"/>
         </svg>
-        <span id="play-label">Play All</span>
+        <span id="play-label">Play</span>
       </button>
-      <button id="btn-play-step" class="toolbar-btn" title="Play step by step" style="display:none;">
+      <button id="btn-play-step" class="toolbar-btn" title="Play in debug mode (step by step)" style="display:none;">
         <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
           <polygon points="2,1 8,7 2,13" fill="currentColor"/>
           <rect x="9" y="1" width="3" height="12" fill="currentColor"/>
         </svg>
-        Step
+        Debug
       </button>
       <button id="btn-step-continue" class="toolbar-btn" title="Continue to next step" style="display:none;">
         <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
@@ -87,8 +87,19 @@
         </svg>
         Stop
       </button>
+      <button id="btn-step-into" class="toolbar-btn" title="Step into block" style="display:none;">
+        Step Into
+      </button>
+      <button id="btn-step-over" class="toolbar-btn" title="Step over block call" style="display:none;">
+        Step Over
+      </button>
     </div>
 
+  </div>
+
+  <!-- ── Debug status bar ──────────────────────────────────────────────── -->
+  <div id="debug-status-bar" style="display:none;">
+    <span id="debug-status-text"></span>
   </div>
 
 

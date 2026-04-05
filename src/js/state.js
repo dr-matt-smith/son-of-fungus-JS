@@ -52,6 +52,7 @@ export const S = {
   // Execution state
   executingNode: null,
   executingCommandIdx: -1,
+  stepOverTarget: null,  // { nodeId, cmdIdx } for step-over
 
   // Callbacks (set by main.js)
   onSelectionChange: null,

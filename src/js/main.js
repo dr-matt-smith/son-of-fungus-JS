@@ -16,7 +16,7 @@ import { getBorderPoint } from './connections/geometry.js';
 import { renderConnGroup, updateConnection } from './connections/conn-render.js';
 import { recalcPairOffsets } from './connections/conn-model.js';
 import { updateInspector, showJsonExport, showRunLog, showJsonLoad } from './inspector.js';
-import { startExecution, startStepExecution, stepNext, stopExecution, isRunning, isStepping, isPaused } from './engine.js';
+import { startExecution, startStepExecution, stepNext, stopExecution, isRunning, isStepping, isPaused, getRunLog } from './engine.js';
 import { initFlowchart, classifyBlock, applyFungusStyles, syncAutoConnections } from './fungus-mode.js';
 
 // ── Toolbar: Fit All ─────────────────────────────────────────────────────────
@@ -599,7 +599,111 @@ btnPlay.addEventListener('click', () => {
   startExecution();
 });
 
+const btnStepInto     = document.getElementById('btn-step-into');
+const btnStepOver     = document.getElementById('btn-step-over');
+const debugStatusBar  = document.getElementById('debug-status-bar');
+const debugStatusText = document.getElementById('debug-status-text');
+
+let debugMode = false;
+let debugEditedVars = new Set();
+
+function enterDebugMode() {
+  debugMode = true;
+  debugEditedVars = new Set();
+  document.body.classList.add('debug-active');
+  if (debugStatusBar) debugStatusBar.style.display = '';
+
+  // Close settings if open
+  showTab('inspector');
+
+  // Show only Variables in data panel
+  const enumSection = document.getElementById('data-enums');
+  const eventSection = document.getElementById('data-events');
+  if (enumSection) enumSection.style.display = 'none';
+  if (eventSection) eventSection.style.display = 'none';
+
+  // Make variable values editable in debug
+  renderVariablesList();
+}
+
+function exitDebugMode() {
+  debugMode = false;
+  document.body.classList.remove('debug-active');
+  if (debugStatusBar) debugStatusBar.style.display = 'none';
+  if (debugStatusText) debugStatusText.textContent = '';
+
+  // Restore data sections
+  const enumSection = document.getElementById('data-enums');
+  const eventSection = document.getElementById('data-events');
+  if (enumSection) enumSection.style.display = '';
+  if (eventSection) eventSection.style.display = '';
+
+  // Clear highlights
+  clearDebugHighlights();
+  renderVariablesList();
+}
+
+function clearDebugHighlights() {
+  for (const el of document.querySelectorAll('.var-highlighted, .var-edited')) {
+    el.classList.remove('var-highlighted', 'var-edited');
+  }
+  for (const el of document.querySelectorAll('.conn-debug-highlight')) {
+    el.classList.remove('conn-debug-highlight');
+  }
+}
+
+function updateDebugStatus(msg) {
+  if (debugStatusText) debugStatusText.textContent = msg || '';
+}
+
+function highlightReferencedVars(cmd) {
+  clearDebugHighlights();
+  if (!cmd) return;
+  const varNames = new Set();
+  if (cmd.variableName) varNames.add(cmd.variableName);
+  if (cmd.compareVarName) varNames.add(cmd.compareVarName);
+  if (cmd.sourceVariableName) varNames.add(cmd.sourceVariableName);
+  if (cmd.extraConditions) {
+    for (const ec of cmd.extraConditions) {
+      if (ec.variableName) varNames.add(ec.variableName);
+      if (ec.compareVarName) varNames.add(ec.compareVarName);
+    }
+  }
+
+  // Highlight matching variable rows
+  const varItems = document.querySelectorAll('#variables-list .variable-wrapper');
+  varItems.forEach((item) => {
+    const nameInput = item.querySelector('.variable-name-input');
+    if (nameInput && varNames.has(nameInput.value)) {
+      item.querySelector('.variable-item')?.classList.add('var-highlighted');
+    }
+  });
+
+  // Highlight edited vars
+  for (const name of debugEditedVars) {
+    varItems.forEach((item) => {
+      const nameInput = item.querySelector('.variable-name-input');
+      if (nameInput && nameInput.value === name) {
+        item.querySelector('.variable-item')?.classList.add('var-edited');
+      }
+    });
+  }
+
+  // Highlight connection for call commands
+  if (cmd.type === 'call' && cmd.targetBlockId != null) {
+    const fromNode = S.executingNode;
+    if (fromNode) {
+      for (const conn of S.connections) {
+        if (conn.fromId === fromNode.id && conn.toId === cmd.targetBlockId && conn.group) {
+          conn.group.classList.add('conn-debug-highlight');
+        }
+      }
+    }
+  }
+}
+
 btnPlayStep.addEventListener('click', () => {
+  enterDebugMode();
   showRunningButtons();
   startStepExecution();
 });
@@ -609,16 +713,60 @@ btnStepContinue.addEventListener('click', () => {
   stepNext();
 });
 
+if (btnStepInto) {
+  btnStepInto.addEventListener('click', () => {
+    showRunningButtons();
+    stepNext();
+  });
+}
+
+if (btnStepOver) {
+  btnStepOver.addEventListener('click', () => {
+    // Step over: run until we return to the same block
+    showRunningButtons();
+    S.stepOverTarget = { nodeId: S.executingNode?.id, cmdIdx: S.executingCommandIdx + 1 };
+    stepNext();
+  });
+}
+
 btnStop.addEventListener('click', () => {
   stopExecution();
+  if (debugMode) exitDebugMode();
   showPlayButtons();
 });
 
 S.onStepPause = () => {
   showStepPausedButtons();
+
+  if (debugMode && S.executingNode) {
+    const cmd = S.executingNode.commands[S.executingCommandIdx];
+
+    // Update status bar
+    const lastLog = getRunLog();
+    const lastEntry = lastLog.length > 0 ? lastLog[lastLog.length - 1].message : '';
+    updateDebugStatus(lastEntry);
+
+    // Highlight referenced variables
+    if (cmd) highlightReferencedVars(cmd);
+
+    // Show Step Into / Step Over for call commands
+    if (cmd && cmd.type === 'call' && btnStepInto && btnStepOver) {
+      btnStepInto.style.display = '';
+      btnStepOver.style.display = '';
+      btnStepContinue.style.display = 'none';
+    } else {
+      if (btnStepInto) btnStepInto.style.display = 'none';
+      if (btnStepOver) btnStepOver.style.display = 'none';
+    }
+
+    // Select the executing node and show command in inspector
+    activateNode(S.executingNode);
+    updateInspector();
+  }
 };
 
 S.onExecutionEnd = () => {
+  if (debugMode) exitDebugMode();
   showPlayButtons();
 };
 
@@ -767,7 +915,7 @@ for (const radio of document.querySelectorAll('input[name="theme"]')) {
   });
 }
 
-playLabel.textContent = 'Play All';
+playLabel.textContent = 'Play';
 showPlayButtons();
 
 // ── Messages tab ────────────────────────────────────────────────────────────

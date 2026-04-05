@@ -237,7 +237,10 @@ function renderNodeInspector(n) {
   const cmdList = document.createElement('div');
   cmdList.className = 'inspector-cmd-list';
 
-  // Clamp selected index
+  // Clamp selected index; auto-select executing command in debug mode
+  if (S.executingNode === n && S.executingCommandIdx >= 0) {
+    selectedCmdIdx = S.executingCommandIdx;
+  }
   if (selectedCmdIdx >= n.commands.length) selectedCmdIdx = n.commands.length - 1;
 
   {

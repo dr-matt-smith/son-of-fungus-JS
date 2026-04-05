@@ -6,10 +6,15 @@ export function setupDOM() {
   document.body.innerHTML = `
     <div id="toolbar">
       <button id="btn-new-state" class="toolbar-btn palette-btn" draggable="false">Block</button>
-      <button id="btn-play" class="toolbar-btn"><span id="play-label">Play All</span></button>
-      <button id="btn-play-step" class="toolbar-btn" style="display:none;">Step</button>
+      <button id="btn-play" class="toolbar-btn"><span id="play-label">Play</span></button>
+      <button id="btn-play-step" class="toolbar-btn" style="display:none;">Debug</button>
       <button id="btn-step-continue" class="toolbar-btn" style="display:none;">Next</button>
       <button id="btn-stop" class="toolbar-btn" style="display:none;">Stop</button>
+      <button id="btn-step-into" class="toolbar-btn" style="display:none;">Step Into</button>
+      <button id="btn-step-over" class="toolbar-btn" style="display:none;">Step Over</button>
+    </div>
+    <div id="debug-status-bar" style="display:none;">
+      <span id="debug-status-text"></span>
     </div>
     <div id="main-area">
       <div id="data-panel">

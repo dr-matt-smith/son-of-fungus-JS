@@ -767,8 +767,8 @@ describe('Step-by-step execution', () => {
     expect(document.getElementById('btn-step-continue')).toBeTruthy();
   });
 
-  it('play label shows "Play All"', () => {
-    expect(document.getElementById('play-label').textContent).toBe('Play All');
+  it('play label shows "Play"', () => {
+    expect(document.getElementById('play-label').textContent).toBe('Play');
   });
 });
 
@@ -1709,6 +1709,27 @@ describe('JSON export includes messages and enums', () => {
     expect(app.S.enums.length).toBe(1);
     app.S.messages = [];
     app.S.enums = [];
+  });
+});
+
+// ─── Version 51: Debug mode ─────────────────────────────────────────────────
+
+describe('Debug mode UI', () => {
+  it('play button label is "Play"', () => {
+    expect(document.getElementById('play-label').textContent).toBe('Play');
+  });
+
+  it('debug button exists', () => {
+    expect(document.getElementById('btn-play-step')).toBeTruthy();
+  });
+
+  it('debug status bar exists in DOM', () => {
+    expect(document.getElementById('debug-status-bar')).toBeTruthy();
+  });
+
+  it('step into and step over buttons exist', () => {
+    expect(document.getElementById('btn-step-into')).toBeTruthy();
+    expect(document.getElementById('btn-step-over')).toBeTruthy();
   });
 });
 

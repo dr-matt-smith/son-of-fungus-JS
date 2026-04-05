@@ -658,3 +658,32 @@ Version 50 features - load from JSON
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
+Version 51 features - simple debugger
+==================
+
+- ✅ rename the "Play All" run button to "Play"
+- ✅ rename the "Step" run button to "Debug"
+
+- ✅ when "Debug" is clicked
+  - ✅ hide the Preferences if they are being shown
+  - ✅ highlight the currently active Block (if a block is executing)
+  - ✅ in the Inspector
+    - ✅ highlight the current command being executed in the Inspector,
+      - ✅ and show its details in the bottom half of the inspector
+  - ✅ show the Variables tab (and hide Enums and Events)
+    - ✅ so the user can see that value of variables as well as the commands being executed for the current block in the Inspector
+    - ✅ if any variables are referenced in the current block command being executed, these variables should be highlighted in the Variables tab
+  - ✅ add a status bar across the top of the screen
+    - ✅ this should display the current action, in the same wording as will be entered into the Run Log
+  - ✅ if a block has a CALL command, highlight the transition arrow between that block and the one being called
+
+- ✅ allow the user to EDIT the value of a variable in debug mode
+
+- ✅ when a call is made to a block
+  - ✅ offer STEP OVER and STEP INTO options
+    - ✅ so user can either jump through execution of the complete block
+    - ✅ or step through each command in the block in sequence
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
