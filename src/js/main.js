@@ -16,6 +16,7 @@ import { getBorderPoint } from './connections/geometry.js';
 import { renderConnGroup, updateConnection } from './connections/conn-render.js';
 import { recalcPairOffsets } from './connections/conn-model.js';
 import { updateInspector, showJsonExport, showRunLog, showJsonLoad } from './inspector.js';
+import { buildRuntime } from './build-runtime.js';
 import { startExecution, startStepExecution, stepNext, stopExecution, isRunning, isStepping, isPaused, getRunLog, logEntry } from './engine.js';
 import { initFlowchart, classifyBlock, applyFungusStyles, syncAutoConnections } from './fungus-mode.js';
 
@@ -499,6 +500,8 @@ restoreBtn.addEventListener('click', () => {
 S.onSelectionChange = updateInspector;
 document.getElementById('btn-export-json').addEventListener('click', showJsonExport);
 document.getElementById('btn-run-log').addEventListener('click', showRunLog);
+const btnBuild = document.getElementById('btn-build');
+if (btnBuild) btnBuild.addEventListener('click', buildRuntime);
 
 // ── Load from JSON ──────────────────────────────────────────────────────────
 

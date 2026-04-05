@@ -1,0 +1,170 @@
+{
+  "variables": [],
+  "messages": [],
+  "enums": [],
+  "nodes": [
+    {
+      "id": 1,
+      "type": "state",
+      "x": 367,
+      "y": 259,
+      "w": 120,
+      "h": 50,
+      "label": "New Block 1",
+      "event": {
+        "type": "gameStarted"
+      },
+      "commands": [
+        {
+          "type": "stageBgImage",
+          "id": "264155c1-2693-4274-8666-8b86632ce0c1",
+          "imageUrl": "/images/FungusTown_1.png"
+        },
+        {
+          "type": "call",
+          "id": "c6705b87-1298-4674-a2f0-d341a451ab68",
+          "targetBlockId": 2,
+          "mode": "stop"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "state",
+      "x": 649,
+      "y": 379,
+      "w": 120,
+      "h": 50,
+      "label": "New Block 2",
+      "event": {
+        "type": "none"
+      },
+      "commands": [
+        {
+          "type": "menu",
+          "id": "950b5c98-b1d4-4816-afcd-15e5a5ea8401",
+          "options": [
+            {
+              "text": "tea",
+              "targetBlockId": 3
+            },
+            {
+              "text": "coffee",
+              "targetBlockId": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "state",
+      "x": 382,
+      "y": 489,
+      "w": 120,
+      "h": 50,
+      "label": "tea",
+      "event": {
+        "type": "none"
+      },
+      "commands": [
+        {
+          "type": "say",
+          "id": "82ba1d16-e9a5-40ed-9123-7edaee5e3839",
+          "character": "",
+          "text": "TEA",
+          "portrait": ""
+        },
+        {
+          "type": "call",
+          "id": "45b752c1-4c98-4ab6-9048-9b967b00f998",
+          "targetBlockId": 5,
+          "mode": "stop"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "state",
+      "x": 803,
+      "y": 506,
+      "w": 120,
+      "h": 50,
+      "label": "coffee",
+      "event": {
+        "type": "none"
+      },
+      "commands": [
+        {
+          "type": "say",
+          "id": "0e681c58-0086-4ed9-8056-6a3dd8886b8f",
+          "character": "",
+          "text": "COFFEE",
+          "portrait": ""
+        },
+        {
+          "type": "call",
+          "id": "23092f37-3a34-4b08-a539-c475e65204c1",
+          "targetBlockId": 5,
+          "mode": "stop"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "state",
+      "x": 551,
+      "y": 645,
+      "w": 120,
+      "h": 50,
+      "label": "wait",
+      "event": {
+        "type": "none"
+      },
+      "commands": [
+        {
+          "type": "stageBgColor",
+          "id": "1f33f8a0-6fa4-4047-b0ee-136408d2a258",
+          "color": "#77bb41"
+        },
+        {
+          "type": "wait",
+          "id": "82bcfa2c-f1d4-4e31-bbf2-868043b1b49e",
+          "duration": 5
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": 1,
+      "fromId": 1,
+      "toId": 2,
+      "label": ""
+    },
+    {
+      "id": 3,
+      "fromId": 2,
+      "toId": 3,
+      "label": ""
+    },
+    {
+      "id": 4,
+      "fromId": 2,
+      "toId": 4,
+      "label": ""
+    },
+    {
+      "id": 5,
+      "fromId": 3,
+      "toId": 5,
+      "label": ""
+    },
+    {
+      "id": 6,
+      "fromId": 4,
+      "toId": 5,
+      "label": ""
+    }
+  ]
+}

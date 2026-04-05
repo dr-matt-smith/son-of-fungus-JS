@@ -749,5 +749,46 @@ Version 55 features - run-time stage
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 
+Version  56 features - build runtime
+==================
 
+this feature is about building a runtime version of the user experience, without the flowchart editor at all
+
+- ✅ add a "Build" button
+  - ✅ this generates a standalone runtime ZIP download
+  - ✅ it includes the /public resources (audio and images)
+  - ✅ it writes HTML/CSS/JS files to create a web page that is a runnable version of the flowchart
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+
+Version 57 features - load from examples
+==================
+
+- [] refactor LOAD JSON button
+  - [] rename this "Load Project"
+    - [] offer a dropdown list of projects from /public/examples
+    - [] offer a file open dialog
+    - [] offer option for user to paste in JSON 
+  
+
+- [] and add Vite and PlayWright tests for the above feature(s)
+
+
+
+Version 58 features - change how Menu command works
+==================
+
+- [] refactor SAY comment
+  - [] when user is typing in text for a say command, update that command as they type in the block
+  - (so they don't have to press TAB to have the typed characters saved)
+
+- [] refactor the Menu command
+  - [] each Menu command has a call to another block
+  - [] if there is a single menu command, followed by some other type of command, then the user is given a single menu button, which when clicked will result in the call to the linked block
+  - [] if there are 2 or more menu commands next to each other, then all these menu choices are offered in a single menu to the user
+    - [] and depending on the choice the user makes, the corresponding block is called
+
+- [] and add Vite and PlayWright tests for the above feature(s)
 

@@ -1566,6 +1566,29 @@ test.describe('V55 – Run stage', () => {
   });
 });
 
+// ─── Version 56: Build runtime ──────────────────────────────────────────
+
+test.describe('V56 – Build runtime', () => {
+  test('Build button is visible', async ({ page }) => {
+    await expect(page.locator('#btn-build')).toBeVisible();
+  });
+
+  test('clicking Build triggers a download', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
+
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+
+    const downloadPromise = page.waitForEvent('download');
+    await page.locator('#btn-build').click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe('flowchart-runtime.zip');
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

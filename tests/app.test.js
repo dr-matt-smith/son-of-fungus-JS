@@ -1768,6 +1768,14 @@ describe('Stage commands', () => {
   });
 });
 
+// ─── Version 56: Build runtime ──────────────────────────────────────────────
+
+describe('Build button', () => {
+  it('build button exists in DOM', () => {
+    expect(document.getElementById('btn-build')).toBeTruthy();
+  });
+});
+
 describe('Audio manifest', () => {
   it('AUDIO_FILES is exported and contains entries', () => {
     // Import is via the app facade; audio-manifest is used by inspector
