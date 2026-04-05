@@ -1,5 +1,11 @@
 {
-  "variables": [],
+  "variables": [
+    {
+      "name": "age",
+      "type": "Integer",
+      "value": 22
+    }
+  ],
   "messages": [],
   "enums": [],
   "nodes": [
@@ -47,6 +53,43 @@
           "waitForNext": true,
           "typingAnimation": true,
           "typingAudio": true,
+          "typingAudioUrl": "/audio/defaults/MidVoice.wav"
+        },
+        {
+          "type": "ifCondition",
+          "id": "9ab7e2a1-8836-4e36-831d-f422d98299fb",
+          "variableName": "age",
+          "operator": ">=",
+          "compareType": "literal",
+          "compareValue": "21",
+          "compareVarName": "",
+          "extraConditions": [],
+          "logic": ""
+        },
+        {
+          "type": "say",
+          "id": "414525c2-1b82-4a63-a788-ed667bbc7d7e",
+          "character": "",
+          "text": "you are at or over 21 !",
+          "portrait": "",
+          "waitForNext": true,
+          "typingAnimation": true,
+          "typingAudio": true,
+          "typingAudioUrl": "/audio/defaults/MidVoice.wav"
+        },
+        {
+          "type": "endIf",
+          "id": "3b947504-34b8-4944-87fc-3407b4a97de7"
+        },
+        {
+          "type": "say",
+          "id": "39686864-0ee9-4cf5-9531-8afede342a7b",
+          "character": "",
+          "text": "I say this regardless of IF statement",
+          "portrait": "",
+          "waitForNext": true,
+          "typingAnimation": false,
+          "typingAudio": false,
           "typingAudioUrl": "/audio/defaults/MidVoice.wav"
         },
         {
