@@ -617,3 +617,46 @@ Version 47 features - add Variable initial values to Run Log
     - ✅ named "Variable initialisation"
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+Version 48 features - move variables and events and enums to separate tab on let of screen
+==================
+
+- ✅ move the Variables and Events and Enums tab to be a separate column on the LEFT hand side of the screen
+  - ✅ so the Inspector is alone on the right-hand side of the screen
+
+- ✅ Arrange Variables and Enums and Events as 3 rows of this left-hand column
+- ✅ have an arrow widget, allowing this whole column to be minimised / revealed
+- ✅ allow this column to have its width resized (just like the inspector)
+  - ✅ default to 25% of the screen
+
+- ✅ allow the dividers between Variables and Enums and Events to be moved
+  - ✅ default them to 1/3rd of the height each
+  - ✅ also add buttons for the row headings for each allowing them to be minimised and expanded
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+Version 49 features - zoom toolbar - move onto stage
+==================
+
+- [] improve the "data" show button, add the word "Data" to the arrow button 
+  - [] and make this button at the top left when the data column is hidden
+    - (it seems to be about 10% from the top for some reason when mimimised)
+
+
+- [] move the zoom toolbar so that it is at the bottom left of the diagram stage
+  - (not in the Variables/Enums/Events column at all)
+
+- [] and add Vite and PlayWright tests for the above feature(s)
+
+Version 50 features - load from JSON
+==================
+
+- [] add a button LOAD JSON
+  - [] this accepts the text from a JSON export and will re-create the flowchart from the JSON data
+  - [] add a popup asking the user if they are sure, since it will mean losing any existing work
+
+- [] and add Vite and PlayWright tests for the above feature(s)
+
+

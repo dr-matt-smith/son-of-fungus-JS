@@ -309,10 +309,9 @@ test.describe('V22 – Edit block name in inspector panel', () => {
 
 // ─── Version 23: Inspector/Events tabs and Settings cog ──────────────────
 
-test.describe('V23 – Inspector/Events tabs and Settings cog', () => {
-  test('inspector and events tabs are visible', async ({ page }) => {
+test.describe('V23 – Inspector and Settings cog', () => {
+  test('inspector tab is visible', async ({ page }) => {
     await expect(page.locator('.inspector-tab[data-tab="inspector"]')).toBeVisible();
-    await expect(page.locator('.inspector-tab[data-tab="messages"]')).toBeVisible();
   });
 
   test('settings cog button is visible', async ({ page }) => {
@@ -433,7 +432,7 @@ test.describe('V25 – Step-by-step execution', () => {
     await node.click();
 
     // Set event to Game Started
-    await page.locator('.inspector-select').first().selectOption('gameStarted');
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
 
     // Add a Say command
     await page.locator('.inspector-add-cmd select').selectOption('say');
@@ -502,7 +501,7 @@ test.describe('V27 – Run Log', () => {
   test('run log shows entries after execution', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-select').first().selectOption('gameStarted');
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
     await page.locator('.inspector-add-cmd select').selectOption('say');
 
     // Deselect and play
@@ -566,7 +565,7 @@ test.describe('V28 – Run Log Style', () => {
     // Create block with Game Started + Say
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-select').first().selectOption('gameStarted');
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
     await page.locator('.inspector-add-cmd select').selectOption('say');
 
     // Deselect and play
@@ -586,7 +585,7 @@ test.describe('V28 – Run Log Style', () => {
     // Create block with Game Started + Say
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-select').first().selectOption('gameStarted');
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
     await page.locator('.inspector-add-cmd select').selectOption('say');
 
     // Deselect and play
@@ -607,7 +606,7 @@ test.describe('V28 – Run Log Style', () => {
     // Create block with Game Started (no commands)
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-select').first().selectOption('gameStarted');
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
 
     // Deselect and play
     const canvas = page.locator('#canvas-container');
@@ -649,7 +648,7 @@ test.describe('V29 – Fungus event annotation', () => {
     // Create block and set Game Started event
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-select').first().selectOption('gameStarted');
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
 
     // Check annotation exists on the block
     const annotation = page.locator('.fungus-event-label');
@@ -669,11 +668,11 @@ test.describe('V29 – Fungus event annotation', () => {
   test('annotation is removed when event is set back to None', async ({ page }) => {
     await dragNewNode(page, '#btn-new-state');
     await page.locator('.state-node').click();
-    await page.locator('.inspector-select').first().selectOption('gameStarted');
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
     await expect(page.locator('.fungus-event-label')).toBeVisible();
 
     // Set back to None
-    await page.locator('.inspector-select').first().selectOption('none');
+    await page.locator('.inspector-event-select').selectOption('none');
     await expect(page.locator('.fungus-event-label')).toHaveCount(0);
   });
 
@@ -683,7 +682,7 @@ test.describe('V29 – Fungus event annotation', () => {
     await expect(node).toHaveClass(/fungus-standard-block/);
 
     await node.click();
-    await page.locator('.inspector-select').first().selectOption('gameStarted');
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
     await expect(node).toHaveClass(/fungus-event-block/);
     await expect(node).not.toHaveClass(/fungus-standard-block/);
   });
@@ -901,16 +900,13 @@ test.describe('V35 – Node ID label', () => {
   });
 });
 
-test.describe('V35 – Messages tab', () => {
-  test('messages tab exists and can be clicked', async ({ page }) => {
-    const tab = page.locator('.inspector-tab[data-tab="messages"]');
-    await expect(tab).toBeVisible();
-    await tab.click();
+test.describe('V35 – Messages (Events) panel', () => {
+  test('messages panel is visible in data panel', async ({ page }) => {
     await expect(page.locator('#messages-panel')).toBeVisible();
   });
 
   test('can add a message via input and button', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="messages"]').click();
+
     await page.locator('#messages-new-input').fill('testMessage');
     await page.locator('#messages-add-btn').click();
 
@@ -921,7 +917,7 @@ test.describe('V35 – Messages tab', () => {
   });
 
   test('can delete a message', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="messages"]').click();
+
     await page.locator('#messages-new-input').fill('msg1');
     await page.locator('#messages-add-btn').click();
     await expect(page.locator('.messages-item')).toHaveCount(1);
@@ -934,7 +930,7 @@ test.describe('V35 – Messages tab', () => {
 test.describe('V35 – Send Message dropdown', () => {
   test('sendMessage command shows dropdown with defined messages', async ({ page }) => {
     // Add a message first
-    await page.locator('.inspector-tab[data-tab="messages"]').click();
+
     await page.locator('#messages-new-input').fill('hello');
     await page.locator('#messages-add-btn').click();
     await page.locator('.inspector-tab[data-tab="inspector"]').click();
@@ -954,7 +950,7 @@ test.describe('V35 – Send Message dropdown', () => {
 test.describe('V35 – Message Received annotation', () => {
   test('Message Received block shows message name on diagram', async ({ page }) => {
     // Add message
-    await page.locator('.inspector-tab[data-tab="messages"]').click();
+
     await page.locator('#messages-new-input').fill('myEvent');
     await page.locator('#messages-add-btn').click();
     await page.locator('.inspector-tab[data-tab="inspector"]').click();
@@ -1044,16 +1040,13 @@ test.describe('V37 – Command summary row layout', () => {
 
 // ─── Version 39: Variables tab ────────────────────────────────────────────
 
-test.describe('V39 – Variables tab', () => {
-  test('variables tab exists and can be clicked', async ({ page }) => {
-    const tab = page.locator('.inspector-tab[data-tab="variables"]');
-    await expect(tab).toBeVisible();
-    await tab.click();
+test.describe('V39 – Variables panel', () => {
+  test('variables panel is visible in data panel', async ({ page }) => {
     await expect(page.locator('#variables-panel')).toBeVisible();
   });
 
   test('can add a variable', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="variables"]').click();
+
     await page.locator('#variables-new-name').fill('score');
     await page.locator('#variables-add-btn').click();
 
@@ -1064,7 +1057,7 @@ test.describe('V39 – Variables tab', () => {
   });
 
   test('can change variable type', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="variables"]').click();
+
     await page.locator('#variables-new-name').fill('count');
     await page.locator('#variables-add-btn').click();
 
@@ -1074,7 +1067,7 @@ test.describe('V39 – Variables tab', () => {
   });
 
   test('Boolean variable shows checkbox', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="variables"]').click();
+
     await page.locator('#variables-new-name').fill('flag');
     await page.locator('#variables-add-btn').click();
 
@@ -1084,7 +1077,7 @@ test.describe('V39 – Variables tab', () => {
   });
 
   test('can delete a variable', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="variables"]').click();
+
     await page.locator('#variables-new-name').fill('temp');
     await page.locator('#variables-add-btn').click();
     await expect(page.locator('.variable-wrapper')).toHaveCount(1);
@@ -1096,16 +1089,13 @@ test.describe('V39 – Variables tab', () => {
 
 // ─── Version 40: Enums ───────────────────────────────────────────────────
 
-test.describe('V40 – Enums tab', () => {
-  test('enums tab exists and can be clicked', async ({ page }) => {
-    const tab = page.locator('.inspector-tab[data-tab="enums"]');
-    await expect(tab).toBeVisible();
-    await tab.click();
+test.describe('V40 – Enums panel', () => {
+  test('enums panel is visible in data panel', async ({ page }) => {
     await expect(page.locator('#enums-panel')).toBeVisible();
   });
 
   test('can add an enum set', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="enums"]').click();
+
     await page.locator('#enums-new-name').fill('Colors');
     await page.locator('#enums-add-btn').click();
 
@@ -1114,7 +1104,7 @@ test.describe('V40 – Enums tab', () => {
   });
 
   test('can add enum values with key and label', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="enums"]').click();
+
     await page.locator('#enums-new-name').fill('Sizes');
     await page.locator('#enums-add-btn').click();
 
@@ -1124,7 +1114,7 @@ test.describe('V40 – Enums tab', () => {
   });
 
   test('can delete an enum set', async ({ page }) => {
-    await page.locator('.inspector-tab[data-tab="enums"]').click();
+
     await page.locator('#enums-new-name').fill('Temp');
     await page.locator('#enums-add-btn').click();
     await expect(page.locator('.enum-card')).toHaveCount(1);
@@ -1148,7 +1138,7 @@ test.describe('V41 – Set Variable (value) command', () => {
 
   test('setVarValue editor shows variable dropdown when variables exist', async ({ page }) => {
     // Add a variable first
-    await page.locator('.inspector-tab[data-tab="variables"]').click();
+
     await page.locator('#variables-new-name').fill('score');
     await page.locator('#variables-add-btn').click();
     await page.locator('.inspector-tab[data-tab="inspector"]').click();
@@ -1176,7 +1166,7 @@ test.describe('V41 – Set Variable (copy) command', () => {
 
   test('setVarCopy editor shows two variable dropdowns', async ({ page }) => {
     // Add variables
-    await page.locator('.inspector-tab[data-tab="variables"]').click();
+
     await page.locator('#variables-new-name').fill('a');
     await page.locator('#variables-add-btn').click();
     await page.locator('#variables-new-name').fill('b');
@@ -1285,7 +1275,7 @@ test.describe('V45 – IF / END-IF', () => {
 
   test('IF editor shows variable, operator and value fields', async ({ page }) => {
     // Add a variable first
-    await page.locator('.inspector-tab[data-tab="variables"]').click();
+
     await page.locator('#variables-new-name').fill('score');
     await page.locator('#variables-add-btn').click();
     await page.locator('.inspector-tab[data-tab="inspector"]').click();
@@ -1351,7 +1341,7 @@ test.describe('V46 – ELSE-IF and ELSE', () => {
 test.describe('V47 – Variable init in Run Log', () => {
   test('run log shows variable values before execution started', async ({ page }) => {
     // Add a variable
-    await page.locator('.inspector-tab[data-tab="variables"]').click();
+
     await page.locator('#variables-new-name').fill('health');
     await page.locator('#variables-add-btn').click();
     await page.locator('.inspector-tab[data-tab="inspector"]').click();

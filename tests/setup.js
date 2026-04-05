@@ -20,6 +20,64 @@ export function setupDOM() {
       <button id="btn-hand-tool" class="toolbar-btn tool-btn"></button>
     </div>
     <div id="main-area">
+      <div id="data-panel">
+        <div class="data-panel-header">
+          <span>Data</span>
+          <button id="btn-collapse-data" class="data-collapse-btn">◀</button>
+        </div>
+        <div id="data-panel-body">
+          <div class="data-section" id="data-variables">
+            <div class="data-section-header">
+              <span class="data-section-title">Variables</span>
+              <button class="data-section-toggle">−</button>
+            </div>
+            <div class="data-section-content" id="variables-panel">
+              <div id="variables-list"></div>
+              <div class="variable-add-row">
+                <select id="variables-new-type" class="inspector-select variable-type-select">
+                  <option value="Boolean">Boolean</option>
+                  <option value="Integer">Integer</option>
+                  <option value="Float">Float</option>
+                  <option value="String" selected>String</option>
+                  <option value="Enum">Enum</option>
+                </select>
+                <input id="variables-new-name" type="text" class="inspector-input variable-name-input" placeholder="Variable name…">
+                <button id="variables-add-btn" class="toolbar-btn">Add</button>
+              </div>
+            </div>
+          </div>
+          <div class="data-section-divider"></div>
+          <div class="data-section" id="data-enums">
+            <div class="data-section-header">
+              <span class="data-section-title">Enums</span>
+              <button class="data-section-toggle">−</button>
+            </div>
+            <div class="data-section-content" id="enums-panel">
+              <div id="enums-list"></div>
+              <div class="variable-add-row">
+                <input id="enums-new-name" type="text" class="inspector-input" placeholder="Enum set name…">
+                <button id="enums-add-btn" class="toolbar-btn">Add</button>
+              </div>
+            </div>
+          </div>
+          <div class="data-section-divider"></div>
+          <div class="data-section" id="data-events">
+            <div class="data-section-header">
+              <span class="data-section-title">Events</span>
+              <button class="data-section-toggle">−</button>
+            </div>
+            <div class="data-section-content" id="messages-panel">
+              <div id="messages-list"></div>
+              <div class="messages-add-row">
+                <input id="messages-new-input" type="text" class="inspector-input" placeholder="New message name…">
+                <button id="messages-add-btn" class="toolbar-btn">Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button id="btn-expand-data" class="data-expand-btn" style="display:none;">▶</button>
+      <div id="divider-left"></div>
       <div id="canvas-container" style="width:800px;height:600px;">
         <div id="canvas" style="width:4000px;height:3000px;">
           <svg id="connections-svg" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -40,9 +98,6 @@ export function setupDOM() {
       <div id="inspector">
         <div id="inspector-tabs">
           <button class="inspector-tab active" data-tab="inspector">Inspector</button>
-          <button class="inspector-tab" data-tab="messages">Events</button>
-          <button class="inspector-tab" data-tab="variables">Variables</button>
-          <button class="inspector-tab" data-tab="enums">Enums</button>
           <button id="btn-settings-cog" class="settings-cog-btn" title="Settings">⚙</button>
         </div>
         <div id="inspector-panel" class="tab-panel">
@@ -68,43 +123,6 @@ export function setupDOM() {
               <input type="radio" name="theme" value="light">
               <span class="settings-mode-name">Light</span>
             </label>
-          </div>
-        </div>
-        <div id="messages-panel" class="tab-panel" style="display:none;">
-          <div class="settings-section">
-            <div class="settings-section-title">Event Messages</div>
-            <div id="messages-list"></div>
-            <div class="messages-add-row">
-              <input id="messages-new-input" type="text" class="inspector-input" placeholder="New message name…">
-              <button id="messages-add-btn" class="toolbar-btn">Add</button>
-            </div>
-          </div>
-        </div>
-        <div id="variables-panel" class="tab-panel" style="display:none;">
-          <div class="settings-section">
-            <div class="settings-section-title">Global Variables</div>
-            <div id="variables-list"></div>
-            <div class="variable-add-row">
-              <select id="variables-new-type" class="inspector-select variable-type-select">
-                <option value="Boolean">Boolean</option>
-                <option value="Integer">Integer</option>
-                <option value="Float">Float</option>
-                <option value="String" selected>String</option>
-                <option value="Enum">Enum</option>
-              </select>
-              <input id="variables-new-name" type="text" class="inspector-input variable-name-input" placeholder="Variable name…">
-              <button id="variables-add-btn" class="toolbar-btn">Add</button>
-            </div>
-          </div>
-        </div>
-        <div id="enums-panel" class="tab-panel" style="display:none;">
-          <div class="settings-section">
-            <div class="settings-section-title">Enum Sets</div>
-            <div id="enums-list"></div>
-            <div class="variable-add-row">
-              <input id="enums-new-name" type="text" class="inspector-input" placeholder="Enum set name…">
-              <button id="enums-add-btn" class="toolbar-btn">Add</button>
-            </div>
           </div>
         </div>
       </div>

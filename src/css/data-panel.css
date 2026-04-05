@@ -1,0 +1,141 @@
+/* ── Left data panel ──────────────────────────────────────────────────────── */
+
+#data-panel {
+  width: 25%;
+  min-width: 150px;
+  max-width: 50%;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.data-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.data-collapse-btn,
+.data-expand-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1;
+}
+
+.data-collapse-btn:hover,
+.data-expand-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-card);
+}
+
+.data-expand-btn {
+  position: absolute;
+  top: 52px;
+  left: 4px;
+  z-index: 50;
+}
+
+#data-panel-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Data sections ───────────────────────────────────────────────────────── */
+
+.data-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 30px;
+}
+
+.data-section.collapsed {
+  flex: 0 0 auto;
+}
+
+.data-section.collapsed .data-section-content {
+  display: none;
+}
+
+.data-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px;
+  background: var(--bg-body);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+  cursor: default;
+}
+
+.data-section-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.data-section-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.data-section-toggle:hover {
+  color: var(--text-primary);
+}
+
+.data-section-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 10px;
+}
+
+/* ── Section dividers ────────────────────────────────────────────────────── */
+
+.data-section-divider {
+  height: 4px;
+  background: var(--border-color);
+  cursor: row-resize;
+  flex-shrink: 0;
+}
+
+.data-section-divider:hover {
+  background: #60a5fa;
+}
+
+/* ── Left divider (resizes data panel) ───────────────────────────────────── */
+
+#divider-left {
+  width: 5px;
+  cursor: col-resize;
+  background: var(--border-color);
+  flex-shrink: 0;
+}
+
+#divider-left:hover,
+#divider-left.dragging {
+  background: #60a5fa;
+}

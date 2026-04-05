@@ -561,30 +561,117 @@ S.onExecutionEnd = () => {
 
 const inspectorPanel  = document.getElementById('inspector-panel');
 const settingsPanel   = document.getElementById('settings-panel');
-const messagesPanel   = document.getElementById('messages-panel');
-const variablesPanel  = document.getElementById('variables-panel');
-const enumsPanel      = document.getElementById('enums-panel');
 const inspectorTabs   = document.getElementById('inspector-tabs');
 const settingsCogBtn  = document.getElementById('btn-settings-cog');
 const closeSettingsBtn = document.getElementById('btn-close-settings');
 
-const contentPanels = [inspectorPanel, settingsPanel, messagesPanel, variablesPanel, enumsPanel];
+const contentPanels = [inspectorPanel, settingsPanel];
 
 function showTab(tabName) {
-  // Exit settings overlay if active
   inspectorTabs.style.display = '';
   for (const p of contentPanels) p.style.display = 'none';
   for (const t of document.querySelectorAll('.inspector-tab')) {
     t.classList.toggle('active', t.dataset.tab === tabName);
   }
   if (tabName === 'inspector') inspectorPanel.style.display = '';
-  else if (tabName === 'messages') { messagesPanel.style.display = ''; renderMessagesList(); }
-  else if (tabName === 'variables') { variablesPanel.style.display = ''; renderVariablesList(); }
-  else if (tabName === 'enums') { enumsPanel.style.display = ''; renderEnumsList(); }
 }
 
 for (const tab of document.querySelectorAll('.inspector-tab')) {
   tab.addEventListener('click', () => showTab(tab.dataset.tab));
+}
+
+// ── Data panel (left) ───────────────────────────────────────────────────────
+
+const dataPanel       = document.getElementById('data-panel');
+const dataPanelBody   = document.getElementById('data-panel-body');
+const btnCollapseData = document.getElementById('btn-collapse-data');
+const btnExpandData   = document.getElementById('btn-expand-data');
+const dividerLeft     = document.getElementById('divider-left');
+
+// Collapse / expand
+if (btnCollapseData) {
+  btnCollapseData.addEventListener('click', () => {
+    dataPanel.style.display = 'none';
+    dividerLeft.style.display = 'none';
+    btnExpandData.style.display = '';
+  });
+}
+if (btnExpandData) {
+  btnExpandData.addEventListener('click', () => {
+    dataPanel.style.display = '';
+    dividerLeft.style.display = '';
+    btnExpandData.style.display = 'none';
+    renderVariablesList();
+    renderEnumsList();
+    renderMessagesList();
+  });
+}
+
+// Section toggle (minimize/expand)
+for (const section of document.querySelectorAll('.data-section')) {
+  const toggle = section.querySelector('.data-section-toggle');
+  if (!toggle) continue;
+  toggle.addEventListener('click', () => {
+    section.classList.toggle('collapsed');
+    toggle.textContent = section.classList.contains('collapsed') ? '+' : '−';
+  });
+}
+
+// Left divider drag (resize data panel)
+if (dividerLeft) {
+  let draggingLeft = false;
+  dividerLeft.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    draggingLeft = true;
+    dividerLeft.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!draggingLeft) return;
+    const mainArea = document.getElementById('main-area');
+    const rect = mainArea.getBoundingClientRect();
+    const pct = ((e.clientX - rect.left) / rect.width) * 100;
+    dataPanel.style.width = `${Math.max(10, Math.min(50, pct))}%`;
+  });
+  document.addEventListener('mouseup', () => {
+    if (!draggingLeft) return;
+    draggingLeft = false;
+    dividerLeft.classList.remove('dragging');
+    document.body.style.cursor = '';
+  });
+}
+
+// Section divider drag (resize sections vertically)
+for (const divider of document.querySelectorAll('.data-section-divider')) {
+  let dragging = false;
+  let prevSection = null;
+  let nextSection = null;
+  divider.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    dragging = true;
+    prevSection = divider.previousElementSibling;
+    nextSection = divider.nextElementSibling;
+    document.body.style.cursor = 'row-resize';
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging || !prevSection || !nextSection) return;
+    const bodyRect = dataPanelBody.getBoundingClientRect();
+    const y = e.clientY - bodyRect.top;
+    const total = bodyRect.height;
+    const prevTop = prevSection.getBoundingClientRect().top - bodyRect.top;
+    const nextBottom = nextSection.getBoundingClientRect().bottom - bodyRect.top;
+    const newPrevH = Math.max(30, y - prevTop);
+    const newNextH = Math.max(30, nextBottom - y);
+    prevSection.style.flex = `0 0 ${newPrevH}px`;
+    nextSection.style.flex = `0 0 ${newNextH}px`;
+  });
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    document.body.style.cursor = '';
+  });
 }
 
 settingsCogBtn.addEventListener('click', () => {
@@ -999,6 +1086,9 @@ export { renderEnumsList };
 
 initFlowchart();
 applyTransform();
+renderVariablesList();
+renderEnumsList();
+renderMessagesList();
 
 // ── Re-exports (facade for tests) ───────────────────────────────────────────
 

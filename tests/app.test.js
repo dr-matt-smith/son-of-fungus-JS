@@ -580,13 +580,10 @@ describe('Edit block name in inspector panel', () => {
 // ─── Version 23: Fungus FlowChart mode ─────────────────────────────────────
 
 describe('Inspector/Events tabs and Settings cog', () => {
-  it('inspector tabs exist in DOM (Inspector + Events)', () => {
+  it('inspector tab exists in DOM', () => {
     const tabs = document.querySelectorAll('.inspector-tab');
-    expect(tabs.length).toBe(4);
+    expect(tabs.length).toBe(1);
     expect(tabs[0].dataset.tab).toBe('inspector');
-    expect(tabs[1].dataset.tab).toBe('messages');
-    expect(tabs[2].dataset.tab).toBe('variables');
-    expect(tabs[3].dataset.tab).toBe('enums');
   });
 
   it('settings cog button exists', () => {
@@ -1131,9 +1128,8 @@ describe('Node ID label', () => {
 });
 
 describe('Messages tab', () => {
-  it('messages tab exists in DOM', () => {
-    const tab = document.querySelector('.inspector-tab[data-tab="messages"]');
-    expect(tab).toBeTruthy();
+  it('messages panel exists in data panel', () => {
+    expect(document.getElementById('messages-panel')).toBeTruthy();
   });
 
   it('messages panel exists in DOM', () => {
@@ -1319,9 +1315,8 @@ describe('Fungus command summary row layout', () => {
 describe('Variables tab', () => {
   afterEach(() => { app.S.variables = []; });
 
-  it('variables tab exists in DOM', () => {
-    const tab = document.querySelector('.inspector-tab[data-tab="variables"]');
-    expect(tab).toBeTruthy();
+  it('variables panel exists in data panel', () => {
+    expect(document.getElementById('variables-panel')).toBeTruthy();
   });
 
   it('variables panel exists in DOM', () => {
@@ -1356,8 +1351,8 @@ describe('Variables tab', () => {
 describe('Enums tab', () => {
   afterEach(() => { app.S.enums = []; });
 
-  it('enums tab exists in DOM', () => {
-    expect(document.querySelector('.inspector-tab[data-tab="enums"]')).toBeTruthy();
+  it('enums panel exists in data panel', () => {
+    expect(document.getElementById('enums-panel')).toBeTruthy();
   });
 
   it('enums panel exists in DOM', () => {
