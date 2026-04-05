@@ -1382,25 +1382,36 @@ test.describe('V49 – Zoom toolbar in canvas', () => {
   });
 });
 
-// ─── Version 50: Load JSON ──────────────────────────────────────────────────
+// ─── Version 50/57: Load Project ────────────────────────────────────────────
 
-test.describe('V50 – Load JSON', () => {
-  test('Load JSON button is visible', async ({ page }) => {
+test.describe('V57 – Load Project', () => {
+  test('Load Project button is visible', async ({ page }) => {
     await expect(page.locator('#btn-load-json')).toBeVisible();
+    await expect(page.locator('#btn-load-json')).toContainText('Load Project');
   });
 
-  test('clicking Load JSON shows modal with textarea', async ({ page }) => {
+  test('clicking Load Project shows modal with three sections', async ({ page }) => {
     await page.locator('#btn-load-json').click();
     await expect(page.locator('#json-modal-overlay')).toBeVisible();
+    // Three sections: examples, file, paste
+    await expect(page.locator('.load-section')).toHaveCount(3);
+    await expect(page.locator('#load-example-select')).toBeVisible();
+    await expect(page.locator('#load-file-input')).toBeVisible();
     await expect(page.locator('#json-load-input')).toBeVisible();
-    await expect(page.locator('#json-load-btn')).toBeVisible();
     await page.keyboard.press('Escape');
   });
 
-  test('invalid JSON shows error message', async ({ page }) => {
+  test('examples dropdown has options', async ({ page }) => {
+    await page.locator('#btn-load-json').click();
+    const options = await page.locator('#load-example-select option').allTextContents();
+    expect(options.length).toBeGreaterThan(1); // at least "— select —" + one example
+    await page.keyboard.press('Escape');
+  });
+
+  test('invalid pasted JSON shows error', async ({ page }) => {
     await page.locator('#btn-load-json').click();
     await page.locator('#json-load-input').fill('not json');
-    await page.locator('#json-load-btn').click();
+    await page.locator('#load-paste-btn').click();
     await expect(page.locator('#json-load-error')).toContainText('Invalid JSON');
     await page.keyboard.press('Escape');
   });

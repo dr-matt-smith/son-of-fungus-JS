@@ -766,14 +766,13 @@ this feature is about building a runtime version of the user experience, without
 Version 57 features - load from examples
 ==================
 
-- [] refactor LOAD JSON button
-  - [] rename this "Load Project"
-    - [] offer a dropdown list of projects from /public/examples
-    - [] offer a file open dialog
-    - [] offer option for user to paste in JSON 
-  
+- ✅ refactor LOAD JSON button
+  - ✅ rename this "Load Project"
+    - ✅ offer a dropdown list of projects from /public/examples
+    - ✅ offer a file open dialog
+    - ✅ offer option for user to paste in JSON 
 
-- [] and add Vite and PlayWright tests for the above feature(s)
+- ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
 

@@ -82,7 +82,7 @@ export function setupDOM() {
         </div>
         <div id="canvas-overlay-buttons">
           <button id="btn-export-json" class="toolbar-btn">Export JSON</button>
-          <button id="btn-load-json" class="toolbar-btn">Load JSON</button>
+          <button id="btn-load-json" class="toolbar-btn">Load Project</button>
           <button id="btn-run-log" class="toolbar-btn">Run Log</button>
           <button id="btn-build" class="toolbar-btn">Build</button>
         </div>

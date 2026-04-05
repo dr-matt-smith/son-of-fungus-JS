@@ -5,6 +5,7 @@ import { applyFungusStyles, syncAutoConnections, updateDescriptionLabel } from '
 import { getRunLog } from './engine.js';
 import { AUDIO_FILES } from './audio-manifest.js';
 import { IMAGE_FILES } from './image-manifest.js';
+import { EXAMPLE_FILES } from './examples-manifest.js';
 
 const inspectorEl    = document.getElementById('inspector');
 const emptyMsg       = document.getElementById('inspector-empty');
@@ -867,22 +868,45 @@ export function showRunLog() {
   });
 }
 
-// ── Load from JSON ──────────────────────────────────────────────────────────
+// ── Load Project ────────────────────────────────────────────────────────────
 
 export function showJsonLoad(onLoad) {
   const overlay = document.createElement('div');
   overlay.id = 'json-modal-overlay';
+
+  let exampleOptions = EXAMPLE_FILES.map(e => `<option value="${e.file}">${e.name}</option>`).join('');
+
   overlay.innerHTML = `
     <div id="json-modal">
       <div id="json-modal-header">
-        <span>Load JSON</span>
+        <span>Load Project</span>
         <button id="json-modal-close" class="json-modal-btn" title="Close">&times;</button>
       </div>
-      <div id="json-modal-body">
-        <textarea id="json-load-input" class="inspector-textarea" rows="12" placeholder="Paste JSON here…" style="width:100%;resize:vertical;"></textarea>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
-          <span id="json-load-error" style="color:#ef4444;font-size:11px;"></span>
-          <button id="json-load-btn" class="toolbar-btn">Load</button>
+      <div id="json-modal-body" style="display:flex;flex-direction:column;gap:14px;">
+        <div class="load-section">
+          <div class="load-section-title">Load from Examples</div>
+          <div style="display:flex;gap:6px;">
+            <select id="load-example-select" class="inspector-select" style="flex:1;margin-top:0;">
+              <option value="">— select example —</option>
+              ${exampleOptions}
+            </select>
+            <button id="load-example-btn" class="toolbar-btn">Load</button>
+          </div>
+        </div>
+        <div class="load-section">
+          <div class="load-section-title">Open File</div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input type="file" id="load-file-input" accept=".json,.JSON" style="flex:1;font-size:11px;">
+            <button id="load-file-btn" class="toolbar-btn">Load</button>
+          </div>
+        </div>
+        <div class="load-section">
+          <div class="load-section-title">Paste JSON</div>
+          <textarea id="json-load-input" class="inspector-textarea" rows="8" placeholder="Paste JSON here…" style="width:100%;resize:vertical;"></textarea>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+            <span id="json-load-error" style="color:#ef4444;font-size:11px;"></span>
+            <button id="load-paste-btn" class="toolbar-btn">Load</button>
+          </div>
         </div>
       </div>
     </div>
@@ -895,20 +919,47 @@ export function showJsonLoad(onLoad) {
     if (e.key === 'Escape') { close(); document.removeEventListener('keydown', escHandler); }
   });
 
-  const textarea = overlay.querySelector('#json-load-input');
   const errorEl = overlay.querySelector('#json-load-error');
-  textarea.addEventListener('keydown', (e) => e.stopPropagation());
 
-  overlay.querySelector('#json-load-btn').addEventListener('click', () => {
-    const text = textarea.value.trim();
-    if (!text) { errorEl.textContent = 'Please paste JSON data.'; return; }
+  function tryLoad(text) {
+    if (!text) { errorEl.textContent = 'No data.'; return; }
     let data;
     try { data = JSON.parse(text); } catch (err) { errorEl.textContent = 'Invalid JSON: ' + err.message; return; }
     if (!data.nodes || !Array.isArray(data.nodes)) { errorEl.textContent = 'JSON must contain a "nodes" array.'; return; }
-
     if (!confirm('This will replace your current flowchart. Are you sure?')) return;
-
     close();
     onLoad(data);
+  }
+
+  // Example load
+  overlay.querySelector('#load-example-btn').addEventListener('click', async () => {
+    const file = overlay.querySelector('#load-example-select').value;
+    if (!file) { errorEl.textContent = 'Please select an example.'; return; }
+    errorEl.textContent = '';
+    try {
+      const resp = await fetch(file);
+      if (!resp.ok) { errorEl.textContent = 'Failed to load example.'; return; }
+      tryLoad(await resp.text());
+    } catch (err) { errorEl.textContent = 'Error: ' + err.message; }
+  });
+
+  // File open
+  overlay.querySelector('#load-file-btn').addEventListener('click', () => {
+    const fileInput = overlay.querySelector('#load-file-input');
+    const file = fileInput.files[0];
+    if (!file) { errorEl.textContent = 'Please choose a file.'; return; }
+    errorEl.textContent = '';
+    const reader = new FileReader();
+    reader.onload = () => tryLoad(reader.result);
+    reader.onerror = () => { errorEl.textContent = 'Failed to read file.'; };
+    reader.readAsText(file);
+  });
+
+  // Paste JSON
+  const textarea = overlay.querySelector('#json-load-input');
+  textarea.addEventListener('keydown', (e) => e.stopPropagation());
+  overlay.querySelector('#load-paste-btn').addEventListener('click', () => {
+    errorEl.textContent = '';
+    tryLoad(textarea.value.trim());
   });
 }
