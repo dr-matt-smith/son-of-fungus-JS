@@ -1641,6 +1641,114 @@ test.describe('V56 – Build runtime', () => {
   });
 });
 
+// ─── Version 72: Data panel row height bars ───────────────────────────────
+
+test.describe('V72 – Data panel row resize bars', () => {
+  test('divider between collapsed sections has no row-resize cursor effect', async ({ page }) => {
+    // Collapse all sections
+    await page.evaluate(() => {
+      document.querySelectorAll('.data-section').forEach(s => {
+        s.classList.add('collapsed');
+        const t = s.querySelector('.data-section-toggle');
+        if (t) t.textContent = '+';
+      });
+    });
+    // Try to mousedown on a divider between collapsed sections
+    const divider = page.locator('#data-panel-body > .data-section-divider').first();
+    await expect(divider).toBeVisible();
+    // After mousedown on divider between collapsed sections, body cursor should NOT be row-resize
+    const box = await divider.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    const cursor = await page.evaluate(() => document.body.style.cursor);
+    expect(cursor).not.toBe('row-resize');
+    await page.mouse.up();
+  });
+
+  test('static dividers are hidden in debug mode', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
+    await addCommand(page, 'Say');
+
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+
+    await page.locator('#btn-play-step').click();
+    await page.waitForTimeout(500);
+
+    // All static dividers should be hidden
+    const staticDividers = page.locator('#data-panel-body > .data-section-divider:not(#debug-stage-divider)');
+    const count = await staticDividers.count();
+    for (let i = 0; i < count; i++) {
+      await expect(staticDividers.nth(i)).toBeHidden();
+    }
+
+    await page.locator('#btn-stop').click();
+  });
+
+  test('debug stage divider is visible and resizable in debug mode', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
+    await addCommand(page, 'Say');
+
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+
+    await page.locator('#btn-play-step').click();
+    await page.waitForTimeout(500);
+
+    // Debug stage divider and preview should be visible
+    await expect(page.locator('#debug-stage-divider')).toBeVisible();
+    await expect(page.locator('#debug-stage-preview')).toBeVisible();
+
+    // Drag the debug stage divider to resize
+    const divider = page.locator('#debug-stage-divider');
+    const divBox = await divider.boundingBox();
+    const previewBefore = await page.locator('#debug-stage-preview').boundingBox();
+
+    await page.mouse.move(divBox.x + divBox.width / 2, divBox.y + divBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(divBox.x + divBox.width / 2, divBox.y - 50, { steps: 5 });
+    await page.mouse.up();
+
+    const previewAfter = await page.locator('#debug-stage-preview').boundingBox();
+    // Preview should have grown (divider moved up)
+    expect(previewAfter.height).toBeGreaterThan(previewBefore.height);
+
+    await page.locator('#btn-stop').click();
+  });
+
+  test('static dividers are restored after exiting debug mode', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
+    await addCommand(page, 'Say');
+
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+
+    await page.locator('#btn-play-step').click();
+    await page.waitForTimeout(500);
+    await page.locator('#btn-stop').click();
+    await page.waitForTimeout(300);
+
+    // Static dividers should be visible again
+    const staticDividers = page.locator('#data-panel-body > .data-section-divider');
+    const count = await staticDividers.count();
+    for (let i = 0; i < count; i++) {
+      await expect(staticDividers.nth(i)).toBeVisible();
+    }
+
+    // Debug stage divider should be gone
+    await expect(page.locator('#debug-stage-divider')).toHaveCount(0);
+  });
+});
+
 // ─── Keyboard shortcuts ────────────────────────────────────────────────────
 
 test.describe('Keyboard shortcuts', () => {

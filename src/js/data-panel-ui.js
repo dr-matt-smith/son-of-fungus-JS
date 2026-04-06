@@ -60,6 +60,7 @@ if (btnCollapseAll) {
   btnCollapseAll.addEventListener('click', () => {
     for (const section of document.querySelectorAll('.data-section')) {
       section.classList.add('collapsed');
+      section.style.flex = '';
       const toggle = section.querySelector('.data-section-toggle');
       if (toggle) toggle.textContent = '+';
     }
@@ -73,6 +74,10 @@ for (const section of document.querySelectorAll('.data-section')) {
   toggle.addEventListener('click', () => {
     section.classList.toggle('collapsed');
     toggle.textContent = section.classList.contains('collapsed') ? '+' : '\u2212';
+    // Reset all sections to flexible sizing when toggling
+    for (const sec of dataPanelBody.querySelectorAll('.data-section')) {
+      sec.style.flex = '';
+    }
   });
 }
 
@@ -102,27 +107,47 @@ if (dividerLeft) {
 }
 
 // Section divider drag (resize sections vertically)
-for (const divider of document.querySelectorAll('.data-section-divider')) {
+// Freeze all visible expanded sections to their current pixel heights
+function freezeAllSections() {
+  for (const sec of dataPanelBody.querySelectorAll('.data-section')) {
+    if (sec.style.display === 'none' || sec.classList.contains('collapsed')) continue;
+    sec.style.flex = `0 0 ${sec.getBoundingClientRect().height}px`;
+  }
+}
+
+export function attachDividerResize(divider) {
   let dragging = false;
   let prevSection = null;
   let nextSection = null;
   divider.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
+    // Find visible (non-hidden, non-collapsed) adjacent sections
+    prevSection = divider.previousElementSibling;
+    while (prevSection && (!prevSection.classList.contains('data-section') || prevSection.style.display === 'none')) {
+      prevSection = prevSection.previousElementSibling;
+    }
+    nextSection = divider.nextElementSibling;
+    while (nextSection && (!nextSection.classList.contains('data-section') || nextSection.style.display === 'none')) {
+      nextSection = nextSection.nextElementSibling;
+    }
+    // Don't resize if either adjacent section is collapsed or missing
+    if (!prevSection || !nextSection) return;
+    if (prevSection.classList.contains('collapsed') || nextSection.classList.contains('collapsed')) return;
     e.preventDefault();
     dragging = true;
-    prevSection = divider.previousElementSibling;
-    nextSection = divider.nextElementSibling;
+    // Lock every section to its current height so nothing shifts
+    freezeAllSections();
     document.body.style.cursor = 'row-resize';
   });
   document.addEventListener('mousemove', (e) => {
     if (!dragging || !prevSection || !nextSection) return;
     const bodyRect = dataPanelBody.getBoundingClientRect();
+    const prevRect = prevSection.getBoundingClientRect();
+    const combinedH = prevRect.height + nextSection.getBoundingClientRect().height;
+    const prevTop = prevRect.top - bodyRect.top;
     const y = e.clientY - bodyRect.top;
-    const total = bodyRect.height;
-    const prevTop = prevSection.getBoundingClientRect().top - bodyRect.top;
-    const nextBottom = nextSection.getBoundingClientRect().bottom - bodyRect.top;
-    const newPrevH = Math.max(30, y - prevTop);
-    const newNextH = Math.max(30, nextBottom - y);
+    const newPrevH = Math.max(30, Math.min(combinedH - 30, y - prevTop));
+    const newNextH = combinedH - newPrevH;
     prevSection.style.flex = `0 0 ${newPrevH}px`;
     nextSection.style.flex = `0 0 ${newNextH}px`;
   });
@@ -131,6 +156,10 @@ for (const divider of document.querySelectorAll('.data-section-divider')) {
     dragging = false;
     document.body.style.cursor = '';
   });
+}
+
+for (const divider of document.querySelectorAll('.data-section-divider')) {
+  attachDividerResize(divider);
 }
 
 // ── Messages tab ────────────────────────────────────────────────────────────

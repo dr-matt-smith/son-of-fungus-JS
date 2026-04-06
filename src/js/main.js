@@ -205,5 +205,5 @@ export { updateInspector } from './inspector.js';
 export { classifyBlock, applyFungusStyles, syncAutoConnections, initFlowchart } from './fungus-mode.js';
 export { startExecution, startStepExecution, stepNext, stopExecution, isRunning, isStepping, isPaused, getRunLog } from './engine.js';
 export { createNodeWithEvents } from './canvas-interactions.js';
-export { renderVariablesList, renderEnumsList, renderMessagesList, VAR_TYPES } from './data-panel-ui.js';
+export { renderVariablesList, renderEnumsList, renderMessagesList, VAR_TYPES, attachDividerResize } from './data-panel-ui.js';
 export { showPlayButtons, debugMode, debugEditedVars } from './play-controls.js';

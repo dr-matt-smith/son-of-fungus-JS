@@ -960,14 +960,14 @@ Version 71 features - debugger improvements
 Version 72 features - fix Data panel row height bars
 ==================
 
-- [] there is an issue with the height resize bars for rows in the Data panel
-  - [] when a row is minimised, it should not be able to be resized
-  - [] when one row is resized other rows seems to change width in a strange way
+- [x] there is an issue with the height resize bars for rows in the Data panel
+  - [x] when a row is minimised, it should not be able to be resized
+  - [x] when one row is resized other rows seems to change width in a strange way
 
-- [] in debug mode, it isn't possible to change the height of the stage preview
-  - [] and there seem to be 2 or 3 very thing resize bars (for enums/events/characters?) - which should be completedly hidden during debug mode
-  - [] so please fix it so that in debug mode the height of the preview stage can be easily changed by the user
+- [x] in debug mode, it isn't possible to change the height of the stage preview
+  - [x] and there seem to be 2 or 3 very thing resize bars (for enums/events/characters?) - which should be completedly hidden during debug mode
+  - [x] so please fix it so that in debug mode the height of the preview stage can be easily changed by the user
     - (width changes seem to work fine)
 
-- [] and add Vite and PlayWright tests for the above feature(s)
+- [x] and add Vite and PlayWright tests for the above feature(s)
 

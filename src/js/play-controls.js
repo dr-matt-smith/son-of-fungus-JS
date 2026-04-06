@@ -4,7 +4,7 @@ import { S } from './state.js';
 import { startExecution, startStepExecution, stepNext, stopExecution, getRunLog } from './engine.js';
 import { activateNode } from './nodes/node-selection.js';
 import { updateInspector } from './inspector.js';
-import { renderVariablesList, showTab } from './data-panel-ui.js';
+import { renderVariablesList, showTab, attachDividerResize } from './data-panel-ui.js';
 
 // ── Play / Stop / Step ───────────────────────────────────────────────────────
 
@@ -89,6 +89,11 @@ function enterDebugMode() {
   if (eventSection) eventSection.style.display = 'none';
   if (charSection) charSection.style.display = 'none';
 
+  // Hide all static section dividers (between enums/events/characters)
+  for (const d of document.querySelectorAll('#data-panel-body > .data-section-divider:not(#debug-stage-divider)')) {
+    d.style.display = 'none';
+  }
+
   // Expand Variables section
   const varSection = document.getElementById('data-variables');
   if (varSection) { varSection.classList.remove('collapsed'); const t = varSection.querySelector('.data-section-toggle'); if (t) t.textContent = '−'; }
@@ -105,13 +110,16 @@ function exitDebugMode() {
   if (debugStatusBar) debugStatusBar.style.display = 'none';
   if (debugStatusText) debugStatusText.textContent = '';
 
-  // Restore data sections
+  // Restore data sections and dividers
   const enumSection = document.getElementById('data-enums');
   const eventSection = document.getElementById('data-events');
   const charSection = document.getElementById('data-characters');
   if (enumSection) enumSection.style.display = '';
   if (eventSection) eventSection.style.display = '';
   if (charSection) charSection.style.display = '';
+  for (const d of document.querySelectorAll('#data-panel-body > .data-section-divider')) {
+    d.style.display = '';
+  }
 
   // Remove debug stage preview
   removeDebugStagePreview();
@@ -129,6 +137,7 @@ function createDebugStagePreview() {
   divider.className = 'data-section-divider';
   divider.id = 'debug-stage-divider';
   body.appendChild(divider);
+  attachDividerResize(divider);
 
   const section = document.createElement('div');
   section.className = 'data-section';
