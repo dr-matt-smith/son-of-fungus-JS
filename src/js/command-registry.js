@@ -39,7 +39,8 @@ export const COMMAND_REGISTRY = {
     },
     detail(cmd) {
       const t = cmd.text || '';
-      return `"${t.substring(0, 24)}${t.length > 24 ? '\u2026' : ''}"`;
+      const charName = cmd.character ? `[${cmd.character}] ` : '';
+      return `${charName}"${t.substring(0, 20)}${t.length > 20 ? '\u2026' : ''}"`;
     },
     renderFields(container, cmd, node) {
       const { updateCmdSummaryRow: _updateCmdSummaryRow } = getFieldCallbacks();

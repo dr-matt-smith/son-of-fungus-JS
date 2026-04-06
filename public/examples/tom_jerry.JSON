@@ -10,12 +10,12 @@
   "enums": [],
   "characters": [
     {
-      "name": "tom",
+      "name": "Tom",
       "color": "#60a5fa",
       "soundUrl": "/audio/defaults/HighVoice.wav"
     },
     {
-      "name": "jerry",
+      "name": "Jerry",
       "color": "#ff2600",
       "soundUrl": "/audio/defaults/LowVoice.wav"
     }
@@ -36,7 +36,7 @@
         {
           "type": "say",
           "id": "7db5849d-6e4c-4b48-ab3c-78879e680a4e",
-          "character": "tom",
+          "character": "Tom",
           "text": "Hello!",
           "portrait": "",
           "waitForNext": true,
@@ -47,7 +47,7 @@
         {
           "type": "say",
           "id": "445419d6-2816-454e-8d15-b342175567a0",
-          "character": "jerry",
+          "character": "Jerry",
           "text": "Hello to you too",
           "portrait": "",
           "waitForNext": true,
