@@ -64,6 +64,17 @@ let running     = false;
 let stepping    = false;   // step-by-step mode
 let paused      = false;   // paused between steps
 let callStack   = [];     // [{ node, cmdIdx }] — for Call with mode 'continue'
+let savedVariableValues = null; // snapshot of variable values before execution
+
+function restoreVariables() {
+  if (!savedVariableValues) return;
+  for (const saved of savedVariableValues) {
+    const v = S.variables.find(x => x.name === saved.name);
+    if (v) v.value = saved.value;
+  }
+  savedVariableValues = null;
+  S.emit('variableChanged');
+}
 let currentNode = null;
 let currentCmd  = 0;
 let waitTimer   = null;
@@ -120,6 +131,7 @@ export function startExecution() {
   if (running) return;
   running = true;
   getAudioContext(); // init audio context on user gesture
+  savedVariableValues = JSON.parse(JSON.stringify(S.variables.map(v => ({ name: v.name, value: v.value }))));
 
   // Find the entry point: a node with gameStarted event
   const entryNode = S.nodes.find(n => n.event?.type === 'gameStarted');
@@ -220,6 +232,7 @@ export function stopExecution() {
   callStack = [];
   // Remove highlight from all nodes
   for (const n of S.nodes) n.el.classList.remove('node-executing');
+  restoreVariables();
   if (S.onInspectorUpdate) S.onInspectorUpdate();
 }
 
@@ -295,6 +308,7 @@ function executeNextCommand() {
       stepping = false;
       paused = false;
       resuming = false;
+      restoreVariables();
       if (S.onInspectorUpdate) S.onInspectorUpdate();
       if (S.onExecutionEnd) S.onExecutionEnd();
     }
