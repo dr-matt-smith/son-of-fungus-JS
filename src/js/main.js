@@ -13,7 +13,7 @@ import { undo, redo, saveSnapshot } from './undo-redo.js';
 import './toolbar.js';
 import { createNodeWithEvents } from './canvas-interactions.js';
 import { showPlayButtons } from './play-controls.js';
-import { renderVariablesList, renderEnumsList, renderMessagesList, showTab } from './data-panel-ui.js';
+import { renderVariablesList, renderEnumsList, renderMessagesList, renderCharactersList, showTab } from './data-panel-ui.js';
 
 // ── Inspector ────────────────────────────────────────────────────────────────
 
@@ -52,6 +52,7 @@ S.on('modelChanged', () => {
   renderVariablesList();
   renderEnumsList();
   renderMessagesList();
+  renderCharactersList();
   updateInspector();
 });
 
@@ -93,6 +94,7 @@ function loadDiagram(data) {
   S.variables = data.variables || [];
   S.messages = data.messages || [];
   S.enums = data.enums || [];
+  S.characters = data.characters || [];
 
   // Load nodes
   let maxId = 0;
@@ -125,6 +127,7 @@ function loadDiagram(data) {
   renderVariablesList();
   renderEnumsList();
   renderMessagesList();
+  renderCharactersList();
   updateInspector();
 }
 
@@ -181,6 +184,7 @@ applyTransform();
 renderVariablesList();
 renderEnumsList();
 renderMessagesList();
+renderCharactersList();
 
 // ── Re-exports (facade for tests) ───────────────────────────────────────────
 

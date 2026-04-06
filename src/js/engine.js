@@ -336,6 +336,10 @@ function execSay(cmd) {
   const text = subVars(cmd.text);
   logEntry(`Block ${currentNode.id} "${currentNode.label}": Say: ${cmd.character ? cmd.character + ': ' : ''}${text}`);
 
+  // Look up character object
+  const charObj = cmd.character ? S.characters.find(c => c.name === cmd.character) : null;
+  const charColor = charObj?.color || '#60a5fa';
+
   // Create dialog element
   const dialog = document.createElement('div');
   dialog.className = 'say-dialog';
@@ -344,6 +348,7 @@ function execSay(cmd) {
     const charEl = document.createElement('div');
     charEl.className = 'say-dialog-character';
     charEl.textContent = cmd.character;
+    charEl.style.color = charColor;
     dialog.appendChild(charEl);
   }
 
@@ -353,8 +358,8 @@ function execSay(cmd) {
 
   document.body.appendChild(dialog);
 
-  // Load typing audio buffer then start
-  const typingUrl = cmd.typingAudioUrl || '/audio/defaults/MidVoice.wav';
+  // Use character sound if set, otherwise fall back to command's typing audio
+  const typingUrl = (charObj?.soundUrl) || cmd.typingAudioUrl || '/audio/defaults/MidVoice.wav';
   const wantTypingAudio = cmd.typingAudio !== false && typingUrl;
   (wantTypingAudio ? loadAudioBuffer(typingUrl) : Promise.resolve(null)).then(typingBuffer => {
     startSayContent(dialog, textEl, text, cmd, typingBuffer);

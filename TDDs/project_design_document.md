@@ -888,3 +888,16 @@ Version 66 features - step-by-step dialog output for say and menu commands
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
+Version 67 features - add character objects, and use with Say commands
+==================
+
+- ✅ added "Characters" section to the data panel (below Events)
+  - ✅ each Character has: name, color (color picker), sound effect (audio dropdown)
+  - ✅ add/delete characters
+
+- ✅ Say command now has character dropdown (from defined characters)
+  - ✅ character name appears in the Say dialog
+  - ✅ character color is applied to the name display
+  - ✅ character sound overrides the typing audio if set
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)

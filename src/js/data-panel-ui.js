@@ -3,6 +3,7 @@
 import { S } from './state.js';
 import { logEntry, isRunning } from './engine.js';
 import { debugMode, debugEditedVars } from './play-controls.js';
+import { AUDIO_FILES } from './audio-manifest.js';
 
 // ── Inspector / Settings tabs ────────────────────────────────────────────────
 
@@ -504,3 +505,92 @@ enumsNewName.addEventListener('keydown', (e) => {
   e.stopPropagation();
   if (e.key === 'Enter') enumsAddBtn.click();
 });
+
+// ── Characters tab ──────────────────────────────────────────────────────────
+
+const charactersList   = document.getElementById('characters-list');
+const charsNewName     = document.getElementById('characters-new-name');
+const charsAddBtn      = document.getElementById('characters-add-btn');
+
+export function renderCharactersList() {
+  if (!charactersList) return;
+  charactersList.innerHTML = '';
+  for (let i = 0; i < S.characters.length; i++) {
+    const ch = S.characters[i];
+    const card = document.createElement('div');
+    card.className = 'character-card';
+
+    // Name
+    const nameRow = document.createElement('div');
+    nameRow.className = 'character-row';
+    nameRow.innerHTML = '<span class="character-field-label">Name</span>';
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.className = 'inspector-input';
+    nameInput.value = ch.name;
+    nameInput.addEventListener('change', () => { ch.name = nameInput.value.trim() || ch.name; });
+    nameInput.addEventListener('keydown', (e) => e.stopPropagation());
+    nameRow.appendChild(nameInput);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'messages-delete-btn';
+    delBtn.textContent = '×';
+    delBtn.title = 'Delete character';
+    delBtn.addEventListener('click', () => { S.characters.splice(i, 1); renderCharactersList(); });
+    nameRow.appendChild(delBtn);
+    card.appendChild(nameRow);
+
+    // Color
+    const colorRow = document.createElement('div');
+    colorRow.className = 'character-row';
+    colorRow.innerHTML = '<span class="character-field-label">Color</span>';
+    const colorInput = document.createElement('input');
+    colorInput.type = 'color';
+    colorInput.className = 'inspector-input character-color-input';
+    colorInput.value = ch.color || '#60a5fa';
+    colorInput.addEventListener('input', () => { ch.color = colorInput.value; });
+    colorRow.appendChild(colorInput);
+    card.appendChild(colorRow);
+
+    // Sound
+    const soundRow = document.createElement('div');
+    soundRow.className = 'character-row';
+    soundRow.innerHTML = '<span class="character-field-label">Sound</span>';
+    const soundSelect = document.createElement('select');
+    soundSelect.className = 'inspector-select';
+    const noSound = document.createElement('option');
+    noSound.value = '';
+    noSound.textContent = '— default —';
+    soundSelect.appendChild(noSound);
+    for (const f of AUDIO_FILES) {
+      const opt = document.createElement('option');
+      opt.value = f;
+      opt.textContent = f;
+      if (f === ch.soundUrl) opt.selected = true;
+      soundSelect.appendChild(opt);
+    }
+    soundSelect.addEventListener('change', () => { ch.soundUrl = soundSelect.value; });
+    soundRow.appendChild(soundSelect);
+    card.appendChild(soundRow);
+
+    charactersList.appendChild(card);
+  }
+}
+
+if (charsAddBtn) {
+  charsAddBtn.addEventListener('click', () => {
+    const name = charsNewName.value.trim();
+    if (name) {
+      S.characters.push({ name, color: '#60a5fa', soundUrl: '' });
+      charsNewName.value = '';
+      renderCharactersList();
+    }
+  });
+}
+
+if (charsNewName) {
+  charsNewName.addEventListener('keydown', (e) => {
+    e.stopPropagation();
+    if (e.key === 'Enter' && charsAddBtn) charsAddBtn.click();
+  });
+}

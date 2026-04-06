@@ -46,6 +46,7 @@ const S = {
   variables: DIAGRAM.variables || [],
   messages: DIAGRAM.messages || [],
   enums: DIAGRAM.enums || [],
+  characters: DIAGRAM.characters || [],
   nodes: DIAGRAM.nodes || [],
 };
 
@@ -115,11 +116,14 @@ function exec(cmd) {
   switch (cmd.type) {
     case 'say': {
       const text = substituteVars(cmd.text || '', S.variables);
+      const charObj = cmd.character ? S.characters.find(c => c.name === cmd.character) : null;
+      const charColor = charObj?.color || '#60a5fa';
       const dlg = document.createElement('div'); dlg.className = 'say-dialog';
-      if (cmd.character) { const ch = document.createElement('div'); ch.className = 'say-char'; ch.textContent = cmd.character; dlg.appendChild(ch); }
+      if (cmd.character) { const ch = document.createElement('div'); ch.className = 'say-char'; ch.textContent = cmd.character; ch.style.color = charColor; dlg.appendChild(ch); }
       const txt = document.createElement('div'); dlg.appendChild(txt);
       document.body.appendChild(dlg);
-      const ta = cmd.typingAudio !== false && cmd.typingAudioUrl ? new Audio(rel(cmd.typingAudioUrl)) : null;
+      const typUrl = (charObj?.soundUrl) || cmd.typingAudioUrl || '/audio/defaults/MidVoice.wav';
+      const ta = cmd.typingAudio !== false && typUrl ? new Audio(rel(typUrl)) : null;
       function finSay() {
         if (cmd.waitForNext !== false) {
           const nb = document.createElement('button'); nb.className = 'say-next'; nb.innerHTML = '▼';

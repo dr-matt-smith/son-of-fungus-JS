@@ -26,6 +26,7 @@ export const S = {
   variables: [],
   messages: [],
   enums: [],
+  characters: [],
 
   // ── Interaction state ───────────────────────────────────────────────
   activeNode: null,
@@ -109,7 +110,7 @@ Object.defineProperty(S, 'view', {
 
 Object.defineProperty(S, 'model', {
   get() {
-    return { nodes: S.nodes, connections: S.connections, variables: S.variables, messages: S.messages, enums: S.enums };
+    return { nodes: S.nodes, connections: S.connections, variables: S.variables, messages: S.messages, enums: S.enums, characters: S.characters };
   },
   enumerable: false,
 });

@@ -4,4 +4,5 @@
  */
 export const EXAMPLE_FILES = [
   { name: 'Coffee or Tea', file: '/examples/coffee_tea.JSON' },
+  { name: 'Tom & Jerry', file: '/examples/tom_jerry.JSON' },
 ];

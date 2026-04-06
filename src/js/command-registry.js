@@ -43,7 +43,9 @@ export const COMMAND_REGISTRY = {
     },
     renderFields(container, cmd, node) {
       const { updateCmdSummaryRow: _updateCmdSummaryRow } = getFieldCallbacks();
-      container.appendChild(labeledInput('Character', cmd.character, v => { cmd.character = v; _updateCmdSummaryRow(); }));
+      // Character dropdown
+      const charOpts = [['', '— none —'], ...S.characters.map(c => [c.name, c.name])];
+      container.appendChild(labeledSelect('Character', cmd.character || '', charOpts, v => { cmd.character = v; _updateCmdSummaryRow(); }));
       container.appendChild(labeledTextarea('Text', cmd.text, v => { cmd.text = v; _updateCmdSummaryRow(); }));
       container.appendChild(labeledCheckbox('Wait for next', cmd.waitForNext ?? true, v => { cmd.waitForNext = v; }));
       container.appendChild(labeledCheckbox('Typing animation', cmd.typingAnimation ?? true, v => { cmd.typingAnimation = v; }));
