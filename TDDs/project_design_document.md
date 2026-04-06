@@ -901,3 +901,21 @@ Version 67 features - add character objects, and use with Say commands
   - ✅ character sound overrides the typing audio if set
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+
+Version 68 features
+==================
+
+- ✅ added Portraits to each Character
+  - ✅ each character can have 1+ portrait images (from /public/images)
+  - ✅ each portrait has a text description and an image URL
+
+- ✅ Say command shows portrait dropdown when character is selected
+
+- ✅ portrait image displayed to the right of Say dialog during execution
+  - ✅ positioned absolute, top-right, 130px height with drop-shadow
+
+- ✅ portraits work in build runtime too
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)

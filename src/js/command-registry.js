@@ -45,8 +45,19 @@ export const COMMAND_REGISTRY = {
     renderFields(container, cmd, node) {
       const { updateCmdSummaryRow: _updateCmdSummaryRow } = getFieldCallbacks();
       // Character dropdown
+      const { updateInspector: _updateInspector } = getFieldCallbacks();
       const charOpts = [['', '— none —'], ...S.characters.map(c => [c.name, c.name])];
-      container.appendChild(labeledSelect('Character', cmd.character || '', charOpts, v => { cmd.character = v; _updateCmdSummaryRow(); }));
+      container.appendChild(labeledSelect('Character', cmd.character || '', charOpts, v => { cmd.character = v; cmd.portrait = ''; _updateCmdSummaryRow(); _updateInspector(); }));
+
+      // Portrait dropdown (if character selected and has portraits)
+      if (cmd.character) {
+        const charObj = S.characters.find(c => c.name === cmd.character);
+        if (charObj?.portraits?.length > 0) {
+          const pOpts = [['', '— none —'], ...charObj.portraits.filter(p => p.description && p.imageUrl).map(p => [p.description, p.description])];
+          container.appendChild(labeledSelect('Portrait', cmd.portrait || '', pOpts, v => { cmd.portrait = v; }));
+        }
+      }
+
       container.appendChild(labeledTextarea('Text', cmd.text, v => { cmd.text = v; _updateCmdSummaryRow(); }));
       container.appendChild(labeledCheckbox('Wait for next', cmd.waitForNext ?? true, v => { cmd.waitForNext = v; }));
       container.appendChild(labeledCheckbox('Typing animation', cmd.typingAnimation ?? true, v => { cmd.typingAnimation = v; }));

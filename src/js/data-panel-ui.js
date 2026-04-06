@@ -4,6 +4,7 @@ import { S } from './state.js';
 import { logEntry, isRunning } from './engine.js';
 import { debugMode, debugEditedVars } from './play-controls.js';
 import { AUDIO_FILES } from './audio-manifest.js';
+import { IMAGE_FILES } from './image-manifest.js';
 
 // ── Inspector / Settings tabs ────────────────────────────────────────────────
 
@@ -573,6 +574,70 @@ export function renderCharactersList() {
     soundRow.appendChild(soundSelect);
     card.appendChild(soundRow);
 
+    // Portraits
+    if (!ch.portraits) ch.portraits = [];
+    const portraitsLabel = document.createElement('div');
+    portraitsLabel.className = 'character-field-label';
+    portraitsLabel.style.marginTop = '6px';
+    portraitsLabel.textContent = 'Portraits';
+    card.appendChild(portraitsLabel);
+
+    for (let j = 0; j < ch.portraits.length; j++) {
+      const p = ch.portraits[j];
+      const pRow = document.createElement('div');
+      pRow.className = 'character-row';
+
+      const descInput = document.createElement('input');
+      descInput.type = 'text';
+      descInput.className = 'inspector-input';
+      descInput.style.flex = '1';
+      descInput.value = p.description || '';
+      descInput.placeholder = 'description…';
+      descInput.addEventListener('change', () => { p.description = descInput.value; });
+      descInput.addEventListener('keydown', (e) => e.stopPropagation());
+      pRow.appendChild(descInput);
+
+      const imgSelect = document.createElement('select');
+      imgSelect.className = 'inspector-select';
+      imgSelect.style.flex = '1';
+      imgSelect.style.marginTop = '0';
+      const noImg = document.createElement('option');
+      noImg.value = '';
+      noImg.textContent = '— image —';
+      imgSelect.appendChild(noImg);
+      for (const f of IMAGE_FILES) {
+        // Only show portraits matching this character's name (case-insensitive folder match)
+        if (!f.includes('potraits')) continue;
+        const parts = f.split('/');
+        const folderName = parts.length >= 4 ? parts[3] : '';
+        if (folderName.toLowerCase() !== ch.name.toLowerCase()) continue;
+        const opt = document.createElement('option');
+        opt.value = f;
+        opt.textContent = parts.pop().replace(/\.\w+$/, ''); // filename without extension
+        if (f === p.imageUrl) opt.selected = true;
+        imgSelect.appendChild(opt);
+      }
+      imgSelect.addEventListener('change', () => { p.imageUrl = imgSelect.value; });
+      pRow.appendChild(imgSelect);
+
+      const pDel = document.createElement('button');
+      pDel.className = 'messages-delete-btn';
+      pDel.textContent = '×';
+      pDel.addEventListener('click', () => { ch.portraits.splice(j, 1); renderCharactersList(); });
+      pRow.appendChild(pDel);
+
+      card.appendChild(pRow);
+    }
+
+    const addPortraitBtn = document.createElement('button');
+    addPortraitBtn.className = 'cmd-btn';
+    addPortraitBtn.textContent = '+ Portrait';
+    addPortraitBtn.addEventListener('click', () => {
+      ch.portraits.push({ description: '', imageUrl: '' });
+      renderCharactersList();
+    });
+    card.appendChild(addPortraitBtn);
+
     charactersList.appendChild(card);
   }
 }
@@ -581,7 +646,7 @@ if (charsAddBtn) {
   charsAddBtn.addEventListener('click', () => {
     const name = charsNewName.value.trim();
     if (name) {
-      S.characters.push({ name, color: '#60a5fa', soundUrl: '' });
+      S.characters.push({ name, color: '#60a5fa', soundUrl: '', portraits: [] });
       charsNewName.value = '';
       renderCharactersList();
     }

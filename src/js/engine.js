@@ -356,6 +356,18 @@ function execSay(cmd) {
   textEl.className = 'say-dialog-text';
   dialog.appendChild(textEl);
 
+  // Portrait image
+  if (cmd.portrait && charObj?.portraits) {
+    const portrait = charObj.portraits.find(p => p.description === cmd.portrait);
+    if (portrait?.imageUrl) {
+      const img = document.createElement('img');
+      img.className = 'say-dialog-portrait';
+      img.src = portrait.imageUrl;
+      img.alt = cmd.portrait;
+      dialog.appendChild(img);
+    }
+  }
+
   document.body.appendChild(dialog);
 
   // Use character sound if set, otherwise fall back to command's typing audio

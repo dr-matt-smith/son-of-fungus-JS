@@ -107,6 +107,17 @@
 .say-dialog-character { font-weight: 700; color: #60a5fa; margin-bottom: 4px; }
 .say-dialog-text { white-space: pre-wrap; }
 
+.say-dialog-portrait {
+  position: absolute;
+  right: 10px;
+  top: -30px;
+  height: 130px;
+  width: auto;
+  object-fit: contain;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
 .say-dialog-next {
   position: absolute;
   bottom: 10px;

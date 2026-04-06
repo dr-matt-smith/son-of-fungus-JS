@@ -31,6 +31,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 .say-char { font-weight: 700; color: #60a5fa; margin-bottom: 4px; }
 .say-next { position: absolute; bottom: 10px; right: 14px; width: 36px; height: 36px; border-radius: 50%; border: 2px solid #4dd0e1; background: transparent; color: #4dd0e1; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .say-next:hover { background: rgba(77,208,225,0.15); }
+.say-portrait { position: absolute; right: 10px; top: -30px; height: 130px; width: auto; object-fit: contain; pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
 .menu-overlay { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; z-index: 200; }
 .menu-btn { width: 500px; max-width: 80vw; padding: 16px 24px; background: #3d4554; border: none; border-radius: 8px; color: #e0e0e0; font-size: 18px; font-family: inherit; cursor: pointer; text-align: center; }
 .menu-btn:hover { background: #4b5563; }
@@ -121,6 +122,7 @@ function exec(cmd) {
       const dlg = document.createElement('div'); dlg.className = 'say-dialog';
       if (cmd.character) { const ch = document.createElement('div'); ch.className = 'say-char'; ch.textContent = cmd.character; ch.style.color = charColor; dlg.appendChild(ch); }
       const txt = document.createElement('div'); dlg.appendChild(txt);
+      if (cmd.portrait && charObj?.portraits) { const p = charObj.portraits.find(x => x.description === cmd.portrait); if (p?.imageUrl) { const img = document.createElement('img'); img.className = 'say-portrait'; img.src = rel(p.imageUrl); dlg.appendChild(img); } }
       document.body.appendChild(dlg);
       const typUrl = (charObj?.soundUrl) || cmd.typingAudioUrl || '/audio/defaults/MidVoice.wav';
       const ta = cmd.typingAudio !== false && typUrl ? new Audio(rel(typUrl)) : null;

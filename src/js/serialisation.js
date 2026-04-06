@@ -7,7 +7,7 @@ export function serialiseDiagram() {
     variables: S.variables.map(v => ({ name: v.name, type: v.type, value: v.value, ...(v.enumName ? { enumName: v.enumName } : {}) })),
     messages: [...S.messages],
     enums: S.enums.map(e => ({ name: e.name, values: e.values.map(v => ({ key: v.key, label: v.label })) })),
-    characters: S.characters.map(c => ({ name: c.name, color: c.color, soundUrl: c.soundUrl })),
+    characters: S.characters.map(c => ({ name: c.name, color: c.color, soundUrl: c.soundUrl, portraits: c.portraits || [] })),
     nodes: S.nodes.map(n => ({
       id: n.id,
       type: n.type,
