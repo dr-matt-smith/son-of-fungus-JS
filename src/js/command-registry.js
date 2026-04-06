@@ -327,6 +327,69 @@ export const COMMAND_REGISTRY = {
     },
   },
 
+  portrait: {
+    label: 'Portrait',
+    category: 'Stage',
+    description: 'Show, hide, or move a character portrait on stage',
+    color: { dark: '#2a1a2a', light: '#fce7f3' },
+    create() {
+      return { display: 'show', character: '', portraitDesc: '', move: false, moveSpeed: 0.6, fromPosition: 'offscreen-right', toPosition: 'right', waitUntilFinished: false };
+    },
+    detail(cmd) {
+      const ch = cmd.character || '?';
+      const action = cmd.display === 'hide' ? 'Hide' : (cmd.move ? `Move → ${cmd.toPosition}` : 'Show');
+      return `${ch}: ${action}`;
+    },
+    renderFields(container, cmd, node) {
+      const { updateInspector: _updateInspector } = getFieldCallbacks();
+      container.appendChild(labeledSelect('Display', cmd.display || 'show', [['show', 'Show'], ['hide', 'Hide']], v => { cmd.display = v; _updateInspector(); }));
+
+      const charOpts = [['', '— select —'], ...S.characters.map(c => [c.name, c.name])];
+      container.appendChild(labeledSelect('Character', cmd.character || '', charOpts, v => { cmd.character = v; cmd.portraitDesc = ''; _updateInspector(); }));
+
+      if (cmd.character) {
+        const charObj = S.characters.find(c => c.name === cmd.character);
+        if (charObj?.portraits?.length > 0) {
+          const pOpts = [['', '— select —'], ...charObj.portraits.filter(p => p.description && p.imageUrl).map(p => [p.description, p.description])];
+          container.appendChild(labeledSelect('Portrait', cmd.portraitDesc || '', pOpts, v => { cmd.portraitDesc = v; }));
+        }
+      }
+
+      if (cmd.display !== 'hide') {
+        container.appendChild(labeledCheckbox('Move', cmd.move ?? false, v => { cmd.move = v; _updateInspector(); }));
+        if (cmd.move) {
+          // Speed slider (0.1s to 3s, default 0.6s)
+          const speedRow = document.createElement('div');
+          speedRow.className = 'cmd-field';
+          speedRow.innerHTML = '<span class="cmd-field-label">Speed</span>';
+          const speedWrap = document.createElement('div');
+          speedWrap.style.cssText = 'display:flex;align-items:center;gap:6px;';
+          const speedSlider = document.createElement('input');
+          speedSlider.type = 'range';
+          speedSlider.min = '0.1';
+          speedSlider.max = '3';
+          speedSlider.step = '0.1';
+          speedSlider.value = String(cmd.moveSpeed ?? 0.6);
+          speedSlider.style.flex = '1';
+          const speedLabel = document.createElement('span');
+          speedLabel.style.cssText = 'font-size:11px;color:var(--text-secondary);min-width:30px;';
+          speedLabel.textContent = `${cmd.moveSpeed ?? 0.6}s`;
+          speedSlider.addEventListener('input', () => { cmd.moveSpeed = parseFloat(speedSlider.value); speedLabel.textContent = `${cmd.moveSpeed}s`; });
+          speedWrap.appendChild(speedSlider);
+          speedWrap.appendChild(speedLabel);
+          speedRow.appendChild(speedWrap);
+          container.appendChild(speedRow);
+
+          const fromOpts = [['offscreen-right', 'Offscreen Right'], ['offscreen-left', 'Offscreen Left'], ['offscreen-top', 'Offscreen Top'], ['offscreen-bottom', 'Offscreen Bottom']];
+          container.appendChild(labeledSelect('From Position', cmd.fromPosition || 'offscreen-right', fromOpts, v => { cmd.fromPosition = v; }));
+        }
+        const toOpts = [['right', 'Right'], ['left', 'Left'], ['center', 'Center']];
+        container.appendChild(labeledSelect('To Position', cmd.toPosition || 'right', toOpts, v => { cmd.toPosition = v; }));
+        container.appendChild(labeledCheckbox('Wait Until Finished', cmd.waitUntilFinished ?? false, v => { cmd.waitUntilFinished = v; }));
+      }
+    },
+  },
+
   wait: {
     label: 'Wait',
     category: 'Flow',

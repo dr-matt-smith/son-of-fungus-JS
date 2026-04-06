@@ -32,6 +32,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 .say-next { position: absolute; bottom: 10px; right: 14px; width: 36px; height: 36px; border-radius: 50%; border: 2px solid #4dd0e1; background: transparent; color: #4dd0e1; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .say-next:hover { background: rgba(77,208,225,0.15); }
 .say-portrait { position: absolute; right: 10px; top: -30px; height: 130px; width: auto; object-fit: contain; pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+.stage-portrait { position: absolute; height: 60%; max-height: 500px; width: auto; object-fit: contain; z-index: 100; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5)); }
 .menu-overlay { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; z-index: 200; }
 .menu-btn { width: 500px; max-width: 80vw; padding: 16px 24px; background: #3d4554; border: none; border-radius: 8px; color: #e0e0e0; font-size: 18px; font-family: inherit; cursor: pointer; text-align: center; }
 .menu-btn:hover { background: #4b5563; }
@@ -170,6 +171,34 @@ function exec(cmd) {
     case 'stopAudio': { for (const [u, a] of Object.entries(audioElements)) { a.pause(); a.currentTime = 0; delete audioElements[u]; } next(); break; }
     case 'stageBgColor': stage.style.backgroundColor = cmd.color || ''; stage.style.backgroundImage = ''; next(); break;
     case 'stageBgImage': if (cmd.imageUrl) { stage.style.backgroundImage = 'url(' + rel(cmd.imageUrl) + ')'; stage.style.backgroundSize = 'cover'; stage.style.backgroundPosition = 'center'; } next(); break;
+    case 'portrait': {
+      const co = cmd.character ? S.characters.find(c => c.name === cmd.character) : null;
+      const pt = co?.portraits?.find(p => p.description === cmd.portraitDesc);
+      const iu = pt?.imageUrl ? rel(pt.imageUrl) : '';
+      const eid = 'portrait-' + (cmd.character || '').replace(/\s+/g, '-');
+      if (cmd.display === 'hide') { const ex = document.getElementById(eid); if (ex) ex.remove(); next(); break; }
+      let im = document.getElementById(eid);
+      if (!im && iu) { im = document.createElement('img'); im.id = eid; im.className = 'stage-portrait'; im.src = iu; stage.appendChild(im); }
+      else if (im && iu) im.src = iu;
+      if (!im) { next(); break; }
+      const pm = {left:{left:'5%',top:'10%',transform:'none'},right:{left:'75%',top:'10%',transform:'none'},center:{left:'50%',top:'10%',transform:'translateX(-50%)'}};
+      const om = {'offscreen-right':{left:'105%',top:'10%',transform:'none'},'offscreen-left':{left:'-40%',top:'10%',transform:'none'},'offscreen-top':{left:null,top:'-80%',transform:'none'},'offscreen-bottom':{left:null,top:'105%',transform:'none'}};
+      const ds = pm[cmd.toPosition||'right']||pm.right;
+      if (cmd.move) {
+        const fr = om[cmd.fromPosition||'offscreen-right']||om['offscreen-right'];
+        const sl = fr.left ?? ds.left;
+        Object.assign(im.style,{left:sl,top:fr.top,right:'auto',bottom:'auto',transform:fr.transform,transition:'none'});
+        im.offsetHeight;
+        const spd = cmd.moveSpeed ?? 0.6;
+        im.style.transition = 'left '+spd+'s ease,top '+spd+'s ease,transform '+spd+'s ease';
+        requestAnimationFrame(()=>{Object.assign(im.style,{left:ds.left,top:ds.top,transform:ds.transform});});
+        if (cmd.waitUntilFinished) { waitTimer = setTimeout(()=>{waitTimer=null;next();},spd*1000+50); } else next();
+      } else {
+        Object.assign(im.style,{left:ds.left,top:ds.top,right:'auto',bottom:'auto',transform:ds.transform,transition:'none'});
+        next();
+      }
+      break;
+    }
     case 'ifCondition': { const r = evalFullCond(cmd); ifBranchTaken.push(r); if (r) next(); else skipToNext(); break; }
     case 'elseIf': { if (ifBranchTaken.length > 0 && ifBranchTaken[ifBranchTaken.length - 1]) { skipToEndIf(); break; } const r = evalFullCond(cmd); if (r) { ifBranchTaken[ifBranchTaken.length - 1] = true; next(); } else skipToNext(); break; }
     case 'elseCmd': { if (ifBranchTaken.length > 0 && ifBranchTaken[ifBranchTaken.length - 1]) { skipToEndIf(); break; } ifBranchTaken[ifBranchTaken.length - 1] = true; next(); break; }

@@ -166,3 +166,14 @@
 }
 
 .menu-choice-btn:hover { background: #4b5563; }
+
+/* ── Stage portrait ──────────────────────────────────────────────────────── */
+.stage-portrait {
+  position: absolute;
+  height: 60%;
+  max-height: 500px;
+  width: auto;
+  object-fit: contain;
+  z-index: 100;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+}

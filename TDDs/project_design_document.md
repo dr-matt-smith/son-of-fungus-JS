@@ -919,3 +919,19 @@ Version 68 features
 - ✅ portraits work in build runtime too
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+Version 69 features - portrait command
+==================
+
+- ✅ new "Portrait" command (Stage category)
+  - ✅ Display: Show/Hide
+  - ✅ Character + Portrait dropdowns
+  - ✅ Move (shift into place): animated slide from offscreen (right/left/top/bottom)
+  - ✅ To Position: right/left/center on stage
+  - ✅ Wait Until Finished option
+  - ✅ Portraits are 60% height, drop-shadowed, absolutely positioned on the run stage
+  - ✅ Hide removes the portrait; multiple characters can be on stage simultaneously
+  - ✅ Works in build runtime too
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)

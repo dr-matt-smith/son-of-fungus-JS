@@ -202,6 +202,7 @@ export function stopExecution() {
   if (waitTimer) { clearTimeout(waitTimer); waitTimer = null; }
   if (menuOverlay) { menuOverlay.remove(); menuOverlay = null; }
   document.querySelectorAll('.say-dialog').forEach(d => d.remove());
+  document.querySelectorAll('.stage-portrait').forEach(d => d.remove());
   if (outputEl) { outputEl.remove(); outputEl = null; }
   S.executingNode = null;
   S.executingCommandIdx = -1;
@@ -316,6 +317,7 @@ function executeCommand(cmd) {
     case 'sendMessage': execSendMessage(cmd); break;
     case 'stageBgColor': execStageBgColor(cmd); break;
     case 'stageBgImage': execStageBgImage(cmd); break;
+    case 'portrait':    execPortrait(cmd); break;
     case 'playMusic': execPlayMusic(cmd); break;
     case 'playSound': execPlaySound(cmd); break;
     case 'stopAudio': execStopAudio(cmd); break;
@@ -614,6 +616,78 @@ function execStageBgImage(cmd) {
     stage.style.backgroundPosition = 'center';
   }
   executeNextCommand();
+}
+
+function execPortrait(cmd) {
+  const charObj = cmd.character ? S.characters.find(c => c.name === cmd.character) : null;
+  const portrait = charObj?.portraits?.find(p => p.description === cmd.portraitDesc);
+  const imgUrl = portrait?.imageUrl || '';
+  logEntry(`Block ${currentNode.id} "${currentNode.label}": Portrait: ${cmd.display} ${cmd.character || ''} ${cmd.portraitDesc || ''}`);
+
+  const stage = document.getElementById('run-stage') || document.body;
+  const existingId = `portrait-${(cmd.character || '').replace(/\s+/g, '-')}`;
+
+  if (cmd.display === 'hide') {
+    const existing = document.getElementById(existingId);
+    if (existing) existing.remove();
+    executeNextCommand();
+    return;
+  }
+
+  // Show or move portrait
+  let img = document.getElementById(existingId);
+  if (!img && imgUrl) {
+    img = document.createElement('img');
+    img.id = existingId;
+    img.className = 'stage-portrait';
+    img.src = imgUrl;
+    img.alt = cmd.portraitDesc || cmd.character || '';
+    stage.appendChild(img);
+  } else if (img && imgUrl) {
+    img.src = imgUrl;
+  }
+
+  if (!img) { executeNextCommand(); return; }
+
+  // All positions use left + top for consistent CSS transitions
+  const posMap = {
+    left:   { left: '5%',  top: '10%', transform: 'none' },
+    right:  { left: '75%', top: '10%', transform: 'none' },
+    center: { left: '50%', top: '10%', transform: 'translateX(-50%)' },
+  };
+  const offMap = {
+    'offscreen-right':  { left: '105%', top: '10%', transform: 'none' },
+    'offscreen-left':   { left: '-40%', top: '10%', transform: 'none' },
+    'offscreen-top':    { left: null,   top: '-80%', transform: 'none' },
+    'offscreen-bottom': { left: null,   top: '105%', transform: 'none' },
+  };
+
+  const dest = posMap[cmd.toPosition || 'right'] || posMap.right;
+
+  if (cmd.move) {
+    const from = offMap[cmd.fromPosition || 'offscreen-right'] || offMap['offscreen-right'];
+    // Set start position (use dest.left for offscreen-top/bottom so horizontal position is correct)
+    const startLeft = from.left ?? dest.left;
+    Object.assign(img.style, { left: startLeft, top: from.top, right: 'auto', bottom: 'auto', transform: from.transform, transition: 'none' });
+
+    // Force reflow then animate
+    img.offsetHeight;
+    const speed = cmd.moveSpeed ?? 0.6;
+    img.style.transition = `left ${speed}s ease, top ${speed}s ease, transform ${speed}s ease`;
+    requestAnimationFrame(() => {
+      Object.assign(img.style, { left: dest.left, top: dest.top, transform: dest.transform });
+    });
+
+    if (cmd.waitUntilFinished) {
+      waitTimer = setTimeout(() => { waitTimer = null; executeNextCommand(); }, speed * 1000 + 50);
+    } else {
+      executeNextCommand();
+    }
+  } else {
+    // Snap to position
+    Object.assign(img.style, { left: dest.left, top: dest.top, right: 'auto', bottom: 'auto', transform: dest.transform, transition: 'none' });
+    executeNextCommand();
+  }
 }
 
 function execPlayMusic(cmd) {
