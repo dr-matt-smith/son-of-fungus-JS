@@ -42,3 +42,47 @@ body.debug-active #main-area {
   stroke: #f59e0b;
   stroke-width: 3;
 }
+
+/* ── Debug stage preview ─────────────────────────────────────────────────── */
+#debug-stage {
+  background: #000;
+}
+
+#debug-stage .say-dialog {
+  position: absolute;
+  bottom: 10px;
+  width: 90%;
+  font-size: 13px;
+  padding: 12px 14px;
+  min-height: 50px;
+  border-width: 2px;
+  border-radius: 10px;
+}
+
+#debug-stage .say-dialog-portrait {
+  height: 80px;
+  top: -20px;
+}
+
+#debug-stage .say-dialog-next {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  bottom: 6px;
+  right: 8px;
+}
+
+#debug-stage .menu-choices-overlay {
+  position: absolute;
+}
+
+#debug-stage .menu-choice-btn {
+  width: 80%;
+  font-size: 13px;
+  padding: 8px 14px;
+}
+
+#debug-stage .stage-portrait {
+  height: 50%;
+  max-height: 200px;
+}

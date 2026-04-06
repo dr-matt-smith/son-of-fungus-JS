@@ -18,6 +18,10 @@ async function addCommand(page, cmdLabel) {
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
+  // Expand all collapsed data sections
+  const toggles = page.locator('.data-section.collapsed .data-section-toggle');
+  const count = await toggles.count();
+  for (let i = 0; i < count; i++) await toggles.nth(i).click();
 });
 
 // ─── Version 1: Toolbar & basic node creation ──────────────────────────────

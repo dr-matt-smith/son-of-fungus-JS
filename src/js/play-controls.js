@@ -81,13 +81,21 @@ function enterDebugMode() {
   // Close settings if open
   showTab('inspector');
 
-  // Show only Variables in data panel
+  // Show only Variables + Stage Preview in data panel
   const enumSection = document.getElementById('data-enums');
   const eventSection = document.getElementById('data-events');
+  const charSection = document.getElementById('data-characters');
   if (enumSection) enumSection.style.display = 'none';
   if (eventSection) eventSection.style.display = 'none';
+  if (charSection) charSection.style.display = 'none';
 
-  // Make variable values editable in debug
+  // Expand Variables section
+  const varSection = document.getElementById('data-variables');
+  if (varSection) { varSection.classList.remove('collapsed'); const t = varSection.querySelector('.data-section-toggle'); if (t) t.textContent = '−'; }
+
+  // Create debug stage preview
+  createDebugStagePreview();
+
   renderVariablesList();
 }
 
@@ -100,12 +108,48 @@ function exitDebugMode() {
   // Restore data sections
   const enumSection = document.getElementById('data-enums');
   const eventSection = document.getElementById('data-events');
+  const charSection = document.getElementById('data-characters');
   if (enumSection) enumSection.style.display = '';
   if (eventSection) eventSection.style.display = '';
+  if (charSection) charSection.style.display = '';
+
+  // Remove debug stage preview
+  removeDebugStagePreview();
 
   // Clear highlights
   clearDebugHighlights();
   renderVariablesList();
+}
+
+function createDebugStagePreview() {
+  const body = document.getElementById('data-panel-body');
+  if (!body || document.getElementById('debug-stage-preview')) return;
+
+  const divider = document.createElement('div');
+  divider.className = 'data-section-divider';
+  divider.id = 'debug-stage-divider';
+  body.appendChild(divider);
+
+  const section = document.createElement('div');
+  section.className = 'data-section';
+  section.id = 'debug-stage-preview';
+  section.style.flex = '1 1 50%';
+  section.innerHTML = `
+    <div class="data-section-header">
+      <span class="data-section-title">Stage Preview</span>
+    </div>
+    <div class="data-section-content" style="padding:0;position:relative;overflow:hidden;background:#000;">
+      <div id="debug-stage" style="position:absolute;inset:0;"></div>
+    </div>
+  `;
+  body.appendChild(section);
+}
+
+function removeDebugStagePreview() {
+  const preview = document.getElementById('debug-stage-preview');
+  const divider = document.getElementById('debug-stage-divider');
+  if (preview) preview.remove();
+  if (divider) divider.remove();
 }
 
 function clearDebugHighlights() {
@@ -120,6 +164,16 @@ function clearDebugHighlights() {
 function updateDebugStatus(msg) {
   if (debugStatusText) debugStatusText.textContent = msg ? `DEBUG run: ${msg}` : '';
 }
+
+S.on('variableChanged', () => {
+  renderVariablesList();
+});
+
+S.on('waitingForInput', () => {
+  if (debugMode && debugStatusText) {
+    debugStatusText.textContent += ' (waiting for user input)';
+  }
+});
 
 function highlightReferencedVars(cmd) {
   clearDebugHighlights();

@@ -944,3 +944,43 @@ Version 70 features - collapose all button for Data panel
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 
+
+Version 71 features - debugger improvements
+==================
+
+- [] when there is a Call command executed in the debugger
+  - [] make "Step into" the first option, then "Step Over", then "Stop"
+  - (at the moment a user pressing Next each time then presses Stop when a Cal command is met)
+
+- [] when there is a command requiring user input (click to continue at the end of a Say command, or for a menu command), cay you add a message "(waiting for user input)" to the debugger status bar
+
+- [] when a variables value is changed, this should be updated in the Variables row of the Data panel (at present nothing changes in Variables of Data panel even when variables are being 'Set' by an executed command)
+
+- [] at present no Stage or Portrait commands can be visualised by the user
+  - [] in debug mode, HIDE the Enums/events/characters rows of the Data panel
+  - [] and make the bottom row of the Data panel the stage preview
+    - [] default this to 50% of the Data panel height when degbugging starts
+      - but allow the use to change the height and width of this Stage preview row
+  - [] so the user can preview the stage, portraits, menua and say interactions all in this stage preview recangle
+    - [] at present Say and Menu debug exectutions are overlaid over the whole screen
+      - [] move all interactions to this new preview stage rectangle at the bottom of the Data panel
+  - [] this should give the user a realistic preview of the flowchart execution during Debug mode
+
+
+- [] and add Vite and PlayWright tests for the above feature(s)
+
+
+Version 72 features - fix Data panel row height bars
+==================
+
+- [] there is an issue with the height resize bars for rows in the Data panel
+  - [] when a row is minimised, it should not be able to be resized
+  - [] when one row is resized other rows seems to change width in a strange way
+
+- [] in debug mode, it isn't possible to change the height of the stage preview
+  - [] and there seem to be 2 or 3 very thing resize bars (for enums/events/characters?) - which should be completedly hidden during debug mode
+  - [] so please fix it so that in debug mode the height of the preview stage can be easily changed by the user
+    - (width changes seem to work fine)
+
+- [] and add Vite and PlayWright tests for the above feature(s)
+

@@ -49,6 +49,17 @@ function playTypingSound(buffer, volume) {
   source.start(0);
 }
 
+// Get the container for runtime UI (debug stage preview when stepping, run stage when playing, or body)
+function getStageContainer() {
+  if (stepping) {
+    const debugStage = document.getElementById('debug-stage');
+    if (debugStage) return debugStage;
+  }
+  const runStage = document.getElementById('run-stage');
+  if (runStage && runStage.style.display !== 'none') return runStage;
+  return document.body;
+}
+
 let running     = false;
 let stepping    = false;   // step-by-step mode
 let paused      = false;   // paused between steps
@@ -370,7 +381,7 @@ function execSay(cmd) {
     }
   }
 
-  document.body.appendChild(dialog);
+  getStageContainer().appendChild(dialog);
 
   // Use character sound if set, otherwise fall back to command's typing audio
   const typingUrl = (charObj?.soundUrl) || cmd.typingAudioUrl || '/audio/defaults/MidVoice.wav';
@@ -392,6 +403,7 @@ function startSayContent(dialog, textEl, text, cmd, typingBuffer) {
         setTimeout(() => { dialog.remove(); executeNextCommand(); }, 250);
       });
       dialog.appendChild(nextBtn);
+      S.emit('waitingForInput');
     } else {
       // Auto-advance after brief delay
       waitTimer = setTimeout(() => {
@@ -477,7 +489,8 @@ function execMenu(cmd) {
     menuOverlay.appendChild(btn);
   }
 
-  document.body.appendChild(menuOverlay);
+  getStageContainer().appendChild(menuOverlay);
+  S.emit('waitingForInput');
 }
 
 // coerceToType, evaluateCondition, conditionSummary imported from runtime-core.js
@@ -561,7 +574,8 @@ function execSetVarValue(cmd) {
   const v = S.variables.find(v => v.name === cmd.variableName);
   if (v) {
     v.value = coerceToType(cmd.value, v.type);
-    logEntry(`Block ${currentNode.id} "${currentNode.label}": Set variable: ${cmd.variableName} = ${cmd.value}`);
+    logEntry(`Block ${currentNode.id} "${currentNode.label}": Set variable: ${cmd.variableName} = ${v.value}`);
+    S.emit('variableChanged');
   } else {
     logEntry(`Block ${currentNode.id} "${currentNode.label}": Set variable: "${cmd.variableName}" not found`);
   }
@@ -574,6 +588,7 @@ function execSetVarCopy(cmd) {
   if (target && source) {
     target.value = source.value;
     logEntry(`Block ${currentNode.id} "${currentNode.label}": Copy variable: ${cmd.variableName} ← ${cmd.sourceVariableName} (${source.value})`);
+    S.emit('variableChanged');
   } else {
     logEntry(`Block ${currentNode.id} "${currentNode.label}": Copy variable: variable not found`);
   }
@@ -599,7 +614,7 @@ function execSendMessage(cmd) {
 
 function execStageBgColor(cmd) {
   logEntry(`Block ${currentNode.id} "${currentNode.label}": Stage BG Color: ${cmd.color}`);
-  const stage = document.getElementById('run-stage');
+  const stage = getStageContainer();
   if (stage) {
     stage.style.backgroundColor = cmd.color;
     stage.style.backgroundImage = '';
@@ -609,7 +624,7 @@ function execStageBgColor(cmd) {
 
 function execStageBgImage(cmd) {
   logEntry(`Block ${currentNode.id} "${currentNode.label}": Stage BG Image: ${cmd.imageUrl || '(none)'}`);
-  const stage = document.getElementById('run-stage');
+  const stage = getStageContainer();
   if (stage && cmd.imageUrl) {
     stage.style.backgroundImage = `url(${cmd.imageUrl})`;
     stage.style.backgroundSize = 'cover';
@@ -624,7 +639,7 @@ function execPortrait(cmd) {
   const imgUrl = portrait?.imageUrl || '';
   logEntry(`Block ${currentNode.id} "${currentNode.label}": Portrait: ${cmd.display} ${cmd.character || ''} ${cmd.portraitDesc || ''}`);
 
-  const stage = document.getElementById('run-stage') || document.body;
+  const stage = getStageContainer();
   const existingId = `portrait-${(cmd.character || '').replace(/\s+/g, '-')}`;
 
   if (cmd.display === 'hide') {
