@@ -54,6 +54,18 @@ if (btnExpandData) {
   });
 }
 
+// Collapse all sections
+const btnCollapseAll = document.getElementById('btn-collapse-all-sections');
+if (btnCollapseAll) {
+  btnCollapseAll.addEventListener('click', () => {
+    for (const section of document.querySelectorAll('.data-section')) {
+      section.classList.add('collapsed');
+      const toggle = section.querySelector('.data-section-toggle');
+      if (toggle) toggle.textContent = '+';
+    }
+  });
+}
+
 // Section toggle (minimize/expand)
 for (const section of document.querySelectorAll('.data-section')) {
   const toggle = section.querySelector('.data-section-toggle');

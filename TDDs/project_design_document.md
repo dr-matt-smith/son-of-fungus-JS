@@ -929,9 +929,18 @@ Version 69 features - portrait command
   - ✅ Character + Portrait dropdowns
   - ✅ Move (shift into place): animated slide from offscreen (right/left/top/bottom)
   - ✅ To Position: right/left/center on stage
-  - ✅ Wait Until Finished option
+  - ✅ Wait Until Finished option/
   - ✅ Portraits are 60% height, drop-shadowed, absolutely positioned on the run stage
   - ✅ Hide removes the portrait; multiple characters can be on stage simultaneously
   - ✅ Works in build runtime too
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
+
+Version 70 features - collapose all button for Data panel
+==================
+
+- ✅ added collapse all button (SVG minus-in-rect icon) in data panel header
+  - ✅ collapses all sections; panel hide arrow moved to left of "Data"
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+

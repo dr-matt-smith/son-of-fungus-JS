@@ -20,8 +20,11 @@ export function setupDOM() {
     <div id="main-area">
       <div id="data-panel">
         <div class="data-panel-header">
-          <span>Data</span>
-          <button id="btn-collapse-data" class="data-collapse-btn">◀</button>
+          <span class="data-header-left">
+            <button id="btn-collapse-data" class="data-collapse-btn">◀</button>
+            <span>Data</span>
+          </span>
+          <button id="btn-collapse-all-sections" class="data-collapse-btn">−</button>
         </div>
         <div id="data-panel-body">
           <div class="data-section" id="data-variables">

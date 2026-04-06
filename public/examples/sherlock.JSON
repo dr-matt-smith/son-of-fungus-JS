@@ -1,0 +1,495 @@
+{
+  "variables": [
+    {
+      "name": "age",
+      "type": "Integer",
+      "value": 0
+    }
+  ],
+  "messages": [],
+  "enums": [],
+  "characters": [
+    {
+      "name": "Tom",
+      "color": "#60a5fa",
+      "soundUrl": "/audio/defaults/HighVoice.wav",
+      "portraits": [
+        {
+          "description": "cat",
+          "imageUrl": "/images/potraits/Tom/Original_Garfield.svg.png"
+        }
+      ]
+    },
+    {
+      "name": "Jerry",
+      "color": "#ff2600",
+      "soundUrl": "/audio/defaults/LowVoice.wav",
+      "portraits": [
+        {
+          "description": "mouse",
+          "imageUrl": "/images/potraits/Jerry/640px-Gartoon_devices_mouse.svg.png"
+        }
+      ]
+    },
+    {
+      "name": "sherlock",
+      "color": "#60a5fa",
+      "soundUrl": "/audio/defaults/LowVoice.wav",
+      "portraits": [
+        {
+          "description": "angry",
+          "imageUrl": "/images/potraits/Sherlock/angry.png"
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": 1,
+      "type": "state",
+      "x": 245,
+      "y": 214,
+      "w": 120,
+      "h": 50,
+      "label": "start",
+      "event": {
+        "type": "gameStarted"
+      },
+      "commands": [
+        {
+          "type": "say",
+          "id": "7db5849d-6e4c-4b48-ab3c-78879e680a4e",
+          "character": "Tom",
+          "text": "Hello!",
+          "portrait": "cat",
+          "waitForNext": true,
+          "typingAnimation": true,
+          "typingAudio": true,
+          "typingAudioUrl": "/audio/defaults/MidVoice.wav"
+        },
+        {
+          "type": "say",
+          "id": "445419d6-2816-454e-8d15-b342175567a0",
+          "character": "Jerry",
+          "text": "Hello to you too",
+          "portrait": "mouse",
+          "waitForNext": true,
+          "typingAnimation": true,
+          "typingAudio": true,
+          "typingAudioUrl": "/audio/defaults/MidVoice.wav"
+        },
+        {
+          "type": "portrait",
+          "id": "9c0c2b8b-e581-43b2-8e79-5edb3c67603d",
+          "display": "show",
+          "character": "sherlock",
+          "portraitDesc": "angry",
+          "move": true,
+          "moveSpeed": 0.6,
+          "fromPosition": "offscreen-right",
+          "toPosition": "right",
+          "waitUntilFinished": true
+        },
+        {
+          "type": "say",
+          "id": "f86ec66a-c62a-41c5-9c5b-ab2a3afea95c",
+          "character": "sherlock",
+          "text": "Hello to you too",
+          "portrait": "angry",
+          "waitForNext": true,
+          "typingAnimation": true,
+          "typingAudio": true,
+          "typingAudioUrl": "/audio/defaults/MidVoice.wav"
+        },
+        {
+          "type": "portrait",
+          "id": "10061985-4651-4b72-a245-edd5956f0b19",
+          "display": "hide",
+          "character": "sherlock",
+          "portraitDesc": "angry",
+          "move": true,
+          "moveSpeed": 0.6,
+          "fromPosition": "offscreen-right",
+          "toPosition": "right",
+          "waitUntilFinished": true
+        },
+        {
+          "type": "stageBgImage",
+          "id": "264155c1-2693-4274-8666-8b86632ce0c1",
+          "imageUrl": "/images/FungusTown_1.png"
+        },
+        {
+          "type": "call",
+          "id": "9e099cb9-800f-4088-88b6-c7b53c852817",
+          "targetBlockId": 10,
+          "mode": "stop"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "state",
+      "x": 602,
+      "y": 575,
+      "w": 120,
+      "h": 50,
+      "label": "menu - tea/coffee",
+      "event": {
+        "type": "none"
+      },
+      "commands": [
+        {
+          "type": "menu",
+          "id": "950b5c98-b1d4-4816-afcd-15e5a5ea8401",
+          "options": [
+            {
+              "text": "tea",
+              "targetBlockId": 3
+            },
+            {
+              "text": "coffee",
+              "targetBlockId": 4
+            }
+          ],
+          "text": "tea",
+          "targetBlockId": 3
+        },
+        {
+          "type": "menu",
+          "id": "c5078856-a45e-4b7e-9505-e3e1ab8160b5",
+          "text": "coffee",
+          "targetBlockId": 4
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "state",
+      "x": 410,
+      "y": 634,
+      "w": 120,
+      "h": 50,
+      "label": "tea",
+      "event": {
+        "type": "none"
+      },
+      "commands": [
+        {
+          "type": "say",
+          "id": "82ba1d16-e9a5-40ed-9123-7edaee5e3839",
+          "character": "",
+          "text": "TEA",
+          "portrait": "",
+          "waitForNext": true,
+          "typingAnimation": true,
+          "typingAudio": true,
+          "typingAudioUrl": "/audio/defaults/MidVoice.wav"
+        },
+        {
+          "type": "call",
+          "id": "45b752c1-4c98-4ab6-9048-9b967b00f998",
+          "targetBlockId": 5,
+          "mode": "stop"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "state",
+      "x": 820,
+      "y": 653,
+      "w": 120,
+      "h": 50,
+      "label": "coffee",
+      "event": {
+        "type": "none"
+      },
+      "commands": [
+        {
+          "type": "say",
+          "id": "0e681c58-0086-4ed9-8056-6a3dd8886b8f",
+          "character": "",
+          "text": "COFFEE",
+          "portrait": "",
+          "waitForNext": true,
+          "typingAnimation": true,
+          "typingAudio": true,
+          "typingAudioUrl": "/audio/defaults/MidVoice.wav"
+        },
+        {
+          "type": "call",
+          "id": "23092f37-3a34-4b08-a539-c475e65204c1",
+          "targetBlockId": 5,
+          "mode": "stop"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "state",
+      "x": 605,
+      "y": 710,
+      "w": 120,
+      "h": 50,
+      "label": "end screen",
+      "event": {
+        "type": "none"
+      },
+      "commands": [
+        {
+          "type": "stageBgColor",
+          "id": "1f33f8a0-6fa4-4047-b0ee-136408d2a258",
+          "color": "#77bb41"
+        },
+        {
+          "type": "wait",
+          "id": "82bcfa2c-f1d4-4e31-bbf2-868043b1b49e",
+          "duration": 5
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "state",
+      "x": 601,
+      "y": 500,
+      "w": 120,
+      "h": 50,
+      "label": "age test",
+      "event": {
+        "type": "gameStarted"
+      },
+      "commands": [
+        {
+          "type": "ifCondition",
+          "id": "9ab7e2a1-8836-4e36-831d-f422d98299fb",
+          "variableName": "age",
+          "operator": ">=",
+          "compareType": "literal",
+          "compareValue": "21",
+          "compareVarName": "",
+          "extraConditions": [],
+          "logic": ""
+        },
+        {
+          "type": "say",
+          "id": "414525c2-1b82-4a63-a788-ed667bbc7d7e",
+          "character": "",
+          "text": "you are 21 or OVER",
+          "portrait": "",
+          "waitForNext": true,
+          "typingAnimation": true,
+          "typingAudio": true,
+          "typingAudioUrl": "/audio/defaults/MidVoice.wav"
+        },
+        {
+          "type": "elseCmd",
+          "id": "8439d48d-bec0-46cf-85fa-218123613e48"
+        },
+        {
+          "type": "say",
+          "id": "04828133-15e1-4500-9464-c0bac7effd9d",
+          "character": "",
+          "text": "you are UNDER 21",
+          "portrait": "",
+          "waitForNext": true,
+          "typingAnimation": true,
+          "typingAudio": true,
+          "typingAudioUrl": "/audio/defaults/MidVoice.wav"
+        },
+        {
+          "type": "endIf",
+          "id": "3b947504-34b8-4944-87fc-3407b4a97de7"
+        },
+        {
+          "type": "say",
+          "id": "39686864-0ee9-4cf5-9531-8afede342a7b",
+          "character": "",
+          "text": "I say this regardless of IF statement",
+          "portrait": "",
+          "waitForNext": true,
+          "typingAnimation": false,
+          "typingAudio": false,
+          "typingAudioUrl": "/audio/defaults/MidVoice.wav"
+        },
+        {
+          "type": "call",
+          "id": "c6705b87-1298-4674-a2f0-d341a451ab68",
+          "targetBlockId": 2,
+          "mode": "stop"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "state",
+      "x": 595,
+      "y": 329,
+      "w": 120,
+      "h": 50,
+      "label": "age menu",
+      "event": {
+        "type": "none"
+      },
+      "commands": [
+        {
+          "type": "menu",
+          "id": "30386d2b-867c-49e8-9ed1-0cc24bbf7ae2",
+          "text": "Set age to 10",
+          "targetBlockId": 8
+        },
+        {
+          "type": "menu",
+          "id": "aca8259c-0966-4892-b804-1a750ecb770b",
+          "text": "Set age to 27",
+          "targetBlockId": 9
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "state",
+      "x": 424,
+      "y": 406,
+      "w": 120,
+      "h": 50,
+      "label": "new age = 10",
+      "event": {
+        "type": "none"
+      },
+      "commands": [
+        {
+          "type": "setVarValue",
+          "id": "602e69a8-2467-4874-8da4-ddcd4362c1eb",
+          "variableName": "age",
+          "value": ""
+        },
+        {
+          "type": "call",
+          "id": "c07b72d5-4ff5-462d-a2b1-d1f5362a0f5c",
+          "targetBlockId": 6,
+          "mode": "stop"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "state",
+      "x": 756,
+      "y": 406,
+      "w": 120,
+      "h": 50,
+      "label": "new age = 27",
+      "event": {
+        "type": "none"
+      },
+      "commands": [
+        {
+          "type": "setVarValue",
+          "id": "602e69a8-2467-4874-8da4-ddcd4362c1eb",
+          "variableName": "age",
+          "value": ""
+        },
+        {
+          "type": "call",
+          "id": "c07b72d5-4ff5-462d-a2b1-d1f5362a0f5c",
+          "targetBlockId": 6,
+          "mode": "stop"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "state",
+      "x": 592,
+      "y": 213,
+      "w": 120,
+      "h": 50,
+      "label": "stage background image",
+      "event": {
+        "type": "gameStarted"
+      },
+      "commands": [
+        {
+          "type": "stageBgImage",
+          "id": "264155c1-2693-4274-8666-8b86632ce0c1",
+          "imageUrl": "/images/FungusTown_1.png"
+        },
+        {
+          "type": "call",
+          "id": "9e099cb9-800f-4088-88b6-c7b53c852817",
+          "targetBlockId": 7,
+          "mode": "stop"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": 2,
+      "fromId": 2,
+      "toId": 3,
+      "label": ""
+    },
+    {
+      "id": 3,
+      "fromId": 2,
+      "toId": 4,
+      "label": ""
+    },
+    {
+      "id": 4,
+      "fromId": 3,
+      "toId": 5,
+      "label": ""
+    },
+    {
+      "id": 5,
+      "fromId": 4,
+      "toId": 5,
+      "label": ""
+    },
+    {
+      "id": 6,
+      "fromId": 6,
+      "toId": 2,
+      "label": ""
+    },
+    {
+      "id": 8,
+      "fromId": 8,
+      "toId": 6,
+      "label": ""
+    },
+    {
+      "id": 9,
+      "fromId": 7,
+      "toId": 8,
+      "label": ""
+    },
+    {
+      "id": 11,
+      "fromId": 9,
+      "toId": 6,
+      "label": ""
+    },
+    {
+      "id": 12,
+      "fromId": 7,
+      "toId": 9,
+      "label": ""
+    },
+    {
+      "id": 13,
+      "fromId": 10,
+      "toId": 7,
+      "label": ""
+    },
+    {
+      "id": 14,
+      "fromId": 1,
+      "toId": 10,
+      "label": ""
+    }
+  ]
+}

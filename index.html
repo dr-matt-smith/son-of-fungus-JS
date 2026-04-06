@@ -115,14 +115,22 @@
     <!-- ── Left data panel ─────────────────────────────────────────────── -->
     <div id="data-panel">
       <div class="data-panel-header">
-        <span>Data</span>
-        <button id="btn-collapse-data" class="data-collapse-btn" title="Collapse panel">◀</button>
+        <span class="data-header-left">
+          <button id="btn-collapse-data" class="data-collapse-btn" title="Collapse panel">◀</button>
+          <span>Data</span>
+        </span>
+        <button id="btn-collapse-all-sections" class="data-collapse-btn" title="Collapse all sections">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="2" width="10" height="10" rx="2"/>
+            <line x1="4.5" y1="7" x2="9.5" y2="7"/>
+          </svg>
+        </button>
       </div>
       <div id="data-panel-body">
-        <div class="data-section" id="data-variables">
+        <div class="data-section collapsed" id="data-variables">
           <div class="data-section-header">
             <span class="data-section-title">Variables</span>
-            <button class="data-section-toggle" title="Toggle section">−</button>
+            <button class="data-section-toggle" title="Toggle section">+</button>
           </div>
           <div class="data-section-content" id="variables-panel">
             <div id="variables-list"></div>
@@ -140,10 +148,10 @@
           </div>
         </div>
         <div class="data-section-divider"></div>
-        <div class="data-section" id="data-enums">
+        <div class="data-section collapsed" id="data-enums">
           <div class="data-section-header">
             <span class="data-section-title">Enums</span>
-            <button class="data-section-toggle" title="Toggle section">−</button>
+            <button class="data-section-toggle" title="Toggle section">+</button>
           </div>
           <div class="data-section-content" id="enums-panel">
             <div id="enums-list"></div>
@@ -154,10 +162,10 @@
           </div>
         </div>
         <div class="data-section-divider"></div>
-        <div class="data-section" id="data-events">
+        <div class="data-section collapsed" id="data-events">
           <div class="data-section-header">
             <span class="data-section-title">Events</span>
-            <button class="data-section-toggle" title="Toggle section">−</button>
+            <button class="data-section-toggle" title="Toggle section">+</button>
           </div>
           <div class="data-section-content" id="messages-panel">
             <div id="messages-list"></div>
@@ -168,10 +176,10 @@
           </div>
         </div>
         <div class="data-section-divider"></div>
-        <div class="data-section" id="data-characters">
+        <div class="data-section collapsed" id="data-characters">
           <div class="data-section-header">
             <span class="data-section-title">Characters</span>
-            <button class="data-section-toggle" title="Toggle section">−</button>
+            <button class="data-section-toggle" title="Toggle section">+</button>
           </div>
           <div class="data-section-content" id="characters-panel">
             <div id="characters-list"></div>
