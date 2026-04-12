@@ -346,6 +346,7 @@ function executeCommand(cmd) {
     case 'playMusic': execPlayMusic(cmd); break;
     case 'playSound': execPlaySound(cmd); break;
     case 'stopAudio': execStopAudio(cmd); break;
+    case 'comment': executeNextCommand(); break;
     default:
       appendOutput(`<div class="exec-msg exec-error">Unknown command: ${cmd.type}</div>`);
       executeNextCommand();

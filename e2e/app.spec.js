@@ -1785,3 +1785,59 @@ test.describe('Keyboard shortcuts', () => {
     expect(labelAfter).not.toBe(labelBefore);
   });
 });
+
+// ─── Version 73: Comment command ──────────────────────────────────────────
+
+test.describe('V73 – Comment command', () => {
+  test('Comment appears in command search popup', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.cmd-action-btn.cmd-action-add').click();
+    await page.locator('.cmd-search-input').fill('Comment');
+    const items = page.locator('.cmd-search-item');
+    const labels = await items.locator('.cmd-search-label').allTextContents();
+    expect(labels).toContain('Comment');
+  });
+
+  test('adding a Comment command shows it in the summary list', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await addCommand(page, 'Comment');
+
+    const summaries = page.locator('.fungus-cmd-summary');
+    await expect(summaries).toHaveCount(1);
+    await expect(summaries.first().locator('.fungus-cmd-verb')).toHaveText('Comment');
+  });
+
+  test('Comment editor has Name and Description fields', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await addCommand(page, 'Comment');
+
+    // The command should be auto-selected after adding; check for editor fields
+    const editor = page.locator('.fungus-cmd-editor');
+    await expect(editor).toBeVisible();
+    await expect(editor.locator('.cmd-field-label', { hasText: 'Name' })).toBeVisible();
+    await expect(editor.locator('.cmd-field-label', { hasText: 'Description' })).toBeVisible();
+  });
+
+  test('Comment command does not affect execution', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
+    await addCommand(page, 'Comment');
+
+    // Deselect and run
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+    await page.locator('#btn-play').click();
+    await page.waitForTimeout(500);
+
+    // Execution should complete without error
+    await page.locator('#btn-run-log').click();
+    const logText = await page.locator('#json-modal-body pre').textContent();
+    expect(logText).toContain('Execution complete');
+    await page.keyboard.press('Escape');
+  });
+});

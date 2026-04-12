@@ -1793,6 +1793,65 @@ describe('V72 – Divider resize bars', () => {
   });
 });
 
+// ─── Version 73: Comment command ──────────────────────────────────────────
+
+describe('V73 – Comment command', () => {
+  afterEach(() => {
+    app.deactivateNode();
+  });
+
+  it('comment command appears in COMMAND_TYPES', () => {
+    expect(app.COMMAND_TYPES.comment).toBeTruthy();
+    expect(app.COMMAND_TYPES.comment.label).toBe('Comment');
+    expect(app.COMMAND_TYPES.comment.category).toBe('Metadata');
+  });
+
+  it('createCommand("comment") returns name and description fields', () => {
+    const cmd = app.createCommand('comment');
+    expect(cmd.type).toBe('comment');
+    expect(cmd.name).toBe('');
+    expect(cmd.description).toBe('');
+    expect(cmd.id).toBeTruthy();
+  });
+
+  it('comment command shows as summary row in inspector', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'comment', name: 'Test Note', description: 'A description' });
+    app.activateNode(node);
+    app.updateInspector();
+
+    const summaries = document.querySelectorAll('.fungus-cmd-summary');
+    expect(summaries.length).toBe(1);
+    expect(summaries[0].textContent).toContain('Comment');
+    expect(summaries[0].textContent).toContain('Test Note');
+    expect(summaries[0].textContent).toContain('A description');
+  });
+
+  it('comment editor shows Name and Description fields', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'comment', name: '', description: '' });
+    app.activateNode(node);
+    app.updateInspector();
+
+    document.querySelector('.fungus-cmd-summary').click();
+
+    const editor = document.querySelector('.fungus-cmd-editor');
+    expect(editor).toBeTruthy();
+    expect(editor.textContent).toContain('Name');
+    expect(editor.textContent).toContain('Description');
+  });
+
+  it('comment detail falls back to (empty) when name and description are blank', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'comment', name: '', description: '' });
+    app.activateNode(node);
+    app.updateInspector();
+
+    const detail = document.querySelector('.fungus-cmd-detail');
+    expect(detail.textContent).toContain('(empty)');
+  });
+});
+
 describe('Audio manifest', () => {
   it('AUDIO_FILES is exported and contains entries', () => {
     // Import is via the app facade; audio-manifest is used by inspector

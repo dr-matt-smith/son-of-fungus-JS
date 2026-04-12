@@ -406,6 +406,25 @@ export const COMMAND_REGISTRY = {
     },
   },
 
+  comment: {
+    label: 'Comment',
+    category: 'Metadata',
+    description: 'Add a note that does not affect execution',
+    color: { dark: '#2a2e2a', light: '#e8ece8' },
+    create() {
+      return { name: '', description: '' };
+    },
+    detail(cmd) {
+      const parts = [cmd.name, cmd.description].filter(Boolean);
+      return parts.length ? parts.join(' — ') : '(empty)';
+    },
+    renderFields(container, cmd, node) {
+      const { updateCmdSummaryRow: _updateCmdSummaryRow } = getFieldCallbacks();
+      container.appendChild(labeledInput('Name', cmd.name, v => { cmd.name = v; _updateCmdSummaryRow(); }));
+      container.appendChild(labeledTextarea('Description', cmd.description, v => { cmd.description = v; _updateCmdSummaryRow(); }));
+    },
+  },
+
   sendMessage: {
     label: 'Send Message',
     category: 'Flow',

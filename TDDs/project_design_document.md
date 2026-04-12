@@ -542,7 +542,7 @@ Version 42 features - light and dark theme
   - ✅ ensure this theme applies to both modes and all tabs
   - ✅ everything should still be readable, in both themes
 
-- ✅ and add Vite and PlayWright tests for the above feature(s)
+  - ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
 Version 43 features - color code command summary rows in inspector
@@ -970,4 +970,17 @@ Version 72 features - fix Data panel row height bars
     - (width changes seem to work fine)
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+
+Version 73 features
+==================
+
+- [x] add new command:
+  - "Comment"
+    -  'name' and 'description'  text fields
+    - it has no behaviour, it just allows a comment to be added in the command sequence to assist a human inspecting a block's contents
+
+- [x] and add Vite and PlayWright tests for the above feature(s)
+
 

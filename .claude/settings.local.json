@@ -16,7 +16,14 @@
       "Bash(ls -la docs/images/*.png)",
       "Bash(wc:*)",
       "Bash(grep -h \"^import\\\\|^export\" /Users/matt/Documents/github/__stateGen_2026/son-of-fungus-JS/src/js/*.js)",
-      "Bash(grep \"from.*inspector\" /Users/matt/Documents/github/__stateGen_2026/son-of-fungus-JS/src/js/*.js /Users/matt/Documents/github/__stateGen_2026/son-of-fungus-JS/src/js/**/*.js)"
+      "Bash(grep \"from.*inspector\" /Users/matt/Documents/github/__stateGen_2026/son-of-fungus-JS/src/js/*.js /Users/matt/Documents/github/__stateGen_2026/son-of-fungus-JS/src/js/**/*.js)",
+      "Bash(grep -n \"inspector\\\\|Inspector\" /Users/matt/Documents/github/__stateGen_2026/son-of-fungus-JS/src/js/*.js)",
+      "Bash(npm test:*)",
+      "Bash(npx --version)",
+      "Read(//opt/homebrew/bin/**)",
+      "Bash(nvm ls:*)",
+      "Bash(fnm ls:*)",
+      "Bash(volta list:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

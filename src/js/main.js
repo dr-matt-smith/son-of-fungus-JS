@@ -207,3 +207,4 @@ export { startExecution, startStepExecution, stepNext, stopExecution, isRunning,
 export { createNodeWithEvents } from './canvas-interactions.js';
 export { renderVariablesList, renderEnumsList, renderMessagesList, VAR_TYPES, attachDividerResize } from './data-panel-ui.js';
 export { showPlayButtons, debugMode, debugEditedVars } from './play-controls.js';
+export { COMMAND_TYPES, createCommand } from './command-registry.js';

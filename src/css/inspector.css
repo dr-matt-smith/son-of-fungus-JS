@@ -305,6 +305,7 @@
 .fungus-cmd-stageBgColor   { background: #2a1a2a; }  /* plum */
 .fungus-cmd-stageBgImage   { background: #2a1a2a; }  /* plum */
 .fungus-cmd-portrait       { background: #2a1a2a; }  /* plum */
+.fungus-cmd-comment        { background: #2a2e2a; }  /* muted green-grey */
 
 [data-theme="light"] .fungus-cmd-say          { background: #f3e8ff; }
 [data-theme="light"] .fungus-cmd-menu         { background: #e0e7ff; }
@@ -323,6 +324,7 @@
 [data-theme="light"] .fungus-cmd-stageBgColor { background: #fce7f3; }
 [data-theme="light"] .fungus-cmd-stageBgImage { background: #fce7f3; }
 [data-theme="light"] .fungus-cmd-portrait    { background: #fce7f3; }
+[data-theme="light"] .fungus-cmd-comment     { background: #e8ece8; }
 
 /* Selected always overrides with green */
 .fungus-cmd-summary.fungus-cmd-selected { background: #14532d; }
