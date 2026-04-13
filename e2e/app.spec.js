@@ -1841,3 +1841,23 @@ test.describe('V73 – Comment command', () => {
     await page.keyboard.press('Escape');
   });
 });
+
+// ─── Version 74: UI improvements ──────────────────────────────────────────
+
+test.describe('V74 – UI improvements', () => {
+  test('page title is "Son of Fungus"', async ({ page }) => {
+    await expect(page).toHaveTitle('Son of Fungus');
+  });
+
+  test('command detail text is readable (not #9ca3af)', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await addCommand(page, 'Say');
+
+    const detail = page.locator('.fungus-cmd-detail').first();
+    const color = await detail.evaluate(el => getComputedStyle(el).color);
+    // #9ca3af = rgb(156, 163, 175) was the old hard-to-read color; #d1d5db was still too dim
+    expect(color).not.toBe('rgb(156, 163, 175)');
+    expect(color).not.toBe('rgb(209, 213, 219)');
+  });
+});

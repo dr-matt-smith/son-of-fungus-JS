@@ -973,14 +973,25 @@ Version 72 features - fix Data panel row height bars
 
 
 
-Version 73 features
+Version 73 features - add Commend command
 ==================
 
-- [x] add new command:
+- ✅ add new command:
   - "Comment"
     -  'name' and 'description'  text fields
     - it has no behaviour, it just allows a comment to be added in the command sequence to assist a human inspecting a block's contents
 
-- [x] and add Vite and PlayWright tests for the above feature(s)
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+Version 74 features - UI improvements
+==================
+
+- ✅ at present the HTML title when run is "StateGen"
+  - ✅ change this to "Son of Fungus"
+
+- ✅ please increase the darkness of the command details in the command sequyence rows in the INspector (the grey text color is a bit difficult to read)
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
