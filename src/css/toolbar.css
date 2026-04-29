@@ -81,6 +81,20 @@
   cursor: grabbing;
 }
 
+/* V77 — non-clickable "(waiting for user input)" pill shown next to Stop in
+   debug mode, with a gap so the developer doesn't accidentally hit Stop where
+   "Next" / "Step Into" used to be. */
+#waiting-input-indicator {
+  font-style: italic;
+  font-size: 12px;
+  color: var(--text-secondary, #9ca3af);
+  padding: 5px 10px;
+  margin-right: 18px;
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
 /* Small state-rectangle icon shown inside the toolbar palette button */
 .palette-icon-state {
   display: inline-block;

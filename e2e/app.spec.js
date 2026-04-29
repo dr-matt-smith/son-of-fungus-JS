@@ -1958,3 +1958,58 @@ test.describe('V76 – Relative asset paths', () => {
     expect(cmds.find(c => c.type === 'stageBgImage').imageUrl).toBe('images/FungusTown_1.png');
   });
 });
+
+// ─── Version 77: Stop-button protection during user-input wait ────────────
+
+test.describe('V77 – waiting for user input indicator', () => {
+  test('indicator is hidden before any execution', async ({ page }) => {
+    await expect(page.locator('#waiting-input-indicator')).toBeHidden();
+  });
+
+  test('Say with waitForNext shows indicator and offsets Stop in debug mode', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
+    await addCommand(page, 'Say');
+
+    await page.locator('#btn-play-step').click();
+    // Step past "Execution started" → "Enter block" → run the Say command.
+    // The Say renders a dialog and emits 'waitingForInput' once typing finishes.
+    await page.locator('#btn-step-continue').click();
+    await page.locator('#btn-step-continue').click();
+
+    await expect(page.locator('#waiting-input-indicator')).toBeVisible();
+    await expect(page.locator('#waiting-input-indicator')).toContainText('waiting for user input');
+
+    // Stop must sit to the right of the indicator — that is the visual gap that
+    // protects against accidental clicks where Next / Step Into used to be.
+    const indicatorRight = await page.locator('#waiting-input-indicator').evaluate(el => el.getBoundingClientRect().right);
+    const stopLeft = await page.locator('#btn-stop').evaluate(el => el.getBoundingClientRect().left);
+    expect(stopLeft).toBeGreaterThan(indicatorRight - 1);
+
+    // Non-clickable: it's a <span>, not a <button>
+    const tag = await page.locator('#waiting-input-indicator').evaluate(el => el.tagName);
+    expect(tag).toBe('SPAN');
+    const pe = await page.locator('#waiting-input-indicator').evaluate(el => getComputedStyle(el).pointerEvents);
+    expect(pe).toBe('none');
+
+    // Advance via the Say's own ▼; indicator hides on next pause/completion.
+    await page.locator('.say-dialog-next').click();
+    await expect(page.locator('#waiting-input-indicator')).toBeHidden();
+  });
+
+  test('clicking Stop during user-input wait still works and hides the indicator', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
+    await addCommand(page, 'Say');
+
+    await page.locator('#btn-play-step').click();
+    await page.locator('#btn-step-continue').click();
+    await page.locator('#btn-step-continue').click();
+    await expect(page.locator('#waiting-input-indicator')).toBeVisible();
+
+    await page.locator('#btn-stop').click();
+    await expect(page.locator('#waiting-input-indicator')).toBeHidden();
+  });
+});

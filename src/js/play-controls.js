@@ -64,10 +64,14 @@ btnPlay.addEventListener('click', () => {
   startExecution();
 });
 
-const btnStepInto     = document.getElementById('btn-step-into');
-const btnStepOver     = document.getElementById('btn-step-over');
-const debugStatusBar  = document.getElementById('debug-status-bar');
-const debugStatusText = document.getElementById('debug-status-text');
+const btnStepInto       = document.getElementById('btn-step-into');
+const btnStepOver       = document.getElementById('btn-step-over');
+const debugStatusBar    = document.getElementById('debug-status-bar');
+const debugStatusText   = document.getElementById('debug-status-text');
+const waitingIndicator  = document.getElementById('waiting-input-indicator');
+
+function showWaitingIndicator() { if (waitingIndicator) waitingIndicator.style.display = ''; }
+function hideWaitingIndicator() { if (waitingIndicator) waitingIndicator.style.display = 'none'; }
 
 export let debugMode = false;
 export let debugEditedVars = new Set();
@@ -109,6 +113,7 @@ function exitDebugMode() {
   document.body.classList.remove('debug-active');
   if (debugStatusBar) debugStatusBar.style.display = 'none';
   if (debugStatusText) debugStatusText.textContent = '';
+  hideWaitingIndicator();
 
   // Restore data sections and dividers
   const enumSection = document.getElementById('data-enums');
@@ -179,9 +184,12 @@ S.on('variableChanged', () => {
 });
 
 S.on('waitingForInput', () => {
-  if (debugMode && debugStatusText) {
-    debugStatusText.textContent += ' (waiting for user input)';
-  }
+  if (!debugMode) return;
+  if (debugStatusText) debugStatusText.textContent += ' (waiting for user input)';
+  // V77 — show non-clickable indicator and visually push Stop to the right,
+  // so a developer rapidly clicking "Next" / "Step Into" doesn't accidentally
+  // hit Stop the moment a Say or Menu pauses for user interaction.
+  showWaitingIndicator();
 });
 
 function highlightReferencedVars(cmd) {
@@ -265,6 +273,7 @@ btnStop.addEventListener('click', () => {
 });
 
 S.onStepPause = () => {
+  hideWaitingIndicator();
   showStepPausedButtons();
 
   if (debugMode) {

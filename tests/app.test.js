@@ -1991,3 +1991,78 @@ describe('V76 – Relative asset paths', () => {
     expect(() => app.normaliseProjectPaths({ nodes: [] })).not.toThrow();
   });
 });
+
+// ─── Version 77: Protect Stop button when waiting for user input ──────────
+
+describe('V77 – waiting for user input indicator', () => {
+  function getIndicator() { return document.getElementById('waiting-input-indicator'); }
+  function isVisible(el) { return el && el.style.display !== 'none'; }
+
+  afterEach(() => {
+    // Make sure we always exit debug mode between cases
+    app.stopExecution();
+    document.body.classList.remove('debug-active');
+    const ind = getIndicator();
+    if (ind) ind.style.display = 'none';
+  });
+
+  it('indicator element exists in the toolbar, hidden by default', () => {
+    const ind = getIndicator();
+    expect(ind).toBeTruthy();
+    expect(ind.tagName).toBe('SPAN'); // not a button — not clickable
+    expect(ind.textContent).toContain('waiting for user input');
+    expect(isVisible(ind)).toBe(false);
+  });
+
+  it('waitingForInput in debug mode shows the indicator', () => {
+    // Enter step debug by clicking the Debug button (no nodes → execution will end fast)
+    // Instead simulate the debug state directly
+    document.body.classList.add('debug-active');
+    // Force the play-controls module's debugMode flag via the public emit path:
+    // re-fire enterDebugMode by clicking btn-play-step. But that would also try to run.
+    // Simpler: directly set the debugMode flag through a small dance — emit
+    // waitingForInput while not in debug, indicator stays hidden; enter debug
+    // by clicking Debug button (which calls enterDebugMode then startStepExecution),
+    // then immediately stop. We use the latter to avoid touching internals.
+
+    // Easier: set debug status text non-empty (mirrors debug mode), trigger via
+    // engine path — but the simplest valid contract test is:
+    // 1) event has no effect outside debug mode
+    app.S.emit('waitingForInput');
+    expect(isVisible(getIndicator())).toBe(false);
+
+    // 2) inside debug mode, the event reveals the indicator
+    document.getElementById('btn-play-step').click(); // enters debug + starts step exec
+    app.S.emit('waitingForInput');
+    expect(isVisible(getIndicator())).toBe(true);
+  });
+
+  it('onStepPause hides the indicator (next pause arrived → no longer waiting)', () => {
+    document.getElementById('btn-play-step').click();
+    app.S.emit('waitingForInput');
+    expect(isVisible(getIndicator())).toBe(true);
+
+    // Engine fires onStepPause when it next pauses
+    if (app.S.onStepPause) app.S.onStepPause();
+    expect(isVisible(getIndicator())).toBe(false);
+  });
+
+  it('exiting debug mode (Stop click) hides the indicator', () => {
+    document.getElementById('btn-play-step').click();
+    app.S.emit('waitingForInput');
+    expect(isVisible(getIndicator())).toBe(true);
+
+    document.getElementById('btn-stop').click();
+    expect(isVisible(getIndicator())).toBe(false);
+  });
+
+  it('indicator is non-interactive (pointer-events: none)', () => {
+    // Inline-styled elements in jsdom return computed style only for inline rules.
+    // The pointer-events rule lives in toolbar.css which jsdom does not load,
+    // but we can at least assert the element is not a <button> and has no
+    // click handler attached on the element itself.
+    const ind = getIndicator();
+    expect(ind.tagName).not.toBe('BUTTON');
+    expect(ind.onclick).toBeNull();
+  });
+});

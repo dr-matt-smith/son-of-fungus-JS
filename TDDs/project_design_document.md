@@ -1037,4 +1037,14 @@ which only resolve at the site root. When published to a sub-path
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 
 
+Version 77 features - avoid hitting "Stop" by mistake when user input required in Debug mode
+==================
 
+- ✅ in debug mode, when user input is required the STOP button appears where the developer has been clicking "next" or "step into"
+  - so they can easily accidently click "Stop" before they realise the system is waiting for them to interactive with the intactive web window
+  - ✅ added a non-clickable `<span id="waiting-input-indicator">(waiting for user input)</span>` next to Stop in the toolbar
+  - ✅ shown only in debug mode when the engine emits `waitingForInput` (Say `waitForNext` and Menu commands)
+  - ✅ hidden again on next step pause / Stop / execution end / debug-mode exit
+  - ✅ italic muted styling, `pointer-events: none`, `margin-right: 18px` so Stop visibly shifts right and the developer must deliberately move to click it
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)

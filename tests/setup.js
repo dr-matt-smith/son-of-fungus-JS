@@ -12,6 +12,7 @@ export function setupDOM() {
       <button id="btn-stop" class="toolbar-btn" style="display:none;">Stop</button>
       <button id="btn-step-into" class="toolbar-btn" style="display:none;">Step Into</button>
       <button id="btn-step-over" class="toolbar-btn" style="display:none;">Step Over</button>
+      <span id="waiting-input-indicator" style="display:none;">(waiting for user input)</span>
     </div>
     <div id="debug-status-bar" style="display:none;">
       <span id="debug-status-text"></span>
