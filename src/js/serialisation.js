@@ -29,3 +29,51 @@ export function serialiseDiagram() {
     })),
   };
 }
+
+// ── Path normalisation on load ──────────────────────────────────────────────
+//
+// Older saved projects store absolute paths like "/audio/foo.mp3" that only
+// resolve correctly when the page is served at the site root. Relative paths
+// ("audio/foo.mp3") resolve against document.baseURI and work at any sub-path.
+// Strip the leading "/" from any path that points into audio/ or images/.
+
+const RELATIVE_PREFIXES = ['/audio/', '/images/'];
+
+function relativisePath(value) {
+  if (typeof value !== 'string') return value;
+  for (const prefix of RELATIVE_PREFIXES) {
+    if (value.startsWith(prefix)) return value.slice(1);
+  }
+  return value;
+}
+
+export function normaliseProjectPaths(data) {
+  if (!data || typeof data !== 'object') return data;
+
+  if (Array.isArray(data.characters)) {
+    for (const ch of data.characters) {
+      if (ch && typeof ch === 'object') {
+        if ('soundUrl' in ch) ch.soundUrl = relativisePath(ch.soundUrl);
+        if (Array.isArray(ch.portraits)) {
+          for (const p of ch.portraits) {
+            if (p && typeof p === 'object' && 'imageUrl' in p) p.imageUrl = relativisePath(p.imageUrl);
+          }
+        }
+      }
+    }
+  }
+
+  if (Array.isArray(data.nodes)) {
+    for (const n of data.nodes) {
+      if (!n || !Array.isArray(n.commands)) continue;
+      for (const cmd of n.commands) {
+        if (!cmd || typeof cmd !== 'object') continue;
+        if ('audioUrl' in cmd) cmd.audioUrl = relativisePath(cmd.audioUrl);
+        if ('imageUrl' in cmd) cmd.imageUrl = relativisePath(cmd.imageUrl);
+        if ('typingAudioUrl' in cmd) cmd.typingAudioUrl = relativisePath(cmd.typingAudioUrl);
+      }
+    }
+  }
+
+  return data;
+}

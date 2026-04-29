@@ -4,6 +4,7 @@ import { S } from './state.js';
 import { applyTransform } from './transform.js';
 import { refreshMinimap } from './minimap.js';
 import { updateInspector, showJsonExport, showRunLog, showJsonLoad } from './inspector.js';
+import { normaliseProjectPaths } from './serialisation.js';
 import { buildRuntime } from './build-runtime.js';
 import { initFlowchart, applyFungusStyles, syncAutoConnections } from './fungus-mode.js';
 import { undo, redo, saveSnapshot } from './undo-redo.js';
@@ -74,6 +75,10 @@ document.addEventListener('keydown', (e) => {
 // ── Load from JSON ──────────────────────────────────────────────────────────
 
 function loadDiagram(data) {
+  // Strip leading "/" from any audio/ or images/ paths in the loaded JSON,
+  // so legacy saves work in sub-folder deployments (PythonAnywhere, etc.).
+  normaliseProjectPaths(data);
+
   // Clear existing
   while (S.nodes.length > 0) {
     const n = S.nodes[0];
@@ -208,3 +213,6 @@ export { createNodeWithEvents } from './canvas-interactions.js';
 export { renderVariablesList, renderEnumsList, renderMessagesList, VAR_TYPES, attachDividerResize } from './data-panel-ui.js';
 export { showPlayButtons, debugMode, debugEditedVars } from './play-controls.js';
 export { COMMAND_TYPES, createCommand } from './command-registry.js';
+export { serialiseDiagram, normaliseProjectPaths } from './serialisation.js';
+export { AUDIO_FILES } from './audio-manifest.js';
+export { IMAGE_FILES } from './image-manifest.js';

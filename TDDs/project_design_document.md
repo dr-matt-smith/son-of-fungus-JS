@@ -994,4 +994,47 @@ Version 74 features - UI improvements
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
 
+Version 75 features -  make background white
+==================
+
+- ✅ add a new command to make the bacjkground white
+  - call it "Make BG White"
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+Version 76 features - relative asset paths (sub-folder publish)
+==================
+
+The build was using absolute `/assets/...`, `/audio/...`, `/images/...` paths,
+which only resolve at the site root. When published to a sub-path
+(e.g. PythonAnywhere `/media/public/son-of-fungus/...`), CSS and assets 404.
+
+- ✅ Vite build: `vite.config.js` already has `base: './'`, so the built
+  `index.html` emits `./assets/...` — no change needed, just rebuild.
+
+- ✅ AUDIO_FILES (`audio-manifest.js`) and IMAGE_FILES (`image-manifest.js`)
+  switched to relative paths (`audio/...`, `images/...`)
+  - relative URLs resolve against `document.baseURI`, so they work whether
+    the editor is hosted at `/` or at a sub-path
+
+- ✅ Hardcoded typing-audio defaults made relative in:
+  - `command-registry.js` (Say `create()` and Typing-sound select default)
+  - `engine.js` (typing-audio fallback during play)
+  - `build-runtime.js` (typing-audio fallback inside the runtime ZIP)
+
+- ✅ `build-runtime.js` ZIP packing: `zip.file(file, ...)` (was `file.slice(1)`)
+  - the existing `rel(url)` helper inside the runtime HTML stays as a
+    backwards-compat normaliser for legacy saves
+
+- ✅ Load-time path normaliser
+  - new `normaliseProjectPaths(data)` in `serialisation.js`
+  - strips leading `/` from any string starting with `/audio/` or `/images/`
+    in: command `audioUrl` / `imageUrl` / `typingAudioUrl`, character
+    `soundUrl`, character portrait `imageUrl`
+  - called by `main.js` `loadDiagram()` so legacy JSON projects keep working
+
+- ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
 

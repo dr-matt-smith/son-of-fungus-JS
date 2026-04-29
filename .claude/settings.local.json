@@ -23,7 +23,9 @@
       "Read(//opt/homebrew/bin/**)",
       "Bash(nvm ls:*)",
       "Bash(fnm ls:*)",
-      "Bash(volta list:*)"
+      "Bash(volta list:*)",
+      "Bash(pkill -f \"vite preview\")",
+      "Bash(git *)"
     ]
   },
   "enableAllProjectMcpServers": true,

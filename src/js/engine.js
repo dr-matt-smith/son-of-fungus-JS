@@ -342,6 +342,7 @@ function executeCommand(cmd) {
     case 'sendMessage': execSendMessage(cmd); break;
     case 'stageBgColor': execStageBgColor(cmd); break;
     case 'stageBgImage': execStageBgImage(cmd); break;
+    case 'makeBgWhite':  execMakeBgWhite(); break;
     case 'portrait':    execPortrait(cmd); break;
     case 'playMusic': execPlayMusic(cmd); break;
     case 'playSound': execPlaySound(cmd); break;
@@ -399,7 +400,7 @@ function execSay(cmd) {
   getStageContainer().appendChild(dialog);
 
   // Use character sound if set, otherwise fall back to command's typing audio
-  const typingUrl = (charObj?.soundUrl) || cmd.typingAudioUrl || '/audio/defaults/MidVoice.wav';
+  const typingUrl = (charObj?.soundUrl) || cmd.typingAudioUrl || 'audio/defaults/MidVoice.wav';
   const wantTypingAudio = cmd.typingAudio !== false && typingUrl;
   (wantTypingAudio ? loadAudioBuffer(typingUrl) : Promise.resolve(null)).then(typingBuffer => {
     startSayContent(dialog, textEl, text, cmd, typingBuffer);
@@ -632,6 +633,16 @@ function execStageBgColor(cmd) {
   const stage = getStageContainer();
   if (stage) {
     stage.style.backgroundColor = cmd.color;
+    stage.style.backgroundImage = '';
+  }
+  executeNextCommand();
+}
+
+function execMakeBgWhite() {
+  logEntry(`Block ${currentNode.id} "${currentNode.label}": Make BG White`);
+  const stage = getStageContainer();
+  if (stage) {
+    stage.style.backgroundColor = '#ffffff';
     stage.style.backgroundImage = '';
   }
   executeNextCommand();

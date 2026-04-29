@@ -125,7 +125,7 @@ function exec(cmd) {
       const txt = document.createElement('div'); dlg.appendChild(txt);
       if (cmd.portrait && charObj?.portraits) { const p = charObj.portraits.find(x => x.description === cmd.portrait); if (p?.imageUrl) { const img = document.createElement('img'); img.className = 'say-portrait'; img.src = rel(p.imageUrl); dlg.appendChild(img); } }
       document.body.appendChild(dlg);
-      const typUrl = (charObj?.soundUrl) || cmd.typingAudioUrl || '/audio/defaults/MidVoice.wav';
+      const typUrl = (charObj?.soundUrl) || cmd.typingAudioUrl || 'audio/defaults/MidVoice.wav';
       const ta = cmd.typingAudio !== false && typUrl ? new Audio(rel(typUrl)) : null;
       function finSay() {
         if (cmd.waitForNext !== false) {
@@ -171,6 +171,7 @@ function exec(cmd) {
     case 'stopAudio': { for (const [u, a] of Object.entries(audioElements)) { a.pause(); a.currentTime = 0; delete audioElements[u]; } next(); break; }
     case 'stageBgColor': stage.style.backgroundColor = cmd.color || ''; stage.style.backgroundImage = ''; next(); break;
     case 'stageBgImage': if (cmd.imageUrl) { stage.style.backgroundImage = 'url(' + rel(cmd.imageUrl) + ')'; stage.style.backgroundSize = 'cover'; stage.style.backgroundPosition = 'center'; } next(); break;
+    case 'makeBgWhite': stage.style.backgroundColor = '#ffffff'; stage.style.backgroundImage = ''; next(); break;
     case 'portrait': {
       const co = cmd.character ? S.characters.find(c => c.name === cmd.character) : null;
       const pt = co?.portraits?.find(p => p.description === cmd.portraitDesc);
@@ -221,19 +222,21 @@ export async function buildRuntime() {
   // Generate the runtime HTML
   zip.file('index.html', generateRuntimeHTML(diagramJson));
 
-  // Fetch and add audio files
+  // Fetch and add audio files. Manifest paths are relative
+  // (e.g. "audio/foo.mp3"), so fetch resolves against the editor's base URL —
+  // works whether the editor is hosted at the site root or in a sub-folder.
   for (const file of AUDIO_FILES) {
     try {
       const resp = await fetch(file);
-      if (resp.ok) zip.file(file.slice(1), await resp.blob()); // remove leading /
+      if (resp.ok) zip.file(file, await resp.blob());
     } catch (_) {}
   }
 
-  // Fetch and add image files
+  // Fetch and add image files (same relative-path convention as audio)
   for (const file of IMAGE_FILES) {
     try {
       const resp = await fetch(file);
-      if (resp.ok) zip.file(file.slice(1), await resp.blob());
+      if (resp.ok) zip.file(file, await resp.blob());
     } catch (_) {}
   }
 

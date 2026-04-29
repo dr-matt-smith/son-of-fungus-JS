@@ -1878,10 +1878,116 @@ describe('V74 – UI improvements', () => {
   });
 });
 
+// ─── Version 75: Make BG White command ────────────────────────────────────
+
+describe('V75 – Make BG White command', () => {
+  afterEach(() => {
+    app.deactivateNode();
+  });
+
+  it('makeBgWhite command appears in COMMAND_TYPES', () => {
+    expect(app.COMMAND_TYPES.makeBgWhite).toBeTruthy();
+    expect(app.COMMAND_TYPES.makeBgWhite.label).toBe('Make BG White');
+    expect(app.COMMAND_TYPES.makeBgWhite.category).toBe('Stage');
+  });
+
+  it('createCommand("makeBgWhite") returns a typed command with no extra props', () => {
+    const cmd = app.createCommand('makeBgWhite');
+    expect(cmd.type).toBe('makeBgWhite');
+    expect(cmd.id).toBeTruthy();
+  });
+
+  it('makeBgWhite command shows as summary row in inspector', () => {
+    const node = app.createNode('state', 0, 0);
+    node.commands.push({ type: 'makeBgWhite' });
+    app.activateNode(node);
+    app.updateInspector();
+
+    const summaries = document.querySelectorAll('.fungus-cmd-summary');
+    expect(summaries.length).toBe(1);
+    expect(summaries[0].textContent).toContain('Make BG White');
+    expect(summaries[0].textContent).toContain('#ffffff');
+  });
+});
+
 describe('Audio manifest', () => {
   it('AUDIO_FILES is exported and contains entries', () => {
     // Import is via the app facade; audio-manifest is used by inspector
     // We test it indirectly — just verify the module loads without error
     expect(true).toBe(true);
+  });
+});
+
+// ─── Version 76: Relative asset paths (sub-folder publish) ──────────────────
+
+describe('V76 – Relative asset paths', () => {
+  it('AUDIO_FILES entries are all relative (no leading slash)', () => {
+    expect(app.AUDIO_FILES.length).toBeGreaterThan(0);
+    for (const f of app.AUDIO_FILES) {
+      expect(f.startsWith('/')).toBe(false);
+      expect(f.startsWith('audio/')).toBe(true);
+    }
+  });
+
+  it('IMAGE_FILES entries are all relative (no leading slash)', () => {
+    expect(app.IMAGE_FILES.length).toBeGreaterThan(0);
+    for (const f of app.IMAGE_FILES) {
+      expect(f.startsWith('/')).toBe(false);
+      expect(f.startsWith('images/')).toBe(true);
+    }
+  });
+
+  it('Say command default typingAudioUrl is relative', () => {
+    const cmd = app.createCommand('say');
+    expect(cmd.typingAudioUrl).toBe('audio/defaults/MidVoice.wav');
+  });
+
+  it('normaliseProjectPaths strips leading slash from command audioUrl', () => {
+    const data = { nodes: [{ commands: [{ type: 'playSound', audioUrl: '/audio/die.mp3' }] }] };
+    app.normaliseProjectPaths(data);
+    expect(data.nodes[0].commands[0].audioUrl).toBe('audio/die.mp3');
+  });
+
+  it('normaliseProjectPaths strips leading slash from command imageUrl', () => {
+    const data = { nodes: [{ commands: [{ type: 'stageBgImage', imageUrl: '/images/FungusTown_1.png' }] }] };
+    app.normaliseProjectPaths(data);
+    expect(data.nodes[0].commands[0].imageUrl).toBe('images/FungusTown_1.png');
+  });
+
+  it('normaliseProjectPaths strips leading slash from typingAudioUrl', () => {
+    const data = { nodes: [{ commands: [{ type: 'say', typingAudioUrl: '/audio/defaults/HighVoice.wav' }] }] };
+    app.normaliseProjectPaths(data);
+    expect(data.nodes[0].commands[0].typingAudioUrl).toBe('audio/defaults/HighVoice.wav');
+  });
+
+  it('normaliseProjectPaths strips leading slash from character soundUrl and portraits', () => {
+    const data = {
+      characters: [
+        { name: 'Sherlock', soundUrl: '/audio/defaults/LowVoice.wav', portraits: [
+          { description: 'happy', imageUrl: '/images/potraits/Sherlock/happy.png' },
+        ] },
+      ],
+    };
+    app.normaliseProjectPaths(data);
+    expect(data.characters[0].soundUrl).toBe('audio/defaults/LowVoice.wav');
+    expect(data.characters[0].portraits[0].imageUrl).toBe('images/potraits/Sherlock/happy.png');
+  });
+
+  it('normaliseProjectPaths leaves already-relative paths untouched', () => {
+    const data = { nodes: [{ commands: [{ type: 'playSound', audioUrl: 'audio/die.mp3' }] }] };
+    app.normaliseProjectPaths(data);
+    expect(data.nodes[0].commands[0].audioUrl).toBe('audio/die.mp3');
+  });
+
+  it('normaliseProjectPaths leaves unrelated string fields untouched', () => {
+    const data = { nodes: [{ commands: [{ type: 'say', text: '/not/a/path' }] }] };
+    app.normaliseProjectPaths(data);
+    expect(data.nodes[0].commands[0].text).toBe('/not/a/path');
+  });
+
+  it('normaliseProjectPaths handles empty / null / undefined input safely', () => {
+    expect(() => app.normaliseProjectPaths(null)).not.toThrow();
+    expect(() => app.normaliseProjectPaths({})).not.toThrow();
+    expect(() => app.normaliseProjectPaths({ nodes: [] })).not.toThrow();
   });
 });

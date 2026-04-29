@@ -1842,6 +1842,50 @@ test.describe('V73 – Comment command', () => {
   });
 });
 
+// ─── Version 75: Make BG White command ───────────────────────────────────
+
+test.describe('V75 – Make BG White command', () => {
+  test('Make BG White appears in command search popup', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.cmd-action-btn.cmd-action-add').click();
+    await page.locator('.cmd-search-input').fill('Make BG White');
+    const items = page.locator('.cmd-search-item');
+    const labels = await items.locator('.cmd-search-label').allTextContents();
+    expect(labels).toContain('Make BG White');
+  });
+
+  test('adding a Make BG White command shows it in the summary list', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await addCommand(page, 'Make BG White');
+
+    const summaries = page.locator('.fungus-cmd-summary');
+    await expect(summaries).toHaveCount(1);
+    await expect(summaries.first().locator('.fungus-cmd-verb')).toHaveText('Make BG White');
+    await expect(summaries.first().locator('.fungus-cmd-detail')).toHaveText('#ffffff');
+  });
+
+  test('Make BG White appears in run log when executed', async ({ page }) => {
+    await dragNewNode(page, '#btn-new-state');
+    await page.locator('.state-node').click();
+    await page.locator('.inspector-event-select').selectOption('gameStarted');
+    await addCommand(page, 'Make BG White');
+
+    const canvas = page.locator('#canvas-container');
+    const box = await canvas.boundingBox();
+    await page.mouse.click(box.x + 5, box.y + 5);
+    await page.locator('#btn-play').click();
+    await page.waitForTimeout(500);
+
+    await page.locator('#btn-run-log').click();
+    const logText = await page.locator('#json-modal-body pre').textContent();
+    expect(logText).toContain('Make BG White');
+    expect(logText).toContain('Execution complete');
+    await page.keyboard.press('Escape');
+  });
+});
+
 // ─── Version 74: UI improvements ──────────────────────────────────────────
 
 test.describe('V74 – UI improvements', () => {
@@ -1859,5 +1903,58 @@ test.describe('V74 – UI improvements', () => {
     // #9ca3af = rgb(156, 163, 175) was the old hard-to-read color; #d1d5db was still too dim
     expect(color).not.toBe('rgb(156, 163, 175)');
     expect(color).not.toBe('rgb(209, 213, 219)');
+  });
+});
+
+// ─── Version 76: Relative asset paths (sub-folder publish) ────────────────
+
+test.describe('V76 – Relative asset paths', () => {
+  test('built index.html references CSS via a relative path', async ({ request }) => {
+    const resp = await request.get('/index.html');
+    expect(resp.ok()).toBe(true);
+    const html = await resp.text();
+    // Vite's base: './' should emit ./assets/... not /assets/...
+    expect(html).toMatch(/href="\.\/assets\/[^"]+\.css"/);
+    expect(html).not.toMatch(/href="\/assets\//);
+  });
+
+  test('legacy /audio/ and /images/ paths in pasted JSON are normalised on load', async ({ page }) => {
+    // Pre-accept the "are you sure?" confirm dialog the loader pops up
+    page.on('dialog', d => d.accept());
+
+    const legacyJson = JSON.stringify({
+      variables: [], messages: [], enums: [],
+      characters: [
+        { name: 'Sherlock', color: '#60a5fa', soundUrl: '/audio/defaults/LowVoice.wav', portraits: [
+          { description: 'happy', imageUrl: '/images/potraits/Sherlock/happy.png' },
+        ] },
+      ],
+      nodes: [
+        { id: 1, type: 'state', x: 100, y: 100, w: 200, h: 100, label: 'Block 1',
+          event: { type: 'gameStarted' },
+          commands: [
+            { type: 'say', text: 'hi', typingAudioUrl: '/audio/defaults/HighVoice.wav' },
+            { type: 'playSound', audioUrl: '/audio/die.mp3' },
+            { type: 'stageBgImage', imageUrl: '/images/FungusTown_1.png' },
+          ] },
+      ],
+      connections: [],
+    });
+
+    await page.locator('#btn-load-json').click();
+    await page.locator('#json-load-input').fill(legacyJson);
+    await page.locator('#load-paste-btn').click();
+
+    // Round-trip through Export JSON to read the in-memory state
+    await page.locator('#btn-export-json').click();
+    const exported = await page.locator('#json-modal-body pre').textContent();
+    const parsed = JSON.parse(exported);
+
+    expect(parsed.characters[0].soundUrl).toBe('audio/defaults/LowVoice.wav');
+    expect(parsed.characters[0].portraits[0].imageUrl).toBe('images/potraits/Sherlock/happy.png');
+    const cmds = parsed.nodes[0].commands;
+    expect(cmds.find(c => c.type === 'say').typingAudioUrl).toBe('audio/defaults/HighVoice.wav');
+    expect(cmds.find(c => c.type === 'playSound').audioUrl).toBe('audio/die.mp3');
+    expect(cmds.find(c => c.type === 'stageBgImage').imageUrl).toBe('images/FungusTown_1.png');
   });
 });

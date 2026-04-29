@@ -35,7 +35,7 @@ export const COMMAND_REGISTRY = {
     description: 'Display dialogue text',
     color: { dark: '#3b1f4a', light: '#f3e8ff' },
     create() {
-      return { character: '', text: 'Hello!', portrait: '', waitForNext: true, typingAnimation: true, typingAudio: true, typingAudioUrl: '/audio/defaults/MidVoice.wav' };
+      return { character: '', text: 'Hello!', portrait: '', waitForNext: true, typingAnimation: true, typingAudio: true, typingAudioUrl: 'audio/defaults/MidVoice.wav' };
     },
     detail(cmd) {
       const t = cmd.text || '';
@@ -64,7 +64,7 @@ export const COMMAND_REGISTRY = {
       container.appendChild(labeledCheckbox('Typing audio', cmd.typingAudio ?? true, v => { cmd.typingAudio = v; }));
       if (cmd.typingAudio !== false) {
         const audioOpts = [['', '— none —'], ...AUDIO_FILES.map(f => [f, f])];
-        container.appendChild(labeledSelect('Typing sound', cmd.typingAudioUrl || '/audio/defaults/MidVoice.wav', audioOpts, v => { cmd.typingAudioUrl = v; }));
+        container.appendChild(labeledSelect('Typing sound', cmd.typingAudioUrl || 'audio/defaults/MidVoice.wav', audioOpts, v => { cmd.typingAudioUrl = v; }));
       }
     },
   },
@@ -325,6 +325,20 @@ export const COMMAND_REGISTRY = {
       const imgOptions = [['', '— none —'], ...IMAGE_FILES.map(f => [f, f])];
       container.appendChild(labeledSelect('Image', cmd.imageUrl || '', imgOptions, v => { cmd.imageUrl = v; }));
     },
+  },
+
+  makeBgWhite: {
+    label: 'Make BG White',
+    category: 'Stage',
+    description: 'Set the stage background to white',
+    color: { dark: '#2a1a2a', light: '#fce7f3' },
+    create() {
+      return {};
+    },
+    detail() {
+      return '#ffffff';
+    },
+    renderFields() {},
   },
 
   portrait: {
