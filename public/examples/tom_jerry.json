@@ -16,7 +16,7 @@
       "portraits": [
         {
           "description": "cat",
-          "imageUrl": "/images/potraits/Tom/Original_Garfield.svg.png"
+          "imageUrl": "/images/portraits/Tom/Original_Garfield.svg.png"
         }
       ]
     },
@@ -27,7 +27,7 @@
       "portraits": [
         {
           "description": "mouse",
-          "imageUrl": "/images/potraits/Jerry/640px-Gartoon_devices_mouse.svg.png"
+          "imageUrl": "/images/portraits/Jerry/640px-Gartoon_devices_mouse.svg.png"
         }
       ]
     },
@@ -38,7 +38,7 @@
       "portraits": [
         {
           "description": "angry",
-          "imageUrl": "/images/potraits/Sherlock/angry.png"
+          "imageUrl": "/images/portraits/Sherlock/angry.png"
         }
       ]
     }

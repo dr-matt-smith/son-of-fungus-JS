@@ -1926,7 +1926,7 @@ test.describe('V76 – Relative asset paths', () => {
       variables: [], messages: [], enums: [],
       characters: [
         { name: 'Sherlock', color: '#60a5fa', soundUrl: '/audio/defaults/LowVoice.wav', portraits: [
-          { description: 'happy', imageUrl: '/images/potraits/Sherlock/happy.png' },
+          { description: 'happy', imageUrl: '/images/portraits/Sherlock/happy.png' },
         ] },
       ],
       nodes: [
@@ -1951,7 +1951,7 @@ test.describe('V76 – Relative asset paths', () => {
     const parsed = JSON.parse(exported);
 
     expect(parsed.characters[0].soundUrl).toBe('audio/defaults/LowVoice.wav');
-    expect(parsed.characters[0].portraits[0].imageUrl).toBe('images/potraits/Sherlock/happy.png');
+    expect(parsed.characters[0].portraits[0].imageUrl).toBe('images/portraits/Sherlock/happy.png');
     const cmds = parsed.nodes[0].commands;
     expect(cmds.find(c => c.type === 'say').typingAudioUrl).toBe('audio/defaults/HighVoice.wav');
     expect(cmds.find(c => c.type === 'playSound').audioUrl).toBe('audio/die.mp3');

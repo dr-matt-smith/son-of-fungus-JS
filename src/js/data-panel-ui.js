@@ -647,10 +647,12 @@ export function renderCharactersList() {
       noImg.textContent = '— image —';
       imgSelect.appendChild(noImg);
       for (const f of IMAGE_FILES) {
-        // Only show portraits matching this character's name (case-insensitive folder match)
-        if (!f.includes('potraits')) continue;
+        // Only show portraits matching this character's name (case-insensitive folder match).
+        // The character folder is the parent directory of the image file, so use
+        // parts[length - 2] — robust to leading "/" and to any portrait-tree depth.
+        if (!f.includes('portraits')) continue;
         const parts = f.split('/');
-        const folderName = parts.length >= 4 ? parts[3] : '';
+        const folderName = parts.length >= 2 ? parts[parts.length - 2] : '';
         if (folderName.toLowerCase() !== ch.name.toLowerCase()) continue;
         const opt = document.createElement('option');
         opt.value = f;

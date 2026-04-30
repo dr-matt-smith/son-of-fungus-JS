@@ -1964,13 +1964,13 @@ describe('V76 – Relative asset paths', () => {
     const data = {
       characters: [
         { name: 'Sherlock', soundUrl: '/audio/defaults/LowVoice.wav', portraits: [
-          { description: 'happy', imageUrl: '/images/potraits/Sherlock/happy.png' },
+          { description: 'happy', imageUrl: '/images/portraits/Sherlock/happy.png' },
         ] },
       ],
     };
     app.normaliseProjectPaths(data);
     expect(data.characters[0].soundUrl).toBe('audio/defaults/LowVoice.wav');
-    expect(data.characters[0].portraits[0].imageUrl).toBe('images/potraits/Sherlock/happy.png');
+    expect(data.characters[0].portraits[0].imageUrl).toBe('images/portraits/Sherlock/happy.png');
   });
 
   it('normaliseProjectPaths leaves already-relative paths untouched', () => {
