@@ -1048,3 +1048,79 @@ Version 77 features - avoid hitting "Stop" by mistake when user input required i
   - ✅ italic muted styling, `pointer-events: none`, `margin-right: 18px` so Stop visibly shifts right and the developer must deliberately move to click it
 
 - ✅ and add Vite and PlayWright tests for the above feature(s)
+
+
+Version 78 features - dedicated PythonAnywhere build with absolute base path
+==================
+
+When published to PythonAnywhere at `/media/public/son-of-fungus`
+(no trailing slash on the served URL), the default `./assets/...`
+references in the built `index.html` resolve against the parent path
+and 404, so CSS / JS fail to load.
+
+- ✅ added `npm run build:pa` script in `package.json`:
+  - runs `vite build --base=/media/public/son-of-fungus/`
+  - emits absolute asset URLs (`/media/public/son-of-fungus/assets/...`)
+    so they resolve correctly with or without a trailing slash on the
+    page URL
+- ✅ left the default `npm run build` unchanged (Vite `base: './'`),
+  so local `npm run preview` and any site-root / trailing-slash host
+  still works
+- ✅ documented both build modes in `README.md`, including how to
+  revert: edit the `--base=...` value if the publish path changes,
+  or delete `build:pa` and use `npm run build` if a single build
+  suffices for all hosts in the future
+
+
+Version 79 features - runtime asset URLs honour the publish sub-path
+==================
+
+After Version 78 fixed the boot-time CSS / JS load on PythonAnywhere
+(absolute paths in `index.html`), runtime fetches still failed when
+the page URL had no trailing slash:
+
+- "Load example" → `fetch('/examples/sherlock.JSON')` resolved to
+  `https://host/media/public/examples/sherlock.JSON` (one level too
+  high, 404), even though the file existed at
+  `https://host/media/public/son-of-fungus/examples/sherlock.JSON`
+- the same hazard applied to audio, stage images, portraits and
+  character sound effects, all of which are written into DOM as
+  relative URLs at runtime — they resolve against `document.baseURI`,
+  which is the page URL, so without a trailing slash they'd hit the
+  parent directory
+
+- ✅ `src/js/examples-manifest.js` — example file paths made relative
+  (no leading `/`), matching the v76 audio/image manifest convention
+
+- ✅ `src/js/main.js` — at startup, inject a `<base href="…">` tag
+  into `<head>` using Vite's `import.meta.env.BASE_URL` value, but
+  ONLY when `BASE_URL` is absolute (starts with `/`):
+  - `npm run build:pa` → `BASE_URL = "/media/public/son-of-fungus/"`
+    → `<base href="/media/public/son-of-fungus/">` is injected, so
+    every relative URL in the editor (fetch / `<audio>` / `<img>` /
+    CSS `url(...)` set via `style.backgroundImage`) resolves against
+    the published sub-path regardless of trailing slash on page URL
+  - `npm run build` → `BASE_URL = "./"` → IIFE no-ops, no `<base>`
+    inserted, default behaviour preserved for dev / preview /
+    site-root hosting
+  - guarded with `document.querySelector('base[href]')` so an
+    existing `<base>` tag (e.g. set by a future template change) is
+    not overridden
+
+- ✅ documented in `README.md` (new "How runtime asset URLs resolve"
+  subsection) including the exact revert path: delete the IIFE in
+  `main.js` if a future host doesn't need this fix
+
+- ✅ index.html has no `<a href>` navigation links, so injecting
+  `<base href>` cannot break in-page anchor or fragment behaviour
+  in this app
+
+Version 80 features - offer extra option to load examples JSON from a URL
+==================
+
+- [] when user clicks to load examples
+  -[] below the OPEN FILE now offer a new option LOAD FROM URL
+  - so if user has URL of JSON for a flowchart, then can just past in the URL
+
+- [] and add Vite and PlayWright tests for the above feature(s)
+

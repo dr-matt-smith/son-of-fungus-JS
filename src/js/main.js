@@ -1,5 +1,22 @@
 'use strict';
 
+// Inject <base href> from Vite's BASE_URL so runtime-relative URLs
+// (audio/, images/, examples/, character portraits, project JSON)
+// resolve against the app's published path — not the browser's
+// document URL, which on sub-path hosts (e.g. PythonAnywhere) without
+// a trailing slash points one directory too high.
+// Only injected when BASE_URL is absolute (starts with "/"); the
+// default `./` build is left untouched so dev/preview keep working
+// against `document.baseURI`.
+(() => {
+  const baseUrl = import.meta.env?.BASE_URL;
+  if (!baseUrl || !baseUrl.startsWith('/')) return;
+  if (document.querySelector('base[href]')) return;
+  const tag = document.createElement('base');
+  tag.href = baseUrl;
+  document.head.insertBefore(tag, document.head.firstChild);
+})();
+
 import { S } from './state.js';
 import { applyTransform } from './transform.js';
 import { refreshMinimap } from './minimap.js';

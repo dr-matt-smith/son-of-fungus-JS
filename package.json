@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:pa": "vite build --base=/media/public/son-of-fungus/",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
