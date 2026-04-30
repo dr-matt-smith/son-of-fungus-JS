@@ -1,5 +1,27 @@
 'use strict';
 
+// On sub-path hosts (e.g. PythonAnywhere /media/public/son-of-fungus),
+// the URL with NO trailing slash and the URL WITH trailing slash can
+// behave differently — relative URLs in HTML/CSS resolve against the
+// document URL, which without a trailing slash points one directory
+// too high. To make a single uploaded build work for both URL forms,
+// redirect the no-slash form to the canonical trailing-slash form
+// before any further script work runs.
+// The <script> tag for this bundle is absolute (Vite's `--base` is
+// baked into index.html by `npm run build:pa`), so this code is
+// guaranteed to load and run even when the rest of the page is
+// fetching against the wrong base.
+(() => {
+  const baseUrl = import.meta.env?.BASE_URL;
+  if (!baseUrl || !baseUrl.startsWith('/') || !baseUrl.endsWith('/')) return;
+  const noSlashPath = baseUrl.slice(0, -1);
+  if (window.location.pathname === noSlashPath) {
+    window.location.replace(
+      baseUrl + window.location.search + window.location.hash
+    );
+  }
+})();
+
 // Inject <base href> from Vite's BASE_URL so runtime-relative URLs
 // (audio/, images/, examples/, character portraits, project JSON)
 // resolve against the app's published path — not the browser's

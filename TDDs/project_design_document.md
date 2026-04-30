@@ -1124,3 +1124,46 @@ Version 80 features - offer extra option to load examples JSON from a URL
 
 - [] and add Vite and PlayWright tests for the above feature(s)
 
+
+Version 81 features - auto-redirect to trailing-slash URL on sub-path hosts
+==================
+
+After Version 78/79 fixed CSS/JS loading and runtime asset URLs for
+the PythonAnywhere build, manual testing showed the published page
+still required the user to type the URL with a trailing slash
+(`https://antulcha.eu.pythonanywhere.com/media/public/son-of-fungus/`)
+to load CSS correctly. Without the trailing slash, PA serves slightly
+different content / resolves relative URLs against the parent path,
+breaking the page even though the CSS `<link>` tag itself is absolute.
+
+To make a single uploaded build work whether the user types the URL
+with or without a trailing slash:
+
+- ✅ added a redirect IIFE at the very top of `src/js/main.js`,
+  ahead of the `<base href>` injection from Version 79:
+  - reads `import.meta.env.BASE_URL`; if it is absolute and ends
+    with `/` (i.e. we are on a sub-path host built via `build:pa`),
+    compares `window.location.pathname` against the BASE_URL minus
+    its trailing slash
+  - if they match exactly, the user is on the bare sub-path with no
+    trailing slash, so `window.location.replace(BASE_URL + search +
+    hash)` bumps the URL to the canonical trailing-slash form
+  - uses `replace()` (not `assign()`) so the back button does not
+    return the user to the broken URL
+  - guarded so it only fires when pathname matches the bare sub-path
+    exactly — sub-pages and deeper paths under BASE_URL are not
+    touched
+
+- ✅ runs reliably because the `<script>` tag for the bundle in
+  `index.html` is absolute (Vite `--base=/media/public/son-of-fungus/`
+  bakes that path in), so the JS loads even when the surrounding HTML
+  is being resolved against the wrong base
+
+- ✅ default `npm run build` is unaffected: `BASE_URL` is `./`, so
+  the IIFE no-ops and dev/preview/site-root hosts are untouched
+
+- ✅ revert path: delete the redirect IIFE in `src/js/main.js`
+  (the block labelled "On sub-path hosts… redirect the no-slash form
+  to the canonical trailing-slash form"). The Version 79 `<base>`
+  injection below it is independent and can stay or go on its own.
+
