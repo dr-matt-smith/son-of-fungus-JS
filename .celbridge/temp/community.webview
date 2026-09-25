@@ -1,0 +1,18 @@
+source_url = "https://celbridge.org/"
+show_url_bar = true
+show_bookmarks_bar = true
+
+[[bookmarks]]
+url = "https://celbridge.org/"
+name = "Celbridge"
+icon = "bs-house"
+
+[[bookmarks]]
+url = "https://learn.celbridge.org/"
+name = "Learn"
+icon = "bs-book"
+
+[[bookmarks]]
+url = "https://celbridge.discourse.group/"
+name = "Forum"
+icon = "bs-chat-dots"

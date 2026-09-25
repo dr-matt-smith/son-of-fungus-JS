@@ -1,0 +1,13 @@
+{
+  "DataVersion": "1",
+  "PreviousSelectedResources": "\u0022[]\u0022",
+  "ActiveDocument": "\u0022logs:reports/project-load.report\u0022",
+  "SelectedDocuments": "{\u0022main_left\u0022:\u0022logs:reports/project-load.report\u0022,\u0022bottom_left\u0022:\u0022project:shell.console\u0022}",
+  "OpenDocumentAddresses": "[{\u0022Resource\u0022:\u0022project:shell.console\u0022,\u0022WindowIndex\u0022:0,\u0022Section\u0022:\u0022bottom_left\u0022,\u0022TabOrder\u0022:0},{\u0022Resource\u0022:\u0022project:README2.md\u0022,\u0022WindowIndex\u0022:0,\u0022Section\u0022:\u0022main_left\u0022,\u0022TabOrder\u0022:0},{\u0022Resource\u0022:\u0022project:son-of-fungus2.celbridge\u0022,\u0022WindowIndex\u0022:0,\u0022Section\u0022:\u0022main_left\u0022,\u0022TabOrder\u0022:1},{\u0022Resource\u0022:\u0022project:dist/index.html\u0022,\u0022WindowIndex\u0022:0,\u0022Section\u0022:\u0022main_left\u0022,\u0022TabOrder\u0022:2},{\u0022Resource\u0022:\u0022logs:reports/project-load.report\u0022,\u0022WindowIndex\u0022:0,\u0022Section\u0022:\u0022main_left\u0022,\u0022TabOrder\u0022:3}]",
+  "ExpandedFolders": "[\u0022project:dist\u0022]",
+  "Editor.PreviousNewFileExtension": "\u0022.console\u0022",
+  "Layout.UtilityPanelSelectedUtility": "\u0022celbridge.explorer\u0022",
+  "Layout.PreferredVisibleAreas": "\u0022main,utility,bottom\u0022",
+  "Layout.ProjectSettingsSelectedSection": "\u0022Resources\u0022",
+  "DocumentEditorStates": "{\u0022project:README2.md\u0022:\u0022{\\u0022editorScrollPercentage\\u0022:0.07196133754225215,\\u0022previewScrollPercentage\\u0022:0.219187675070028,\\u0022viewMode\\u0022:\\u0022preview\\u0022,\\u0022editorFlexShare\\u0022:0.5}\u0022,\u0022project:shell.console\u0022:\u0022{\\u0022activeSection\\u0022:\\u0022type\\u0022,\\u0022scrollTop\\u0022:0}\u0022}"
+}
