@@ -1,0 +1,37 @@
+[session]
+type = "shell"
+
+[[session.shortcut]]
+label = "install Node packages"
+icon = "bs-download"
+text = "npm install"
+
+[[session.shortcut]]
+label = "run the dev server"
+icon = "bs-play-btn"
+text = "npm run dev"
+
+[[session.shortcut]]
+label = "build into dist/"
+icon = "bs-hammer"
+text = "npm run build"
+
+[[session.shortcut]]
+label = "build for PythonAnywhere publish"
+icon = "bs-cloud-upload"
+text = "npm run build:pa"
+
+[[session.shortcut]]
+label = "preview the dist/ build"
+icon = "bs-eye"
+text = "npm run preview"
+
+[[session.shortcut]]
+label = "run the unit tests (vitest)"
+icon = "bs-check2-square"
+text = "npm test"
+
+[[session.shortcut]]
+label = "build, then run the end-to-end tests (playwright)"
+icon = "bs-clipboard-check"
+text = "npm run test:e2e"
